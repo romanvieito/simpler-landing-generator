@@ -134,60 +134,10 @@ export default function Home() {
                   </p>
                 </SignedOut>
                 {error ? <p className="text-sm text-red-400">{error}</p> : null}
-                <p className="text-xs text-neutral-400">
-                  Tip: keep it short—what you do, who it is for, one promise, one call to action.
-                </p>
               </div>
             </div>
           </div>
         </header>
-
-        <SignedIn>
-          {result ? (
-            <section className="space-y-6 rounded-3xl border border-white/10 bg-white/5 p-6 shadow-lg ring-1 ring-white/10 backdrop-blur">
-              <div className="flex flex-wrap items-center justify-between gap-4">
-                <div>
-                  <p className="text-sm font-semibold text-[#9cc2ff]">Preview ready</p>
-                  <p className="text-sm text-neutral-300">
-                    Share this link or tweak copy before you ship to production.
-                  </p>
-                </div>
-                <div className="flex flex-wrap items-center gap-3">
-                  <a
-                    href={shareUrl || "#"}
-                    className="inline-flex items-center gap-2 rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:border-white/30"
-                  >
-                    Open preview
-                  </a>
-                  <button
-                    type="button"
-                    onClick={handleCopy}
-                    disabled={!shareUrl}
-                    className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-[#6b5bff] to-[#67d8ff] px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {copied ? "Copied" : "Copy share link"}
-                  </button>
-                </div>
-              </div>
-              <LandingPreview content={result} />
-            </section>
-          ) : (
-            <section className="rounded-3xl border border-dashed border-white/20 bg-white/5 px-8 py-10 text-white shadow-sm backdrop-blur">
-              <p className="text-lg font-semibold">You’ll see a full preview here after you generate.</p>
-              <p className="mt-2 text-sm text-neutral-300">
-                Paste your focus, click generate, and we’ll draft the hero, benefits, and CTA.
-              </p>
-            </section>
-          )}
-        </SignedIn>
-        <SignedOut>
-          <section className="rounded-3xl border border-dashed border-white/20 bg-white/5 px-8 py-10 text-center text-white shadow-sm backdrop-blur">
-            <p className="text-lg font-semibold">Sign in to see your generated preview.</p>
-            <p className="mt-2 text-sm text-neutral-300">
-              We’ll keep your drafts ready so you can edit and share them instantly.
-            </p>
-          </section>
-        </SignedOut>
 
         <section className="grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm ring-1 ring-white/10 backdrop-blur sm:grid-cols-3">
           {[
