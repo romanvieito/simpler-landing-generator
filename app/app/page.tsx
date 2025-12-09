@@ -24,7 +24,7 @@ const suggestionPrompts = [
   "Why are founders skeptical of AI landing copy?",
 ];
 
-const formatOptions = ["Script", "Landing", "Outline"];
+const formatOptions = ["Professional", "Personal", "Business", "Friendly", "Creative"];
 
 const createId = () => (crypto.randomUUID ? crypto.randomUUID() : `item-${Date.now()}`);
 
