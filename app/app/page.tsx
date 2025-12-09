@@ -1,7 +1,9 @@
 "use client";
 
-import { SignedIn, SignedOut, SignInButton } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
+import Link from "next/link";
 import { useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 
 import { LandingPreview } from "@/components/landing-preview";
 import { generateLandingContent, type GeneratedLanding } from "@/lib/generator";
@@ -28,6 +30,8 @@ const createId = () => (crypto.randomUUID ? crypto.randomUUID() : `item-${Date.n
 
 export default function AppWorkspace() {
   const starterContent = useMemo(() => generateLandingContent(starterPrompt), []);
+  const { user } = useUser();
+  const pathname = usePathname();
 
   const [prompt, setPrompt] = useState(starterPrompt);
   const [landing, setLanding] = useState<GeneratedLanding | null>(starterContent);
@@ -129,12 +133,137 @@ export default function AppWorkspace() {
   };
 
   return (
-    <main className="min-h-screen bg-neutral-50 px-6 pb-20 pt-14 text-neutral-900">
-      <div className="mx-auto flex w-full max-w-5xl flex-col gap-10">
-        <header className="flex flex-col gap-6">
-          <h1 className="text-center text-3xl font-semibold sm:text-4xl">
-            What&apos;s your landing idea?
-          </h1>
+    <main className="flex min-h-screen bg-neutral-50 text-neutral-900">
+      <aside className="flex w-20 flex-col items-center justify-between border-r border-neutral-200 bg-white/80 px-4 py-6 backdrop-blur">
+        <div className="flex flex-col items-center gap-6">
+          <div className="group relative">
+            <Link
+              href="/app"
+              className="flex h-12 w-12 items-center justify-center rounded-full bg-black text-lg font-bold text-white shadow-sm"
+              aria-label="Workspace home"
+            >
+              w
+            </Link>
+            <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-xl bg-neutral-900 px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100">
+              Workspace
+            </span>
+          </div>
+
+          <div className="flex flex-col items-center gap-3">
+            <div className="group relative">
+              <button
+                type="button"
+                onClick={() => setPrompt(starterPrompt)}
+                className="flex h-12 w-12 items-center justify-center rounded-xl text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-800"
+                aria-label="New idea"
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor">
+                  <path d="M12 5v14M5 12h14" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+              <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-xl bg-neutral-900 px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100">
+                New idea
+              </span>
+            </div>
+
+            <div className="group relative">
+              <Link
+                href="/app/history"
+                className={`flex h-12 w-12 items-center justify-center rounded-xl transition ${
+                  pathname === "/app/history"
+                    ? "bg-neutral-200 text-neutral-900"
+                    : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
+                }`}
+                aria-label="History"
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor">
+                  <path
+                    d="M12 8v4l2.5 1.5M5.5 11a6.5 6.5 0 111.9 4.6"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                  <path d="M5 5v4h4" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </Link>
+              <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-xl bg-neutral-900 px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100">
+                History
+              </span>
+            </div>
+
+            <div className="group relative">
+              <Link
+                href="/app/analytics"
+                className={`flex h-12 w-12 items-center justify-center rounded-xl transition ${
+                  pathname === "/app/analytics"
+                    ? "bg-neutral-200 text-neutral-900"
+                    : "text-neutral-500 hover:bg-neutral-100 hover:text-neutral-800"
+                }`}
+                aria-label="Analytics"
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor">
+                  <rect x="5" y="11" width="3" height="7" rx="1" strokeWidth="2" />
+                  <rect x="10.5" y="8" width="3" height="10" rx="1" strokeWidth="2" />
+                  <rect x="16" y="5" width="3" height="13" rx="1" strokeWidth="2" />
+                </svg>
+              </Link>
+              <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-xl bg-neutral-900 px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100">
+                Analytics
+              </span>
+            </div>
+
+            <div className="group relative">
+              <button
+                type="button"
+                className="flex h-12 w-12 items-center justify-center rounded-xl text-neutral-500 transition hover:bg-neutral-100 hover:text-neutral-800"
+                aria-label="Downloads"
+              >
+                <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor">
+                  <path d="M12 5v10M7 10l5 5 5-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M5 19h14" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </button>
+              <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-xl bg-neutral-900 px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100">
+                Downloads
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div className="pb-4">
+          <SignedIn>
+            <div className="group relative">
+              <UserButton
+                afterSignOutUrl="/"
+                appearance={{
+                  elements: {
+                    avatarBox: "h-12 w-12 rounded-full shadow-sm",
+                  },
+                }}
+              />
+              <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-xl bg-neutral-900 px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100">
+                Account
+              </span>
+            </div>
+          </SignedIn>
+          <SignedOut>
+            <SignInButton>
+              <div className="group relative">
+                <button className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-200 text-xs font-semibold text-neutral-700 shadow-sm transition hover:bg-neutral-300">
+                  Sign in
+                </button>
+                <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-xl bg-neutral-900 px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100">
+                  Sign in
+                </span>
+              </div>
+            </SignInButton>
+          </SignedOut>
+        </div>
+      </aside>
+
+      <section className="flex-1 px-6 py-10">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-6">
+          <h1 className="text-center text-3xl font-semibold sm:text-4xl">What&apos;s your landing idea?</h1>
 
           <SignedOut>
             <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
@@ -262,8 +391,8 @@ export default function AppWorkspace() {
               </div>
             </div>
           </SignedIn>
-        </header>
-      </div>
+        </div>
+      </section>
     </main>
   );
 }
