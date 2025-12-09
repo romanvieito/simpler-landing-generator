@@ -9,50 +9,42 @@ const bulletIcons = ["✅", "⚡️", "📱", "🔗"];
 
 export function LandingPreview({ content, showHeader = true }: LandingPreviewProps) {
   return (
-    <section className="w-full rounded-3xl border border-neutral-200 bg-white/70 shadow-sm ring-1 ring-black/[0.02] backdrop-blur-sm dark:border-white/10 dark:bg-white/5">
+    <section className="relative w-full overflow-hidden rounded-3xl border border-white/10 bg-white/5 shadow-lg ring-1 ring-white/10 backdrop-blur">
       {showHeader ? (
-        <div className="flex items-center justify-between border-b border-neutral-100 px-6 py-4 dark:border-white/10">
+        <div className="relative flex items-center justify-between border-b border-white/10 px-6 py-4">
           <div>
-            <p className="text-sm font-medium text-neutral-500 dark:text-neutral-300">
-              Preview
-            </p>
-            <p className="text-sm text-neutral-400 dark:text-neutral-500">
-              Generated landing based on your prompt
-            </p>
+            <p className="text-sm font-semibold text-[#9cc2ff]">Preview</p>
+            <p className="text-sm text-neutral-300">Generated landing based on your prompt</p>
           </div>
-          <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-100">
+          <span className="rounded-full bg-gradient-to-r from-[#6b5bff] to-[#67d8ff] px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-white shadow-sm">
             Ready
           </span>
         </div>
       ) : null}
-      <div className="grid gap-8 px-8 py-10 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
+      <div className="relative grid gap-8 px-8 py-10 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
         <div className="space-y-4">
-          <p className="text-sm font-semibold uppercase tracking-[0.08em] text-emerald-700 dark:text-emerald-200">
+          <p className="text-sm font-semibold uppercase tracking-[0.12em] text-[#9cc2ff]">
             {content.audience}
           </p>
-          <h1 className="text-3xl font-semibold leading-tight text-neutral-950 dark:text-white sm:text-4xl">
+          <h1 className="text-3xl font-semibold leading-tight text-white sm:text-4xl">
             {content.headline}
           </h1>
-          <p className="text-lg text-neutral-600 dark:text-neutral-200">
-            {content.subhead}
-          </p>
+          <p className="text-lg text-neutral-200">{content.subhead}</p>
           <div className="flex flex-wrap items-center gap-3 pt-2">
-            <button className="rounded-full bg-neutral-900 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-800 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-200">
+            <button className="rounded-full bg-gradient-to-r from-[#6b5bff] via-[#7c5bff] to-[#67d8ff] px-5 py-2.5 text-sm font-semibold text-white shadow-sm shadow-[#6b5bff]/20 transition hover:scale-[1.01] active:scale-[0.99]">
               {content.callToAction}
             </button>
-            <button className="rounded-full border border-neutral-300 px-4 py-2 text-sm font-semibold text-neutral-900 transition hover:border-neutral-400 dark:border-white/30 dark:text-white dark:hover:border-white/50">
+            <button className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:border-white/30">
               Book a quick call
             </button>
           </div>
-          <p className="text-sm text-neutral-500 dark:text-neutral-300">
+          <p className="text-sm text-neutral-400">
             You can tweak this copy inline. Keep it short, benefit-led, and focused on a single CTA.
           </p>
         </div>
-        <div className="space-y-4 rounded-2xl border border-dashed border-neutral-200 bg-neutral-50/80 p-6 dark:border-white/15 dark:bg-white/5">
-          <p className="text-sm font-semibold text-neutral-800 dark:text-neutral-100">
-            What ships in your landing
-          </p>
-          <ul className="space-y-3 text-sm text-neutral-700 dark:text-neutral-200">
+        <div className="space-y-4 rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm ring-1 ring-white/10 backdrop-blur">
+          <p className="text-sm font-semibold text-white">What ships in your landing</p>
+          <ul className="space-y-3 text-sm text-neutral-200">
             {content.features.map((feature, index) => (
               <li className="flex gap-3" key={feature}>
                 <span className="text-lg" aria-hidden>
@@ -62,13 +54,9 @@ export function LandingPreview({ content, showHeader = true }: LandingPreviewPro
               </li>
             ))}
           </ul>
-          <div className="rounded-xl bg-white px-4 py-3 shadow-sm ring-1 ring-black/5 dark:bg-white/10 dark:ring-white/10">
-            <p className="text-xs font-semibold uppercase tracking-[0.08em] text-neutral-400 dark:text-neutral-300">
-              Prompt
-            </p>
-            <p className="text-sm font-medium text-neutral-900 dark:text-white">
-              “{content.prompt}”
-            </p>
+          <div className="rounded-xl bg-white/5 px-4 py-3 shadow-sm ring-1 ring-white/10">
+            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-neutral-400">Prompt</p>
+            <p className="text-sm font-medium text-white">“{content.prompt}”</p>
           </div>
         </div>
       </div>
