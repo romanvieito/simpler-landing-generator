@@ -15,6 +15,14 @@ type HistoryEntry = {
 
 const HISTORY_KEY = "workspaceHistory:v1";
 const starterPrompt = "Productized design for SaaS founders needing quick launches";
+const suggestionPrompts = [
+  "What if AI tools reshape remote team onboarding?",
+  "How can creators ship landing pages faster?",
+  "What if local services bundled memberships?",
+  "Why are founders skeptical of AI landing copy?",
+];
+
+const formatOptions = ["Script", "Landing", "Outline"];
 
 const createId = () => (crypto.randomUUID ? crypto.randomUUID() : `item-${Date.now()}`);
 
@@ -38,6 +46,8 @@ export default function AppWorkspace() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
+  const [format, setFormat] = useState(formatOptions[0]);
+  const [showFormats, setShowFormats] = useState(false);
 
   const shareUrl = useMemo(() => {
     if (!draft) return "";
@@ -54,6 +64,7 @@ export default function AppWorkspace() {
   const handleGenerate = async () => {
     setError("");
     setCopied(false);
+    setShowFormats(false);
     setLoading(true);
     try {
       const response = await fetch("/api/generate", {
@@ -118,268 +129,140 @@ export default function AppWorkspace() {
   };
 
   return (
-    <main className="min-h-screen bg-black px-6 pb-20 pt-14 text-white">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-10">
-        <header className="flex flex-col gap-3">
-          <p className="inline-flex w-fit items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-[#9cc2ff] ring-1 ring-white/10">
-            Workspace
-          </p>
-          <div className="flex flex-col gap-2">
-            <h1 className="text-3xl font-semibold text-white sm:text-4xl">
-              Generate, edit, and share your landing in one place.
-            </h1>
-            <p className="text-sm text-neutral-300">
-              Draft with AI, tweak the copy, keep your prompt history, and open a production-style
-              preview without leaving this screen.
-            </p>
-          </div>
-        </header>
+    <main className="min-h-screen bg-neutral-50 px-6 pb-20 pt-14 text-neutral-900">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-10">
+        <header className="flex flex-col gap-6">
+          <h1 className="text-center text-3xl font-semibold sm:text-4xl">
+            What&apos;s your landing idea?
+          </h1>
 
-        <SignedOut>
-          <div className="flex flex-col items-start gap-4 rounded-2xl border border-white/10 bg-white/5 p-8 shadow-sm ring-1 ring-white/10 backdrop-blur">
-            <div className="space-y-2">
-              <h2 className="text-xl font-semibold text-white">Sign in to use the workspace</h2>
-              <p className="text-sm text-neutral-300">
-                Your generations and prompt history stay tied to your account.
+          <SignedOut>
+            <div className="mx-auto flex w-full max-w-2xl flex-col items-center gap-4 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm">
+              <p className="text-sm text-neutral-600">
+                Sign in to save prompts, generate, and keep your preview history.
               </p>
+              <SignInButton>
+                <button className="rounded-full bg-black px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:opacity-90">
+                  Sign in to continue
+                </button>
+              </SignInButton>
             </div>
-            <SignInButton>
-              <button className="rounded-full bg-gradient-to-r from-[#6b5bff] to-[#67d8ff] px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:scale-[1.01] active:scale-[0.99]">
-                Sign in to continue
-              </button>
-            </SignInButton>
-          </div>
-        </SignedOut>
+          </SignedOut>
 
-        <SignedIn>
-          <div className="grid gap-6 lg:grid-cols-[1.05fr,0.95fr]">
-            <div className="space-y-6">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm ring-1 ring-white/10 backdrop-blur">
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#9cc2ff]">
-                        Prompt
-                      </p>
-                      <p className="text-sm text-neutral-300">Describe the offer and audience.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        const regenerated = generateLandingContent(prompt);
-                        setLanding(regenerated);
-                        setDraft(regenerated);
-                        setFeaturesText(regenerated.features.join("\n"));
-                      }}
-                      className="text-xs font-semibold text-[#9cc2ff] underline underline-offset-4 transition hover:text-white"
-                    >
-                      Quick draft
-                    </button>
-                  </div>
-                  <textarea
-                    value={prompt}
-                    onChange={(event) => setPrompt(event.target.value)}
-                    placeholder="Example: Financial planning for first-time founders with a 30 minute consult"
-                    className="min-h-[140px] w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white shadow-sm transition focus:border-[#6b5bff] focus:outline-none focus:ring-2 focus:ring-[#6b5bff]/40"
-                  />
-                  <button
-                    type="button"
-                    onClick={handleGenerate}
-                    disabled={loading}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#6b5bff] to-[#67d8ff] px-4 py-3 text-sm font-semibold text-white transition hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    {loading ? "Generating..." : "Generate with AI"}
-                  </button>
-                  {error ? <p className="text-sm text-red-400">{error}</p> : null}
-                  <p className="text-xs text-neutral-400">
-                    Keep it short—what you sell, who it is for, one promise, and a single CTA.
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm ring-1 ring-white/10 backdrop-blur">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#9cc2ff]">
-                      History
-                    </p>
-                    <p className="text-sm text-neutral-300">Recent prompts in this browser.</p>
-                  </div>
-                  {history.length ? (
-                    <button
-                      type="button"
-                      onClick={clearHistory}
-                      className="text-xs font-semibold text-neutral-400 underline underline-offset-4 transition hover:text-white"
-                    >
-                      Clear
-                    </button>
-                  ) : null}
-                </div>
-                {history.length === 0 ? (
-                  <p className="mt-4 text-sm text-neutral-400">
-                    Generate to keep a log of your prompts and drafts.
-                  </p>
-                ) : (
-                  <ul className="mt-4 space-y-3">
-                    {history.map((entry) => (
-                      <li
-                        key={entry.id}
-                        className="flex flex-col gap-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white shadow-sm"
+          <SignedIn>
+            <div className="w-full">
+              <div className="rounded-3xl border border-neutral-200 bg-white p-6 shadow-sm">
+                <div className="flex flex-col gap-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4">
+                    <div className="flex flex-1 items-center gap-2 rounded-2xl border border-neutral-200 bg-white px-3 py-2 shadow-inner">
+                      <button
+                        type="button"
+                        className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 text-neutral-500 transition hover:bg-neutral-100"
+                        aria-label="Prompt options"
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="space-y-1">
-                            <p className="font-semibold text-white">{entry.prompt}</p>
-                            <p className="text-xs text-neutral-400">
-                              {new Date(entry.createdAt).toLocaleString()}
-                            </p>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => applyHistory(entry)}
-                            className="rounded-full border border-white/15 bg-white/5 px-3 py-1 text-xs font-semibold text-white transition hover:border-white/30"
+                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor">
+                          <path d="M6 9h12M6 15h12" strokeWidth="2" strokeLinecap="round" />
+                          <circle cx="9" cy="9" r="1.5" fill="currentColor" />
+                          <circle cx="15" cy="15" r="1.5" fill="currentColor" />
+                        </svg>
+                      </button>
+                      <input
+                        value={prompt}
+                        onChange={(event) => setPrompt(event.target.value)}
+                        placeholder="Describe the landing you want to ship..."
+                        className="h-12 flex-1 rounded-full bg-transparent px-2 text-base text-neutral-900 outline-none placeholder:text-neutral-400"
+                      />
+                      <div className="relative">
+                        <button
+                          type="button"
+                          onClick={() => setShowFormats((prev) => !prev)}
+                          className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm font-medium text-neutral-700 shadow-sm transition hover:bg-neutral-100"
+                        >
+                          {format}
+                          <svg
+                            viewBox="0 0 24 24"
+                            className={`h-4 w-4 transition ${showFormats ? "rotate-180" : ""}`}
+                            fill="none"
+                            stroke="currentColor"
                           >
-                            Load
-                          </button>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-5">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm ring-1 ring-white/10 backdrop-blur">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#9cc2ff]">
-                      Editor
-                    </p>
-                    <p className="text-sm text-neutral-300">
-                      Adjust copy before sharing the preview link.
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
+                            <path d="M6 9l6 6 6-6" strokeWidth="2" strokeLinecap="round" />
+                          </svg>
+                        </button>
+                        {showFormats ? (
+                          <div className="absolute right-0 z-10 mt-2 w-32 rounded-xl border border-neutral-200 bg-white p-1 shadow-lg">
+                            {formatOptions.map((option) => (
+                              <button
+                                key={option}
+                                type="button"
+                                onClick={() => {
+                                  setFormat(option);
+                                  setShowFormats(false);
+                                }}
+                                className={`w-full rounded-lg px-3 py-2 text-left text-sm transition hover:bg-neutral-100 ${
+                                  option === format ? "text-neutral-900 font-semibold" : "text-neutral-600"
+                                }`}
+                              >
+                                {option}
+                              </button>
+                            ))}
+                          </div>
+                        ) : null}
+                      </div>
+                    </div>
                     <button
                       type="button"
-                      onClick={handleCopy}
-                      disabled={!shareUrl}
-                      className="rounded-full bg-gradient-to-r from-[#6b5bff] to-[#67d8ff] px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-60"
+                      onClick={handleGenerate}
+                      disabled={loading}
+                      className="flex h-12 w-12 items-center justify-center rounded-full bg-black text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-60"
                     >
-                      {copied ? "Copied" : "Copy preview link"}
+                      {loading ? (
+                        <svg
+                          className="h-5 w-5 animate-spin text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          />
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"
+                          />
+                        </svg>
+                      ) : (
+                        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor">
+                          <path d="M5 12h14M13 6l6 6-6 6" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                      )}
                     </button>
-                    <a
-                      href={shareUrl || "#"}
-                      className="rounded-full border border-white/15 bg-white/5 px-4 py-2 text-xs font-semibold text-white shadow-sm transition hover:border-white/30"
-                    >
-                      Open preview
-                    </a>
+                  </div>
+
+                  {error ? <p className="text-sm text-red-500">{error}</p> : null}
+
+                  <div className="flex flex-wrap gap-3">
+                    {suggestionPrompts.map((item) => (
+                      <button
+                        key={item}
+                        type="button"
+                        onClick={() => setPrompt(item)}
+                        className="rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm text-neutral-700 shadow-sm transition hover:border-neutral-300 hover:bg-neutral-50"
+                      >
+                        {item}
+                      </button>
+                    ))}
                   </div>
                 </div>
-
-                {draft ? (
-                  <div className="mt-5 grid gap-4 md:grid-cols-2">
-                    <label className="space-y-1 text-sm font-semibold text-white">
-                      <span className="block text-xs uppercase tracking-[0.14em] text-neutral-400">
-                        Audience
-                      </span>
-                      <input
-                        value={draft.audience}
-                        onChange={(event) =>
-                          setDraft((prev) => (prev ? { ...prev, audience: event.target.value } : prev))
-                        }
-                        className="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white shadow-sm focus:border-[#6b5bff] focus:outline-none focus:ring-2 focus:ring-[#6b5bff]/40"
-                      />
-                    </label>
-                    <label className="space-y-1 text-sm font-semibold text-white">
-                      <span className="block text-xs uppercase tracking-[0.14em] text-neutral-400">
-                        Call to action
-                      </span>
-                      <input
-                        value={draft.callToAction}
-                        onChange={(event) =>
-                          setDraft((prev) =>
-                            prev ? { ...prev, callToAction: event.target.value } : prev,
-                          )
-                        }
-                        className="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white shadow-sm focus:border-[#6b5bff] focus:outline-none focus:ring-2 focus:ring-[#6b5bff]/40"
-                      />
-                    </label>
-                    <label className="space-y-1 text-sm font-semibold text-white md:col-span-2">
-                      <span className="block text-xs uppercase tracking-[0.14em] text-neutral-400">
-                        Headline
-                      </span>
-                      <input
-                        value={draft.headline}
-                        onChange={(event) =>
-                          setDraft((prev) => (prev ? { ...prev, headline: event.target.value } : prev))
-                        }
-                        className="w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white shadow-sm focus:border-[#6b5bff] focus:outline-none focus:ring-2 focus:ring-[#6b5bff]/40"
-                      />
-                    </label>
-                    <label className="space-y-1 text-sm font-semibold text-white md:col-span-2">
-                      <span className="block text-xs uppercase tracking-[0.14em] text-neutral-400">
-                        Subhead
-                      </span>
-                      <textarea
-                        value={draft.subhead}
-                        onChange={(event) =>
-                          setDraft((prev) => (prev ? { ...prev, subhead: event.target.value } : prev))
-                        }
-                        className="min-h-[96px] w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white shadow-sm focus:border-[#6b5bff] focus:outline-none focus:ring-2 focus:ring-[#6b5bff]/40"
-                      />
-                    </label>
-                    <label className="space-y-1 text-sm font-semibold text-white md:col-span-2">
-                      <span className="block text-xs uppercase tracking-[0.14em] text-neutral-400">
-                        Features (one per line)
-                      </span>
-                      <textarea
-                        value={featuresText}
-                        onChange={(event) => {
-                          const value = event.target.value;
-                          setFeaturesText(value);
-                          setDraft((prev) =>
-                            prev
-                              ? {
-                                  ...prev,
-                                  features: value
-                                    .split("\n")
-                                    .map((line) => line.trim())
-                                    .filter(Boolean),
-                                }
-                              : prev,
-                          );
-                        }}
-                        className="min-h-[120px] w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white shadow-sm focus:border-[#6b5bff] focus:outline-none focus:ring-2 focus:ring-[#6b5bff]/40"
-                      />
-                    </label>
-                  </div>
-                ) : (
-                  <p className="mt-4 text-sm text-neutral-300">
-                    Generate first to unlock the editor and preview.
-                  </p>
-                )}
               </div>
-
-              {draft ? (
-                <div className="rounded-3xl border border-white/10 bg-white/5 p-6 shadow-lg ring-1 ring-white/10 backdrop-blur">
-                  <div className="mb-4 flex items-center justify-between">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[#9cc2ff]">
-                        Preview
-                      </p>
-                      <p className="text-sm text-neutral-300">Live view of your edits</p>
-                    </div>
-                    {landing && landing.prompt === draft.prompt ? (
-                      <span className="text-xs font-semibold text-neutral-400">Last AI draft</span>
-                    ) : null}
-                  </div>
-                  <LandingPreview content={draft} showHeader={false} />
-                </div>
-              ) : null}
             </div>
-          </div>
-        </SignedIn>
+          </SignedIn>
+        </header>
       </div>
     </main>
   );
