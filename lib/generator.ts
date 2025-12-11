@@ -18,10 +18,9 @@ export type GenerationRequest = {
 };
 
 const defaultFeatures = [
-  "Clear offer with one above-the-fold CTA",
-  "Benefits-led copy in plain language",
-  "Social proof or quick win to build trust",
-  "Low-friction way to contact or book",
+  "Clear hero with just one CTA",
+  "Benefits-first copy in plain language",
+  "Contact/booking actions that work on mobile",
 ];
 
 const anthropic =
@@ -52,8 +51,8 @@ const buildPrompt = ({ prompt, style, sections }: GenerationRequest) => {
     styleLine,
     sectionsLine,
     "Return JSON only. No code fences, no markdown, no commentary.",
-    `Keys: headline, subhead, audience, features (4 short bullets), callToAction, prompt.`,
-    "Tone: clear, benefit-led, with one primary action.",
+    `Keys: headline, subhead, audience, callToAction.`,
+    "Tone: clear, benefit-led, with just one primary action.",
     "If unsure, make reasonable assumptions to keep output useful.",
   ].join(" ");
 };
@@ -97,19 +96,16 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
 
   const subhead =
     cleanedPrompt.length > 0
-      ? `Paste your focus (${cleanedPrompt}) and ship a clean, credible landing without an agency or endless revisions.`
-      : "Drop a short prompt and get a ready-to-share landing page that keeps the main thing the main thing.";
+      ? `Describe ${cleanedPrompt} and get a crisp landing with one CTA, benefits, and proof.`
+      : "Describe your offer and get a clean landing with a single CTA and proof point.";
 
-  const callToAction =
-    cleanedPrompt.length > 0
-      ? "Generate my landing"
-      : "Start with a 30-second prompt";
+  const callToAction = cleanedPrompt.length > 0 ? "Generate landing" : "Start with a 30-second prompt";
 
   const features = [
-    `Clear story: what you do for ${cleanedPrompt || "customers"} in one scroll.`,
-    "Mobile-ready hero with CTA that drives calls or bookings.",
-    "Trust signals and benefits copy you can tweak in-line.",
-    "Shareable preview link to get sign-off fast.",
+    `Hero that states the offer for ${cleanedPrompt || "customers"} in one line.`,
+    "Three benefit bullets and a proof slot.",
+    "Primary CTA plus a contact/booking backup.",
+    "Shareable preview to get quick sign-off.",
   ];
 
   return {
