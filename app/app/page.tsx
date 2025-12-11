@@ -332,9 +332,13 @@ export default function AppWorkspace() {
       <section className="flex-1 px-6 py-10">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-6">
           <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
-            <h1 className="text-center text-3xl font-semibold sm:text-4xl">What&apos;s your landing idea?</h1>
+            {!previewVisible ? (
+              <h1 className="text-center text-3xl font-semibold sm:text-4xl">What do you want to create?</h1>
+            ) : (
+              <span aria-hidden className="h-10" />
+            )}
             <SignedIn>
-              <button
+              {/* <button
                 type="button"
                 onClick={() => setPreviewVisible((prev) => !prev)}
                 className="inline-flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-3 py-2 text-sm font-semibold text-neutral-700 shadow-sm transition hover:border-neutral-300 hover:bg-neutral-50"
@@ -349,7 +353,7 @@ export default function AppWorkspace() {
                   <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
                 </svg>
                 {previewVisible ? "Hide preview" : "Show preview"}
-              </button>
+              </button> */}
             </SignedIn>
           </div>
 
