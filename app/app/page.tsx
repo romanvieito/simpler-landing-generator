@@ -72,7 +72,33 @@ const buildStarterContent = (rawPrompt: string): GeneratedLanding => {
     callToAction: prompt ? "Generate my landing" : "Start with a 30-second prompt",
     prompt: prompt || "busy small business owners",
     style: "Modern",
-    sections: ["Hero", "Features", "CTA"],
+    sections: ["Hero", "Benefits", "Contact"],
+    sectionsContent: {
+      hero: {
+        eyebrow: prompt ? `For ${prompt}` : "For small business owners",
+        headline,
+        subhead,
+        primaryCta: prompt ? "Generate my landing" : "Start now",
+        secondaryCta: "Book a quick call",
+        badge: "Preview ready",
+      },
+      benefits: {
+        title: "Benefits",
+        bullets: [
+          "Clear hero with your offer",
+          "Benefit bullets tuned to your prompt",
+          "Mobile-friendly layout",
+        ],
+      },
+      contact: {
+        title: "Contact form",
+        description: "Drop a note and we'll get back quickly.",
+        nameLabel: "Name",
+        emailLabel: "Email",
+        messageLabel: "Message",
+        submitLabel: "Send message",
+      },
+    },
   };
 };
 
@@ -329,7 +355,7 @@ export default function AppWorkspace() {
               <button
                 type="button"
                 className="flex h-12 w-12 items-center justify-center rounded-xl text-[var(--text-muted)] transition hover:bg-[var(--surface-muted)] hover:text-[var(--text-strong)]"
-                aria-label="Downloads"
+                aria-label="Published"
               >
                 <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor">
                   <path d="M12 5v10M7 10l5 5 5-5" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -337,7 +363,7 @@ export default function AppWorkspace() {
                 </svg>
               </button>
               <span className="pointer-events-none absolute left-14 top-1/2 -translate-y-1/2 whitespace-nowrap rounded-xl bg-[var(--text-strong)] px-3 py-1 text-xs font-semibold text-white opacity-0 shadow-lg transition group-hover:opacity-100">
-                Downloads
+                Published
               </span>
             </div>
           </div>
@@ -580,45 +606,45 @@ export default function AppWorkspace() {
                   <div className="rounded-[var(--radius-xl)] border border-[var(--border-soft)] bg-[var(--surface)] p-4 shadow-[var(--shadow-subtle)] lg:sticky lg:top-8 lg:self-start lg:pl-3">
                   <div className="flex items-center gap-2 rounded-xl border border-[var(--border-soft)] bg-[var(--surface-muted)] px-3 py-2">
                     
-                    <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-muted)]">
-                      <div className="flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-white px-2 py-1">
-                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <path d="M12 3v12" strokeLinecap="round" />
-                          <path d="M8.25 6.75 12 3l3.75 3.75" strokeLinecap="round" strokeLinejoin="round" />
-                          <path d="M5.25 14.25h13.5A1.25 1.25 0 0120 15.5v3.25A2.25 2.25 0 0117.75 21H6.25A2.25 2.25 0 014 18.75V15.5a1.25 1.25 0 011.25-1.25Z" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        Publish
-                      </div>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          if (!shareUrl) return;
-                          window.open(shareUrl, "_blank", "noopener,noreferrer");
-                        }}
-                        disabled={!shareUrl}
-                        className="flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-white px-2 py-1 transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)] disabled:cursor-not-allowed disabled:border-[var(--border-soft)] disabled:bg-[var(--surface-muted)] disabled:text-[var(--text-muted)]"
-                      >
-                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <path d="M13.5 10.5 21 3" strokeLinecap="round" strokeLinejoin="round" />
-                          <path d="M15.75 3H21v5.25" strokeLinecap="round" strokeLinejoin="round" />
-                          <path d="M21 9.75V18a3 3 0 01-3 3H6a3 3 0 01-3-3V6a3 3 0 013-3h8.25" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        Open in new tab
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setIsFullscreen(true)}
-                        className="flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-white px-2 py-1 transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)]"
-                      >
-                        <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <path d="M9 3H5a2 2 0 00-2 2v4" strokeLinecap="round" strokeLinejoin="round" />
-                          <path d="M15 3h4a2 2 0 012 2v4" strokeLinecap="round" strokeLinejoin="round" />
-                          <path d="M3 15v4a2 2 0 002 2h4" strokeLinecap="round" strokeLinejoin="round" />
-                          <path d="M21 15v4a2 2 0 01-2 2h-4" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        Fullscreen
-                      </button>
+                  <div className="flex items-center gap-2 text-xs font-semibold text-[var(--text-muted)]">
+                    <div className="flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-white px-2 py-1">
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M12 3v12" strokeLinecap="round" />
+                        <path d="M8.25 6.75 12 3l3.75 3.75" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M5.25 14.25h13.5A1.25 1.25 0 0120 15.5v3.25A2.25 2.25 0 0117.75 21H6.25A2.25 2.25 0 014 18.75V15.5a1.25 1.25 0 011.25-1.25Z" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Publish
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!shareUrl) return;
+                        window.open(shareUrl, "_blank", "noopener,noreferrer");
+                      }}
+                      disabled={!shareUrl}
+                      className="flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-white px-2 py-1 transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)] disabled:cursor-not-allowed disabled:border-[var(--border-soft)] disabled:bg-[var(--surface-muted)] disabled:text-[var(--text-muted)]"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M13.5 10.5 21 3" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M15.75 3H21v5.25" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M21 9.75V18a3 3 0 01-3 3H6a3 3 0 01-3-3V6a3 3 0 013-3h8.25" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Open in new tab
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsFullscreen(true)}
+                      className="flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-white px-2 py-1 transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)]"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <path d="M9 3H5a2 2 0 00-2 2v4" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M15 3h4a2 2 0 012 2v4" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M3 15v4a2 2 0 002 2h4" strokeLinecap="round" strokeLinejoin="round" />
+                        <path d="M21 15v4a2 2 0 01-2 2h-4" strokeLinecap="round" strokeLinejoin="round" />
+                      </svg>
+                      Fullscreen
+                    </button>
+                  </div>
                   </div>
 
                   <div className="relative mt-4">
