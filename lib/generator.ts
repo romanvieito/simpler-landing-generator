@@ -1,3 +1,5 @@
+import Anthropic from "@anthropic-ai/sdk";
+
 export type GeneratedLanding = {
   headline: string;
   subhead: string;
@@ -5,6 +7,14 @@ export type GeneratedLanding = {
   features: string[];
   callToAction: string;
   prompt: string;
+  style?: string;
+  sections?: string[];
+};
+
+export type GenerationRequest = {
+  prompt: string;
+  style?: string;
+  sections?: string[];
 };
 
 const defaultFeatures = [
@@ -14,6 +24,12 @@ const defaultFeatures = [
   "Low-friction way to contact or book",
 ];
 
+const anthropic =
+  process.env.ANTHROPIC_API_KEY?.trim()?.length && typeof fetch !== "undefined"
+    ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+    : null;
+const CLAUDE_MODEL = "claude-3-5-haiku-latest";
+
 const toTitleCase = (value: string) =>
   value
     .split(" ")
@@ -22,15 +38,56 @@ const toTitleCase = (value: string) =>
     .join(" ")
     .trim();
 
-export const generateLandingContent = (rawPrompt: string): GeneratedLanding => {
-  const prompt = rawPrompt?.trim() || "local service business";
+const buildPrompt = ({ prompt, style, sections }: GenerationRequest) => {
+  const trimmed = prompt?.trim() || "local service business";
+  const styleLine = style ? `Style: ${style}.` : "Style: modern, minimal.";
+  const sectionsLine =
+    sections && sections.length > 0
+      ? `Sections to emphasize: ${sections.join(", ")}.`
+      : "Sections to emphasize: Hero, Features, CTA.";
+
+  return [
+    "You write concise, conversion-focused landing page copy.",
+    `Focus: ${trimmed}.`,
+    styleLine,
+    sectionsLine,
+    "Return JSON only. No code fences, no markdown, no commentary.",
+    `Keys: headline, subhead, audience, features (4 short bullets), callToAction, prompt.`,
+    "Tone: clear, benefit-led, with one primary action.",
+    "If unsure, make reasonable assumptions to keep output useful.",
+  ].join(" ");
+};
+
+const safeParseCompletion = (text: string) => {
+  const cleaned = text.replace(/```json|```/g, "").trim();
+  try {
+    return JSON.parse(cleaned) as Partial<GeneratedLanding>;
+  } catch {
+    return null;
+  }
+};
+
+const normalizeFeatures = (value: unknown, fallback: string[]) => {
+  if (Array.isArray(value)) {
+    const trimmed = value
+      .map((item) => (typeof item === "string" ? item.trim() : ""))
+      .filter(Boolean);
+    if (trimmed.length > 0) {
+      return trimmed.slice(0, 6);
+    }
+  }
+  return fallback;
+};
+
+const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): GeneratedLanding => {
+  const cleanedPrompt = prompt?.trim() || "local service business";
   const focus = toTitleCase(
-    prompt.length > 80 ? `${prompt.slice(0, 77)}...` : prompt,
+    cleanedPrompt.length > 80 ? `${cleanedPrompt.slice(0, 77)}...` : cleanedPrompt,
   );
 
   const audience =
-    prompt.length > 0
-      ? `Built for ${prompt.toLowerCase()} owners`
+    cleanedPrompt.length > 0
+      ? `Built for ${cleanedPrompt.toLowerCase()} owners`
       : "Built for busy small business owners";
 
   const headline =
@@ -39,17 +96,17 @@ export const generateLandingContent = (rawPrompt: string): GeneratedLanding => {
       : "Launch a simple landing in minutes";
 
   const subhead =
-    prompt.length > 0
-      ? `Paste your focus (${prompt}) and ship a clean, credible landing without an agency or endless revisions.`
+    cleanedPrompt.length > 0
+      ? `Paste your focus (${cleanedPrompt}) and ship a clean, credible landing without an agency or endless revisions.`
       : "Drop a short prompt and get a ready-to-share landing page that keeps the main thing the main thing.";
 
   const callToAction =
-    prompt.length > 0
+    cleanedPrompt.length > 0
       ? "Generate my landing"
       : "Start with a 30-second prompt";
 
   const features = [
-    `Clear story: what you do for ${prompt || "customers"} in one scroll.`,
+    `Clear story: what you do for ${cleanedPrompt || "customers"} in one scroll.`,
     "Mobile-ready hero with CTA that drives calls or bookings.",
     "Trust signals and benefits copy you can tweak in-line.",
     "Shareable preview link to get sign-off fast.",
@@ -59,9 +116,50 @@ export const generateLandingContent = (rawPrompt: string): GeneratedLanding => {
     headline,
     subhead,
     audience,
-    features: prompt ? features : defaultFeatures,
+    features: cleanedPrompt ? features : defaultFeatures,
     callToAction,
-    prompt: prompt || "busy small business owners",
+    prompt: cleanedPrompt || "busy small business owners",
+    style,
+    sections,
   };
+};
+
+export const generateLandingContent = async (
+  input: GenerationRequest,
+): Promise<GeneratedLanding> => {
+  const fallback = buildFallbackContent(input);
+
+  if (!anthropic) {
+    return fallback;
+  }
+
+  try {
+    const completion = await anthropic.messages.create({
+      model: CLAUDE_MODEL,
+      max_tokens: 400,
+      temperature: 0.7,
+      messages: [{ role: "user", content: buildPrompt(input) }],
+    });
+
+    const text = completion.content
+      .map((part) => ("text" in part ? part.text : ""))
+      .join("\n");
+    const parsed = safeParseCompletion(text);
+
+    if (!parsed) return fallback;
+
+    return {
+      headline: parsed.headline?.trim() || fallback.headline,
+      subhead: parsed.subhead?.trim() || fallback.subhead,
+      audience: parsed.audience?.trim() || fallback.audience,
+      features: normalizeFeatures(parsed.features, fallback.features),
+      callToAction: parsed.callToAction?.trim() || fallback.callToAction,
+      prompt: parsed.prompt?.trim() || fallback.prompt,
+      style: input.style ?? parsed.style ?? fallback.style,
+      sections: input.sections?.length ? input.sections : parsed.sections ?? fallback.sections,
+    };
+  } catch {
+    return fallback;
+  }
 };
 
