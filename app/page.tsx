@@ -10,6 +10,7 @@ const starterPrompt =
   "Bookkeeping and payroll for local contractors with same-day replies";
 const styleOptions = ["Modern", "Minimal", "Bold"];
 const sectionOptions = ["Hero", "Features", "Testimonials", "FAQ", "Pricing", "CTA"];
+const MIN_PROMPT_LENGTH = 12;
 
 type PendingGenerationState = {
   prompt: string;
@@ -69,12 +70,18 @@ export default function Home() {
   }, [origin, result]);
 
   const handleGenerate = async (override?: Partial<PendingGenerationState>) => {
-    const input = override?.prompt ?? prompt;
+    const input = (override?.prompt ?? prompt).trim();
     const chosenStyle = override?.style ?? style;
     const chosenSections = override?.sections ?? sections;
     setError("");
     setCopied(false);
     setLoading(true);
+
+    if (input.length < MIN_PROMPT_LENGTH) {
+      setLoading(false);
+      setError("Please add a bit more detail so we can generate useful copy.");
+      return;
+    }
     try {
       const response = await fetch("/api/generate", {
         method: "POST",
@@ -90,7 +97,8 @@ export default function Home() {
         if (response.status === 401) {
           throw new Error("Please sign in to generate a landing page.");
         }
-        throw new Error("Could not generate landing content. Try again.");
+        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
+        throw new Error(payload?.error || "Could not generate landing content. Try again.");
       }
 
       const data = (await response.json()) as GeneratedLanding;

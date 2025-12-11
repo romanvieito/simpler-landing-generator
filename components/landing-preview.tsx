@@ -50,7 +50,7 @@ export function LandingPreview({ content, showHeader = true }: LandingPreviewPro
           </p>
         </div>
         <div className="space-y-5 rounded-[var(--radius-lg)] border border-[var(--border-soft)] bg-[var(--surface-muted)] p-6" style={{ boxShadow: "var(--shadow-soft)" }}>
-          <p className="text-sm font-semibold text-[var(--text-strong)]">What ships in your landing</p>
+          <p className="text-sm font-semibold text-[var(--text-strong)]">From idea to live site</p>
           <ul className="space-y-3 text-sm text-[var(--text-primary)]">
             {content.features.map((feature, index) => (
               <li className="flex gap-3" key={feature}>
@@ -61,6 +61,19 @@ export function LandingPreview({ content, showHeader = true }: LandingPreviewPro
               </li>
             ))}
           </ul>
+          {(content.imagePrompt || content.imageAlt) && (
+            <div className="rounded-[var(--radius-md)] border border-[var(--border-soft)] bg-white px-4 py-3" style={{ boxShadow: "var(--shadow-subtle)" }}>
+              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                Hero image guidance
+              </p>
+              <p className="text-sm font-semibold text-[var(--text-strong)]">
+                {content.imagePrompt || "Bright, welcoming hero photo with the primary offer in focus."}
+              </p>
+              <p className="text-xs text-[var(--text-secondary)]">
+                Alt text: {content.imageAlt || "Hero image for the landing page"}
+              </p>
+            </div>
+          )}
           <div className="rounded-[var(--radius-md)] border border-[var(--border-soft)] bg-white px-4 py-3" style={{ boxShadow: "var(--shadow-subtle)" }}>
             <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Prompt</p>
             <p className="text-sm font-semibold text-[var(--text-strong)]">“{content.prompt}”</p>
