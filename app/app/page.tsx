@@ -16,12 +16,28 @@ type HistoryEntry = {
 };
 
 const HISTORY_KEY = "workspaceHistory:v1";
-const starterPrompt = "Productized design for SaaS founders needing quick launches";
+const starterPrompt = "Boutique fitness studio with intro class passes";
 const suggestionPrompts = [
-  "What if AI tools reshape remote team onboarding?",
-  "How can creators ship landing pages faster?",
-  "What if local services bundled memberships?",
-  "Why are founders skeptical of AI landing copy?",
+  "Mobile pet groomer for busy urban pet owners",
+  "Bookkeeping service specializing in food trucks",
+  "Home cleaning business offering recurring bundles",
+  "Landscaping crew focused on seasonal yard refresh packages",
+  "On-site phone/tablet repair for small retailers",
+  "Catering service tailored to startup office lunches",
+  "Photography mini-sessions for real estate agents",
+  "Childcare co-op with flexible weekend care slots",
+  "Local HVAC with same-day emergency booking",
+  "Pool maintenance plans for short-term rentals",
+  "Lawn care subscription with seasonal add-ons",
+  "Mobile car detailing for apartment dwellers",
+  "Tutoring service for middle-school math and science",
+  "Handyman specializing in condo punch lists",
+  "Window washing bundles for small storefronts",
+  "Chimney sweeping and annual fireplace inspections",
+  "Personal chef meal prep for new parents",
+  "E-bike repair and tune-ups for commuters",
+  "Dog walking and drop-in visits for hybrid workers",
+  "Interior painting crew with weekend availability",
 ];
 
 const formatOptions = ["Professional", "Personal", "Business", "Friendly", "Creative"];
@@ -90,6 +106,13 @@ export default function AppWorkspace() {
   const [format, setFormat] = useState(formatOptions[0]);
   const [showFormats, setShowFormats] = useState(false);
   const gridRef = useRef<HTMLDivElement | null>(null);
+  const [suggestionOffset, setSuggestionOffset] = useState(0);
+
+  const visibleSuggestions = useMemo(() => {
+    const take = 4;
+    if (suggestionPrompts.length <= take) return suggestionPrompts;
+    return Array.from({ length: take }, (_, index) => suggestionPrompts[(suggestionOffset + index) % suggestionPrompts.length]);
+  }, [suggestionOffset]);
 
   const shareUrl = useMemo(() => {
     if (!draft) return "";
@@ -331,12 +354,10 @@ export default function AppWorkspace() {
 
       <section className="flex-1 px-6 py-10">
         <div className="mx-auto flex w-full max-w-6xl flex-col gap-4 sm:gap-6">
-          <div className="flex flex-col items-center justify-between gap-3 sm:flex-row">
+          <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
             {!previewVisible ? (
               <h1 className="text-center text-3xl font-semibold sm:text-4xl">What do you want to create?</h1>
-            ) : (
-              <span aria-hidden className="h-10" />
-            )}
+            ) : null}
             <SignedIn>
               {/* <button
                 type="button"
@@ -399,17 +420,7 @@ export default function AppWorkspace() {
 
                   <div className="flex flex-wrap items-center justify-between gap-3 border-t border-neutral-100 px-4 py-3">
                     <div className="flex items-center gap-2">
-                      {/* Attach button */}
-                      <button
-                        type="button"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg text-neutral-400 transition hover:bg-neutral-100 hover:text-neutral-600"
-                        aria-label="Attach file"
-                      >
-                        <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="1.5">
-                          <path d="M12 5v14M5 12h14" strokeLinecap="round" />
-                        </svg>
-                      </button>
-
+                     
                       {/* Format selector */}
                       <div className="relative">
                         <button
@@ -492,9 +503,9 @@ export default function AppWorkspace() {
                 {error ? <p className="text-center text-sm text-red-500">{error}</p> : null}
 
                 <div className="flex flex-wrap items-center justify-center gap-2">
-                  {suggestionPrompts.map((item, index) => (
+                  {visibleSuggestions.map((item, index) => (
                     <button
-                      key={item}
+                      key={`${item}-${index}`}
                       type="button"
                       onClick={() => setPrompt(item)}
                       className="flex items-center gap-2 rounded-full border border-neutral-200 bg-white px-4 py-2 text-sm text-neutral-600 transition hover:border-neutral-300 hover:bg-neutral-50"
@@ -528,6 +539,7 @@ export default function AppWorkspace() {
                   ))}
                   <button
                     type="button"
+                    onClick={() => setSuggestionOffset((prev) => (prev + 4) % suggestionPrompts.length)}
                     className="flex h-9 w-9 items-center justify-center rounded-full border border-neutral-200 bg-white text-neutral-400 transition hover:border-neutral-300 hover:bg-neutral-50 hover:text-neutral-600"
                     aria-label="Refresh suggestions"
                   >
