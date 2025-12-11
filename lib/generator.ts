@@ -27,7 +27,7 @@ const anthropic =
   process.env.ANTHROPIC_API_KEY?.trim()?.length && typeof fetch !== "undefined"
     ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
     : null;
-const CLAUDE_MODEL = "claude-3-5-haiku-latest";
+const CLAUDE_MODEL = "claude-haiku-4-5"; // Dont change this model, it's the best one for this use case.
 
 const toTitleCase = (value: string) =>
   value
@@ -43,7 +43,7 @@ const buildPrompt = ({ prompt, style, sections }: GenerationRequest) => {
   const sectionsLine =
     sections && sections.length > 0
       ? `Sections to emphasize: ${sections.join(", ")}.`
-      : "Sections to emphasize: Hero, Features, CTA.";
+      : "Sections to emphasize: Hero, Features, and just one CTA.";
 
   return [
     "You write concise, conversion-focused landing page copy.",
@@ -105,7 +105,6 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
     `Hero that states the offer for ${cleanedPrompt || "customers"} in one line.`,
     "Three benefit bullets and a proof slot.",
     "Primary CTA plus a contact/booking backup.",
-    "Shareable preview to get quick sign-off.",
   ];
 
   return {
