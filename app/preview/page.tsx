@@ -10,7 +10,7 @@ type PreviewPageProps = {
 export default async function PreviewPage({ searchParams }: PreviewPageProps) {
   const params = await searchParams;
   const prompt = typeof params.prompt === "string" ? params.prompt : "";
-  const content = generateLandingContent(prompt);
+  const content = await generateLandingContent({ prompt });
 
   return (
     <main className="min-h-screen bg-black px-6 pb-20 pt-14 text-white">

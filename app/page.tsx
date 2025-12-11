@@ -8,9 +8,19 @@ import type { GeneratedLanding } from "@/lib/generator";
 
 const starterPrompt =
   "Bookkeeping and payroll for local contractors with same-day replies";
+const styleOptions = ["Modern", "Minimal", "Bold"];
+const sectionOptions = ["Hero", "Features", "Testimonials", "FAQ", "Pricing", "CTA"];
+
+type PendingGenerationState = {
+  prompt: string;
+  style: string;
+  sections: string[];
+};
 
 export default function Home() {
   const [prompt, setPrompt] = useState(starterPrompt);
+  const [style, setStyle] = useState(styleOptions[0]);
+  const [sections, setSections] = useState<string[]>(["Hero", "Features", "CTA"]);
   const [result, setResult] = useState<GeneratedLanding | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -27,10 +37,28 @@ export default function Home() {
   useEffect(() => {
     if (!isLoaded || !isSignedIn || pendingGenerationRef.current) return;
     const stored = localStorage.getItem("pendingPrompt");
-    if (stored) {
+    if (!stored) return;
+
+    try {
+      const parsed = JSON.parse(stored) as Partial<PendingGenerationState>;
+      const nextPrompt = parsed.prompt ?? starterPrompt;
+      const nextStyle = parsed.style ?? styleOptions[0];
+      const nextSections = Array.isArray(parsed.sections) && parsed.sections.length > 0
+        ? parsed.sections
+        : ["Hero", "Features", "CTA"];
+
+      setPrompt(nextPrompt);
+      setStyle(nextStyle);
+      setSections(nextSections);
+
+      pendingGenerationRef.current = true;
+      void handleGenerate({ prompt: nextPrompt, style: nextStyle, sections: nextSections });
+    } catch {
+      // fall back to prompt-only flow if stored value is not JSON
       setPrompt(stored);
       pendingGenerationRef.current = true;
-      void handleGenerate(stored);
+      void handleGenerate({ prompt: stored });
+    } finally {
       localStorage.removeItem("pendingPrompt");
     }
   }, [isLoaded, isSignedIn]);
@@ -40,8 +68,10 @@ export default function Home() {
     return `${origin}/preview?prompt=${encodeURIComponent(result.prompt)}`;
   }, [origin, result]);
 
-  const handleGenerate = async (promptOverride?: string) => {
-    const input = promptOverride ?? prompt;
+  const handleGenerate = async (override?: Partial<PendingGenerationState>) => {
+    const input = override?.prompt ?? prompt;
+    const chosenStyle = override?.style ?? style;
+    const chosenSections = override?.sections ?? sections;
     setError("");
     setCopied(false);
     setLoading(true);
@@ -49,7 +79,11 @@ export default function Home() {
       const response = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: input }),
+        body: JSON.stringify({
+          prompt: input,
+          style: chosenStyle,
+          sections: chosenSections,
+        }),
       });
 
       if (!response.ok) {
@@ -70,8 +104,17 @@ export default function Home() {
   };
 
   const handleGenerateSignedOut = () => {
-    localStorage.setItem("pendingPrompt", prompt);
+    localStorage.setItem(
+      "pendingPrompt",
+      JSON.stringify({ prompt, style, sections } satisfies PendingGenerationState),
+    );
     openSignIn();
+  };
+
+  const toggleSection = (value: string) => {
+    setSections((current) =>
+      current.includes(value) ? current.filter((item) => item !== value) : [...current, value],
+    );
   };
 
   const handleCopy = async () => {
@@ -111,6 +154,46 @@ export default function Home() {
                   placeholder="Example: Weekend lawn care plans for busy homeowners that includes seasonal refreshes"
                   className="min-h-[120px] w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white shadow-sm transition focus:border-[#6b5bff] focus:outline-none focus:ring-2 focus:ring-[#6b5bff]/40"
                 />
+                <div className="grid gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-white">Style</label>
+                    <div className="flex flex-wrap gap-2">
+                      {styleOptions.map((option) => (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => setStyle(option)}
+                          className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
+                            style === option
+                              ? "border-[#6b5bff] bg-[#6b5bff]/20 text-white"
+                              : "border-white/15 bg-white/5 text-neutral-200 hover:border-white/30"
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="text-sm font-semibold text-white">Include sections</label>
+                    <div className="grid grid-cols-2 gap-2 text-sm text-neutral-200 sm:grid-cols-3">
+                      {sectionOptions.map((option) => (
+                        <label
+                          key={option}
+                          className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 shadow-sm"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={sections.includes(option)}
+                            onChange={() => toggleSection(option)}
+                            className="h-4 w-4 rounded border-white/30 bg-transparent text-[#6b5bff] focus:ring-[#6b5bff]"
+                          />
+                          <span>{option}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
                 <SignedIn>
                   <button
                     type="button"

@@ -12,11 +12,22 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { prompt } = (await request.json().catch(() => ({}))) as {
+  const { prompt, style, sections } = (await request.json().catch(() => ({}))) as {
     prompt?: string;
+    style?: string;
+    sections?: string[];
   };
 
-  const content = generateLandingContent(typeof prompt === "string" ? prompt : "");
+  const parsedSections =
+    Array.isArray(sections) && sections.length > 0
+      ? sections.map((item) => (typeof item === "string" ? item.trim() : "")).filter(Boolean)
+      : undefined;
+
+  const content = await generateLandingContent({
+    prompt: typeof prompt === "string" ? prompt : "",
+    style: typeof style === "string" ? style : undefined,
+    sections: parsedSections,
+  });
 
   return NextResponse.json(content);
 }
