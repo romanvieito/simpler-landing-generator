@@ -50,53 +50,47 @@ const toTitleCase = (value: string) =>
     .join(" ")
     .trim();
 const buildStarterContent = (rawPrompt: string): GeneratedLanding => {
-  const prompt = rawPrompt?.trim() || "local service business";
+  const prompt = rawPrompt?.trim() || "your business";
   const focus = toTitleCase(prompt.length > 80 ? `${prompt.slice(0, 77)}...` : prompt);
-  const headline =
-    focus.length > 0 ? `${focus} landing in minutes` : "Launch a simple landing in minutes";
-  const subhead =
-    prompt.length > 0
-      ? `Paste your focus (${prompt}) and ship a clean, credible landing without an agency or endless revisions.`
-      : "Drop a short prompt and get a ready-to-share landing page that keeps the main thing the main thing.";
+  const headline = focus ? `${focus} website in seconds` : "A simple site from one prompt";
+  const subhead = prompt
+    ? `Type what you do ("${prompt}") and get a clean, single-scroll site you can send today.`
+    : "Type what you do and get a clean, single-scroll site you can send today.";
 
   return {
     headline,
     subhead,
-    audience: prompt ? `Built for ${prompt.toLowerCase()} owners` : "Built for busy small business owners",
+    audience: prompt ? `${prompt.toLowerCase()} owners` : "Busy owners",
     features: [
-      `Clear story: what you do for ${prompt || "customers"} in one scroll.`,
-      "Mobile-ready hero with CTA that drives calls or bookings.",
-      "Trust signals and benefits copy you can tweak in-line.",
-      "Shareable preview link to get sign-off fast.",
+      `Paste your prompt and see a finished page for ${prompt}.`,
+      "Edit text in-line; no design skills needed.",
+      "Mobile-ready hero, benefits, and contact ready to ship.",
+      "Share a preview link right away.",
     ],
-    callToAction: prompt ? "Generate my landing" : "Start with a 30-second prompt",
-    prompt: prompt || "busy small business owners",
-    style: "Modern",
+    callToAction: prompt ? "Generate my site" : "Create my site",
+    prompt,
+    style: "Simple",
     sections: ["Hero", "Benefits", "Contact"],
     sectionsContent: {
       hero: {
-        eyebrow: prompt ? `For ${prompt}` : "For small business owners",
+        eyebrow: focus || "Your business",
         headline,
         subhead,
-        primaryCta: prompt ? "Generate my landing" : "Start now",
-        secondaryCta: "Book a quick call",
-        badge: "Preview ready",
+        primaryCta: "Generate my site",
+        secondaryCta: "See a quick preview",
+        badge: "Ready to share",
       },
       benefits: {
-        title: "Benefits",
-        bullets: [
-          "Clear hero with your offer",
-          "Benefit bullets tuned to your prompt",
-          "Mobile-friendly layout",
-        ],
+        title: "Why it's easy",
+        bullets: ["One prompt → full page", "Clear offer and CTA", "Mobile friendly by default"],
       },
       contact: {
-        title: "Contact form",
-        description: "Drop a note and we'll get back quickly.",
+        title: "Next steps",
+        description: "Drop a note and we'll reply fast.",
         nameLabel: "Name",
         emailLabel: "Email",
-        messageLabel: "Message",
-        submitLabel: "Send message",
+        messageLabel: "What do you need?",
+        submitLabel: "Send",
       },
     },
   };
