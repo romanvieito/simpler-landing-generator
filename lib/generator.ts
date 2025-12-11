@@ -1,5 +1,48 @@
 import Anthropic from "@anthropic-ai/sdk";
 
+export type GeneratedPlanFeature = {
+  title: string;
+  description?: string;
+};
+
+export type GeneratedPlan = {
+  name: string;
+  price: string;
+  description?: string;
+  features: GeneratedPlanFeature[];
+  cta?: string;
+  badge?: string;
+};
+
+export type GeneratedTestimonial = {
+  quote: string;
+  name: string;
+  role?: string;
+};
+
+export type GeneratedSections = {
+  hero: {
+    eyebrow?: string;
+    headline: string;
+    subhead: string;
+    primaryCta: string;
+    secondaryCta?: string;
+    badge?: string;
+  };
+  benefits: {
+    title: string;
+    bullets: string[];
+  };
+  contact: {
+    title: string;
+    description?: string;
+    nameLabel: string;
+    emailLabel: string;
+    messageLabel: string;
+    submitLabel: string;
+  };
+};
+
 export type GeneratedLanding = {
   headline: string;
   subhead: string;
@@ -13,6 +56,7 @@ export type GeneratedLanding = {
   imageAlt?: string;
   palette?: string;
   tone?: string;
+  sectionsContent: GeneratedSections;
 };
 
 export type GenerationRequest = {
@@ -64,7 +108,8 @@ const buildPrompt = ({ prompt, style, sections }: GenerationRequest) => {
     styleLine,
     sectionsLine,
     "Return raw JSON only (no markdown, no code fences, no commentary).",
-    "Required keys: headline, subhead, audience, callToAction, features (array), prompt, imagePrompt, imageAlt, palette, tone.",
+    "Required keys: headline, subhead, audience, callToAction, features (array), prompt, imagePrompt, imageAlt, palette, tone, sectionsContent.",
+    "sectionsContent shape: hero {eyebrow, headline, subhead, primaryCta, secondaryCta, badge}, benefits {title, bullets}, contact {title, description, nameLabel, emailLabel, messageLabel, submitLabel}. Keep it short and simple.",
     "Constraints: headline must include the brand; callToAction is 2-5 words and points to booking/contact; features are 3-6 short benefit bullets.",
     "Add a concise hero imagePrompt plus a 3-6 word imageAlt; keep them generic and safe.",
     "Tone: clear, benefit-led, avoid fluff. If unsure, make reasonable assumptions while keeping output usable.",
@@ -142,6 +187,29 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
     "Responsive layout that keeps the CTA visible on mobile.",
   ];
 
+  const sectionsContent: GeneratedSections = {
+    hero: {
+      eyebrow: audience,
+      headline: `${brand} — ${headline}`,
+      subhead,
+      primaryCta: callToAction,
+      secondaryCta: "Contact us",
+      badge: "Simple site",
+    },
+    benefits: {
+      title: "Why this works",
+      bullets: (cleanedPrompt ? features : defaultFeatures).slice(0, 4),
+    },
+    contact: {
+      title: "Contact form",
+      description: "Reach out and we’ll reply quickly.",
+      nameLabel: "Name",
+      emailLabel: "Email",
+      messageLabel: "Message",
+      submitLabel: "Send message",
+    },
+  };
+
   return {
     headline: `${brand} - ${headline}`,
     subhead,
@@ -155,6 +223,7 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
     imageAlt: `${brand} hero image`,
     palette: style ? `${style} palette` : "Modern palette with high contrast blues and neutrals",
     tone: "Clear, confident, benefit-led",
+    sectionsContent,
   };
 };
 
@@ -199,6 +268,7 @@ export const generateLandingContent = async (
       imageAlt: parsed.imageAlt?.trim() || fallback.imageAlt,
       palette: parsed.palette?.trim() || fallback.palette,
       tone: parsed.tone?.trim() || fallback.tone,
+      sectionsContent: parsed.sectionsContent ?? fallback.sectionsContent,
     };
   } catch {
     return fallback;
