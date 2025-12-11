@@ -1,8 +1,31 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f5f7fb;
+  --foreground: #0f172a;
+
+  --surface: #ffffff;
+  --surface-muted: #f2f5fb;
+
+  --border-soft: #e4e9f1;
+  --border-strong: #d6deeb;
+
+  --text-strong: #0f172a;
+  --text-primary: #1f2937;
+  --text-secondary: #334155;
+  --text-muted: #6b7280;
+
+  --accent: #2563eb;
+  --accent-strong: #1d4ed8;
+  --accent-soft: #e7efff;
+
+  --radius-md: 12px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
+
+  --shadow-card: 0 25px 80px -55px rgba(15, 23, 42, 0.6);
+  --shadow-soft: 0 20px 60px -50px rgba(15, 23, 42, 0.45);
+  --shadow-subtle: 0 8px 26px -24px rgba(15, 23, 42, 0.4);
 }
 
 @theme inline {
@@ -20,13 +43,16 @@
 }
 
 body {
-  background: var(--background);
+  background: radial-gradient(circle at 20% 20%, #f8fbff, transparent 35%),
+    radial-gradient(circle at 80% 0%, #eef2ff, transparent 30%),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   letter-spacing: -0.01em;
+  min-height: 100vh;
 }
 
 ::selection {
-  background: #6b5bff66;
-  color: #f8f9ff;
+  background: #2b5be799;
+  color: #f8faff;
 }
