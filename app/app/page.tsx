@@ -2,7 +2,7 @@
 
 import { SignedIn, SignedOut, SignInButton, UserButton, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname } from "next/navigation";
 
 import { LandingPreview } from "@/components/landing-preview";
@@ -84,8 +84,12 @@ export default function AppWorkspace() {
   const [error, setError] = useState("");
   const [copied, setCopied] = useState(false);
   const [previewVisible, setPreviewVisible] = useState(false);
+  const [previewWidth, setPreviewWidth] = useState(45); // percent for right column on desktop
+  const [dragging, setDragging] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(false);
   const [format, setFormat] = useState(formatOptions[0]);
   const [showFormats, setShowFormats] = useState(false);
+  const gridRef = useRef<HTMLDivElement | null>(null);
 
   const shareUrl = useMemo(() => {
     if (!draft) return "";
@@ -93,6 +97,34 @@ export default function AppWorkspace() {
     if (!base) return "";
     return `${base}/preview?prompt=${encodeURIComponent(draft.prompt)}`;
   }, [draft]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mql = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsDesktop(mql.matches);
+    update();
+    mql.addEventListener("change", update);
+    return () => mql.removeEventListener("change", update);
+  }, []);
+
+  useEffect(() => {
+    if (!dragging) return;
+    const handleMove = (event: MouseEvent) => {
+      if (!gridRef.current) return;
+      const rect = gridRef.current.getBoundingClientRect();
+      const x = event.clientX - rect.left;
+      const pct = (x / rect.width) * 100;
+      const rightPct = Math.min(70, Math.max(30, 100 - pct));
+      setPreviewWidth(rightPct);
+    };
+    const stop = () => setDragging(false);
+    window.addEventListener("mousemove", handleMove);
+    window.addEventListener("mouseup", stop);
+    return () => {
+      window.removeEventListener("mousemove", handleMove);
+      window.removeEventListener("mouseup", stop);
+    };
+  }, [dragging]);
 
   const saveHistory = (items: HistoryEntry[]) => {
     if (typeof window === "undefined") return;
@@ -335,13 +367,21 @@ export default function AppWorkspace() {
           </SignedOut>
 
           <SignedIn>
-            <div
-              className={`grid w-full grid-cols-1 items-start gap-6 ${
-                draft && previewVisible ? "lg:grid-cols-2" : "lg:grid-cols-1"
-              }`}
-              style={draft && previewVisible ? { gridTemplateColumns: "1.05fr 0.95fr" } : undefined}
-            >
-              <div className="space-y-4">
+            <div className="relative">
+              <div
+                ref={gridRef}
+                className={`grid w-full grid-cols-1 items-start gap-6 ${
+                  draft && previewVisible && isDesktop ? "lg:grid-cols-2" : "lg:grid-cols-1"
+                }`}
+                style={
+                  draft && previewVisible && isDesktop
+                    ? {
+                        gridTemplateColumns: `${Math.max(30, 100 - previewWidth)}% ${previewWidth}%`,
+                      }
+                    : undefined
+                }
+              >
+                <div className="space-y-4">
                 <div className="rounded-2xl border border-neutral-200 bg-white shadow-sm">
                   <div className="p-4">
                     <textarea
@@ -494,8 +534,8 @@ export default function AppWorkspace() {
                 </div>
               </div>
 
-              {draft && previewVisible ? (
-                <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm lg:sticky lg:top-8 lg:self-start lg:pl-3">
+                {draft && previewVisible ? (
+                  <div className="rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm lg:sticky lg:top-8 lg:self-start lg:pl-3">
                   <div className="flex items-center gap-2 rounded-xl border border-neutral-100 bg-neutral-50 px-3 py-2">
                     <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white text-neutral-500 shadow-sm ring-1 ring-neutral-200">
                       <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -543,7 +583,20 @@ export default function AppWorkspace() {
                       <LandingPreview content={draft} showHeader={false} />
                     </div>
                   </div>
-                </div>
+                  </div>
+                ) : null}
+              </div>
+
+              {draft && previewVisible && isDesktop ? (
+                <button
+                  type="button"
+                  aria-label="Resize preview panel"
+                  onMouseDown={() => setDragging(true)}
+                  className="pointer-events-auto absolute inset-y-0 hidden w-3 cursor-col-resize items-center justify-center lg:flex"
+                  style={{ left: `${Math.max(30, 100 - previewWidth)}%`, transform: "translateX(-6px)" }}
+                >
+                  <span className="block h-20 w-1 rounded-full bg-neutral-300 shadow-inner" />
+                </button>
               ) : null}
             </div>
           </SignedIn>
