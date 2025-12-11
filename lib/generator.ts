@@ -9,6 +9,10 @@ export type GeneratedLanding = {
   prompt: string;
   style?: string;
   sections?: string[];
+  imagePrompt?: string;
+  imageAlt?: string;
+  palette?: string;
+  tone?: string;
 };
 
 export type GenerationRequest = {
@@ -20,7 +24,8 @@ export type GenerationRequest = {
 const defaultFeatures = [
   "Clear hero with just one CTA",
   "Benefits-first copy in plain language",
-  "Contact/booking actions that work on mobile",
+  "Contact or booking actions that work on mobile",
+  "Backup contact/CTA link for visitors not ready to book",
 ];
 
 const anthropic =
@@ -28,6 +33,13 @@ const anthropic =
     ? new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
     : null;
 const CLAUDE_MODEL = "claude-haiku-4-5"; // Dont change this model, it's the best one for this use case.
+
+const deriveBrand = (prompt: string) => {
+  const cleaned = prompt.replace(/[^a-zA-Z0-9\s&'-]/g, " ").replace(/\s+/g, " ").trim();
+  if (!cleaned) return "Launch Studio";
+  const words = cleaned.split(" ").slice(0, 3);
+  return toTitleCase(words.join(" ")).slice(0, 40) || "Launch Studio";
+};
 
 const toTitleCase = (value: string) =>
   value
@@ -39,28 +51,32 @@ const toTitleCase = (value: string) =>
 
 const buildPrompt = ({ prompt, style, sections }: GenerationRequest) => {
   const trimmed = prompt?.trim() || "local service business";
+  const brand = deriveBrand(trimmed);
   const styleLine = style ? `Style: ${style}.` : "Style: modern, minimal.";
   const sectionsLine =
     sections && sections.length > 0
-      ? `Sections to emphasize: ${sections.join(", ")}.`
-      : "Sections to emphasize: Hero, Features, and just one CTA.";
+      ? `Sections to emphasize (keep this order): ${sections.join(", ")}. Must include a CTA and a contact/booking mention.`
+      : "Sections to emphasize: Hero, Features, CTA, simple contact/booking mention.";
 
   return [
-    "You write concise, conversion-focused landing page copy.",
-    `Focus: ${trimmed}.`,
+    "You write concise, conversion-focused landing page copy with one clear CTA and a backup contact/booking mention.",
+    `Brand name to use everywhere: ${brand}. Focus/offer: ${trimmed}.`,
     styleLine,
     sectionsLine,
-    "Return JSON only. No code fences, no markdown, no commentary.",
-    `Keys: headline, subhead, audience, callToAction.`,
-    "Tone: clear, benefit-led, with just one primary action.",
-    "If unsure, make reasonable assumptions to keep output useful.",
+    "Return raw JSON only (no markdown, no code fences, no commentary).",
+    "Required keys: headline, subhead, audience, callToAction, features (array), prompt, imagePrompt, imageAlt, palette, tone.",
+    "Constraints: headline must include the brand; callToAction is 2-5 words and points to booking/contact; features are 3-6 short benefit bullets.",
+    "Add a concise hero imagePrompt plus a 3-6 word imageAlt; keep them generic and safe.",
+    "Tone: clear, benefit-led, avoid fluff. If unsure, make reasonable assumptions while keeping output usable.",
   ].join(" ");
 };
 
 const safeParseCompletion = (text: string) => {
-  const cleaned = text.replace(/```json|```/g, "").trim();
+  const withoutFences = text.replace(/```json|```/g, "").trim();
+  const match = withoutFences.match(/\{[\s\S]*\}/);
+  const candidate = match ? match[0] : withoutFences;
   try {
-    return JSON.parse(cleaned) as Partial<GeneratedLanding>;
+    return JSON.parse(candidate) as Partial<GeneratedLanding>;
   } catch {
     return null;
   }
@@ -78,8 +94,26 @@ const normalizeFeatures = (value: unknown, fallback: string[]) => {
   return fallback;
 };
 
+const normalizeCallToAction = (value: unknown, fallback: string) => {
+  if (typeof value !== "string") return fallback;
+  const cleaned = value.replace(/[^a-zA-Z0-9\s'!&.-]/g, "").trim();
+  if (cleaned.length < 3) return fallback;
+  const words = cleaned.split(/\s+/);
+  const normalized = words.length > 8 ? `${words.slice(0, 7).join(" ")}...` : cleaned;
+  return normalized;
+};
+
+const ensureContactSupport = (features: string[]) => {
+  const hasContact = features.some((item) =>
+    /contact|book|call|schedule|reply|support/i.test(item),
+  );
+  if (hasContact) return features;
+  return [...features.slice(0, 3), "Contact or booking link is included for visitors not ready to buy"];
+};
+
 const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): GeneratedLanding => {
   const cleanedPrompt = prompt?.trim() || "local service business";
+  const brand = deriveBrand(cleanedPrompt);
   const focus = toTitleCase(
     cleanedPrompt.length > 80 ? `${cleanedPrompt.slice(0, 77)}...` : cleanedPrompt,
   );
@@ -105,10 +139,11 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
     `Hero that states the offer for ${cleanedPrompt || "customers"} in one line.`,
     "Three benefit bullets and a proof slot.",
     "Primary CTA plus a contact/booking backup.",
+    "Responsive layout that keeps the CTA visible on mobile.",
   ];
 
   return {
-    headline,
+    headline: `${brand} - ${headline}`,
     subhead,
     audience,
     features: cleanedPrompt ? features : defaultFeatures,
@@ -116,6 +151,10 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
     prompt: cleanedPrompt || "busy small business owners",
     style,
     sections,
+    imagePrompt: `Hero photo of ${brand} serving ${cleanedPrompt || "customers"}, bright and inviting.`,
+    imageAlt: `${brand} hero image`,
+    palette: style ? `${style} palette` : "Modern palette with high contrast blues and neutrals",
+    tone: "Clear, confident, benefit-led",
   };
 };
 
@@ -143,15 +182,23 @@ export const generateLandingContent = async (
 
     if (!parsed) return fallback;
 
+    const mergedFeatures = ensureContactSupport(normalizeFeatures(parsed.features, fallback.features));
+
     return {
-      headline: parsed.headline?.trim() || fallback.headline,
+      headline: parsed.headline?.trim()
+        ? parsed.headline.trim()
+        : `${deriveBrand(input.prompt || fallback.prompt)} - ${fallback.headline}`,
       subhead: parsed.subhead?.trim() || fallback.subhead,
       audience: parsed.audience?.trim() || fallback.audience,
-      features: normalizeFeatures(parsed.features, fallback.features),
-      callToAction: parsed.callToAction?.trim() || fallback.callToAction,
+      features: mergedFeatures,
+      callToAction: normalizeCallToAction(parsed.callToAction, fallback.callToAction),
       prompt: parsed.prompt?.trim() || fallback.prompt,
       style: input.style ?? parsed.style ?? fallback.style,
       sections: input.sections?.length ? input.sections : parsed.sections ?? fallback.sections,
+      imagePrompt: parsed.imagePrompt?.trim() || fallback.imagePrompt,
+      imageAlt: parsed.imageAlt?.trim() || fallback.imageAlt,
+      palette: parsed.palette?.trim() || fallback.palette,
+      tone: parsed.tone?.trim() || fallback.tone,
     };
   } catch {
     return fallback;

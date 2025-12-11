@@ -104,6 +104,7 @@ export default function AppWorkspace() {
   const [isDesktop, setIsDesktop] = useState(false);
   const [format, setFormat] = useState(formatOptions[0]);
   const [showFormats, setShowFormats] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const gridRef = useRef<HTMLDivElement | null>(null);
   const [suggestionOffset, setSuggestionOffset] = useState(0);
 
@@ -147,6 +148,28 @@ export default function AppWorkspace() {
       window.removeEventListener("mouseup", stop);
     };
   }, [dragging]);
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        setIsFullscreen(false);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isFullscreen]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
+    const originalOverflow = document.body.style.overflow;
+    if (isFullscreen) {
+      document.body.style.overflow = "hidden";
+    }
+    return () => {
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [isFullscreen]);
 
   const saveHistory = (items: HistoryEntry[]) => {
     if (typeof window === "undefined") return;
@@ -566,15 +589,27 @@ export default function AppWorkspace() {
                         </svg>
                         Publish
                       </div>
-                      <div className="flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-white px-2 py-1">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (!shareUrl) return;
+                          window.open(shareUrl, "_blank", "noopener,noreferrer");
+                        }}
+                        disabled={!shareUrl}
+                        className="flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-white px-2 py-1 transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)] disabled:cursor-not-allowed disabled:border-[var(--border-soft)] disabled:bg-[var(--surface-muted)] disabled:text-[var(--text-muted)]"
+                      >
                         <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
                           <path d="M13.5 10.5 21 3" strokeLinecap="round" strokeLinejoin="round" />
                           <path d="M15.75 3H21v5.25" strokeLinecap="round" strokeLinejoin="round" />
                           <path d="M21 9.75V18a3 3 0 01-3 3H6a3 3 0 01-3-3V6a3 3 0 013-3h8.25" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                         Open in new tab
-                      </div>
-                      <div className="flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-white px-2 py-1">
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => setIsFullscreen(true)}
+                        className="flex items-center gap-1 rounded-full border border-[var(--border-soft)] bg-white px-2 py-1 transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)]"
+                      >
                         <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.5">
                           <path d="M9 3H5a2 2 0 00-2 2v4" strokeLinecap="round" strokeLinejoin="round" />
                           <path d="M15 3h4a2 2 0 012 2v4" strokeLinecap="round" strokeLinejoin="round" />
@@ -582,7 +617,7 @@ export default function AppWorkspace() {
                           <path d="M21 15v4a2 2 0 01-2 2h-4" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                         Fullscreen
-                      </div>
+                      </button>
                     </div>
                   </div>
 
@@ -616,6 +651,31 @@ export default function AppWorkspace() {
                 >
                   <span className="block h-20 w-1 rounded-full bg-[var(--border-strong)] shadow-inner" />
                 </button>
+              ) : null}
+              {draft && isFullscreen ? (
+                <div className="fixed inset-0 z-50 flex flex-col bg-[var(--surface)]/90 backdrop-blur-lg">
+                  <div className="flex justify-end p-4">
+                    <button
+                      type="button"
+                      onClick={() => setIsFullscreen(false)}
+                      className="inline-flex items-center gap-2 rounded-full border border-[var(--border-soft)] bg-white px-4 py-2 text-sm font-semibold text-[var(--text-strong)] shadow-sm transition hover:border-[var(--border-strong)] hover:bg-[var(--surface-muted)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]"
+                      aria-label="Exit fullscreen"
+                    >
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+                        <path d="M4 9V5a1 1 0 011-1h4" strokeLinecap="round" />
+                        <path d="M20 9V5a1 1 0 00-1-1h-4" strokeLinecap="round" />
+                        <path d="M4 15v4a1 1 0 001 1h4" strokeLinecap="round" />
+                        <path d="M20 15v4a1 1 0 01-1 1h-4" strokeLinecap="round" />
+                      </svg>
+                      Exit fullscreen
+                    </button>
+                  </div>
+                  <div className="flex-1 overflow-auto px-4 pb-6 sm:px-8">
+                    <div className="mx-auto max-w-6xl rounded-2xl border border-[var(--border-soft)] bg-[var(--surface-muted)] p-4 shadow-[var(--shadow-soft)]">
+                      <LandingPreview content={draft} showHeader={false} />
+                    </div>
+                  </div>
+                </div>
               ) : null}
             </div>
           </SignedIn>
