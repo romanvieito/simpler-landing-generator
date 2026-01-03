@@ -33,7 +33,7 @@ export function LandingPreview({ content, showHeader = true }: LandingPreviewPro
       <div className="relative grid gap-10 px-8 py-10 lg:grid-cols-[1.1fr,0.9fr] lg:items-center">
         <div className="space-y-5">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[var(--text-muted)]">
-            {sections.hero.eyebrow || content.audience}
+            {sections.audience.title}
           </p>
           <h1 className="text-3xl font-semibold leading-tight text-[var(--text-strong)] sm:text-4xl">
             {sections.hero.headline || content.headline}
@@ -57,18 +57,8 @@ export function LandingPreview({ content, showHeader = true }: LandingPreviewPro
         </div>
         <div className="space-y-5 rounded-[var(--radius-lg)] border border-[var(--border-soft)] bg-[var(--surface-muted)] p-6" style={{ boxShadow: "var(--shadow-soft)" }}>
           <div className="space-y-2">
-            <p className="text-sm font-semibold text-[var(--text-strong)]">{sections.benefits.title}</p>
-            <p className="text-sm text-[var(--text-secondary)]">Key benefits generated from your prompt.</p>
-            <ul className="space-y-3 text-sm text-[var(--text-primary)]">
-              {sections.benefits.bullets.map((item, index) => (
-                <li className="flex gap-3" key={`${item}-${index}`}>
-                  <span className="text-lg" aria-hidden>
-                    {bulletIcons[index % bulletIcons.length]}
-                  </span>
-                  <span>{item}</span>
-                </li>
-              ))}
-            </ul>
+            <p className="text-sm font-semibold text-[var(--text-strong)]">{sections.audience.title}</p>
+            <p className="text-sm text-[var(--text-secondary)]">{sections.audience.description}</p>
           </div>
           {(content.imagePrompt || content.imageAlt) && (
             <div className="rounded-[var(--radius-md)] border border-[var(--border-soft)] bg-white px-4 py-3" style={{ boxShadow: "var(--shadow-subtle)" }}>
@@ -93,9 +83,6 @@ export function LandingPreview({ content, showHeader = true }: LandingPreviewPro
         <div className="space-y-2">
           <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--text-muted)]">Contact</p>
           <h3 className="text-xl font-semibold text-[var(--text-strong)]">{sections.contact.title}</h3>
-          {sections.contact.description ? (
-            <p className="text-sm text-[var(--text-secondary)]">{sections.contact.description}</p>
-          ) : null}
         </div>
         <form className="w-full max-w-md space-y-3 rounded-[var(--radius-lg)] border border-[var(--border-soft)] bg-[var(--surface-muted)] p-5 shadow-[var(--shadow-subtle)]">
           <label className="block space-y-1 text-sm text-[var(--text-secondary)]">

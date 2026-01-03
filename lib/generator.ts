@@ -22,20 +22,17 @@ export type GeneratedTestimonial = {
 
 export type GeneratedSections = {
   hero: {
-    eyebrow?: string;
     headline: string;
     subhead: string;
     primaryCta: string;
     secondaryCta?: string;
-    badge?: string;
   };
-  benefits: {
+  audience: {
     title: string;
-    bullets: string[];
+    description: string;
   };
   contact: {
     title: string;
-    description?: string;
     nameLabel: string;
     emailLabel: string;
     messageLabel: string;
@@ -66,10 +63,9 @@ export type GenerationRequest = {
 };
 
 const defaultFeatures = [
-  "Clear hero with just one CTA",
-  "Benefits-first copy in plain language",
-  "Contact or booking actions that work on mobile",
-  "Backup contact/CTA link for visitors not ready to book",
+  "Simple hero section with clear offer",
+  "Audience section showing target customers",
+  "Contact form with name, email, and message fields",
 ];
 
 const anthropic =
@@ -99,18 +95,18 @@ const buildPrompt = ({ prompt, style, sections }: GenerationRequest) => {
   const styleLine = style ? `Style: ${style}.` : "Style: modern, minimal.";
   const sectionsLine =
     sections && sections.length > 0
-      ? `Sections to emphasize (keep this order): ${sections.join(", ")}. Must include a CTA and a contact/booking mention.`
-      : "Sections to emphasize: Hero, Features, CTA, simple contact/booking mention.";
+      ? `Sections to emphasize (keep this order): ${sections.join(", ")}. Must include a CTA and contact form.`
+      : "Sections to emphasize: Hero, Audience, Contact form.";
 
   return [
-    "You write concise, conversion-focused landing page copy with one clear CTA and a backup contact/booking mention.",
+    "You write concise, conversion-focused landing page copy with one clear CTA and a simple contact form.",
     `Brand name to use everywhere: ${brand}. Focus/offer: ${trimmed}.`,
     styleLine,
     sectionsLine,
     "Return raw JSON only (no markdown, no code fences, no commentary).",
     "Required keys: headline, subhead, audience, callToAction, features (array), prompt, imagePrompt, imageAlt, palette, tone, sectionsContent.",
-    "sectionsContent shape: hero {eyebrow, headline, subhead, primaryCta, secondaryCta, badge}, benefits {title, bullets}, contact {title, description, nameLabel, emailLabel, messageLabel, submitLabel}. Keep it short and simple.",
-    "Constraints: headline must include the brand; callToAction is 2-5 words and points to booking/contact; features are 3-6 short benefit bullets.",
+    "sectionsContent shape: hero {headline, subhead, primaryCta, secondaryCta}, audience {title, description}, contact {title, nameLabel, emailLabel, messageLabel, submitLabel}. Keep it short and simple.",
+    "Constraints: headline must include the brand; callToAction is 2-5 words and points to booking/contact; features are 3 short benefit bullets.",
     "Add a concise hero imagePrompt plus a 3-6 word imageAlt; keep them generic and safe.",
     "Tone: clear, benefit-led, avoid fluff. If unsure, make reasonable assumptions while keeping output usable.",
   ].join(" ");
@@ -175,34 +171,30 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
 
   const subhead =
     cleanedPrompt.length > 0
-      ? `Describe ${cleanedPrompt} and get a crisp landing with one CTA, benefits, and proof.`
-      : "Describe your offer and get a clean landing with a single CTA and proof point.";
+      ? `Describe ${cleanedPrompt} and get a simple landing with hero, audience, and contact form.`
+      : "Describe your offer and get a clean landing with hero, audience, and contact form.";
 
   const callToAction = cleanedPrompt.length > 0 ? "Generate landing" : "Start with a 30-second prompt";
 
   const features = [
-    `Hero that states the offer for ${cleanedPrompt || "customers"} in one line.`,
-    "Three benefit bullets and a proof slot.",
-    "Primary CTA plus a contact/booking backup.",
-    "Responsive layout that keeps the CTA visible on mobile.",
+    `Clear hero section explaining ${cleanedPrompt || "the offer"}.`,
+    "Audience section showing who this is for.",
+    "Simple contact form with name, email, and message.",
   ];
 
   const sectionsContent: GeneratedSections = {
     hero: {
-      eyebrow: audience,
       headline: `${brand} — ${headline}`,
       subhead,
       primaryCta: callToAction,
       secondaryCta: "Contact us",
-      badge: "Simple site",
     },
-    benefits: {
-      title: "Why this works",
-      bullets: (cleanedPrompt ? features : defaultFeatures).slice(0, 4),
+    audience: {
+      title: "Who this is for",
+      description: audience,
     },
     contact: {
-      title: "Contact form",
-      description: "Reach out and we’ll reply quickly.",
+      title: "Get in touch",
       nameLabel: "Name",
       emailLabel: "Email",
       messageLabel: "Message",
@@ -221,7 +213,7 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
     sections,
     imagePrompt: `Hero photo of ${brand} serving ${cleanedPrompt || "customers"}, bright and inviting.`,
     imageAlt: `${brand} hero image`,
-    palette: style ? `${style} palette` : "Modern palette with high contrast blues and neutrals",
+    palette: style ? `${style} palette` : "Modern palette with high contrast and neutrals",
     tone: "Clear, confident, benefit-led",
     sectionsContent,
   };
