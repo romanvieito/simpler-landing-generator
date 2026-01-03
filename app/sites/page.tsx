@@ -4,6 +4,7 @@
 import { useState, useEffect } from 'react';
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 type Site = {
   id: string;
@@ -14,6 +15,7 @@ type Site = {
 };
 
 export default function SitesPage() {
+  const router = useRouter();
   const [sites, setSites] = useState<Site[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -51,13 +53,8 @@ export default function SitesPage() {
   }
 
   function handleLoadInEditor(site: Site) {
-    // Store in localStorage to load in main editor
-    localStorage.setItem('loadSite', JSON.stringify({
-      id: site.id,
-      title: site.title,
-      description: site.description,
-    }));
-    window.location.href = '/';
+    // Navigate to main page with site ID as query parameter
+    router.push(`/?loadSite=${site.id}`);
   }
 
   return (

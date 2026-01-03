@@ -3,13 +3,14 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { deleteSite, getSite } from '@/lib/db';
 
-type Params = { params: { id: string } };
+type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_req: Request, { params }: Params) {
   const { userId } = await auth();
+  const { id } = await params;
 
   try {
-    const site = await getSite({ id: params.id, userId });
+    const site = await getSite({ id, userId });
     if (!site) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json({ site });
   } catch (e: any) {
@@ -20,9 +21,10 @@ export async function GET(_req: Request, { params }: Params) {
 
 export async function DELETE(_req: Request, { params }: Params) {
   const { userId } = await auth();
+  const { id } = await params;
 
   try {
-    await deleteSite({ id: params.id, userId });
+    await deleteSite({ id, userId });
     return NextResponse.json({ ok: true });
   } catch (e: any) {
     console.error(e);

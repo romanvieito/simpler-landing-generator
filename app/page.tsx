@@ -4,6 +4,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 
 type Plan = {
   title: string;
@@ -23,6 +24,7 @@ type Plan = {
 };
 
 export default function Page() {
+  const searchParams = useSearchParams();
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState<'idle' | 'planning' | 'coding' | 'publishing' | 'saving'>('idle');
   const [plan, setPlan] = useState<Plan | null>(null);
@@ -40,6 +42,46 @@ export default function Page() {
       previewRef.current.innerHTML = html;
     }
   }, [html]);
+
+  // Load site from URL parameter on mount (for "Load in Editor" functionality)
+  useEffect(() => {
+    const loadSiteId = searchParams.get('loadSite');
+    if (loadSiteId) {
+      console.log('Loading site from URL parameter:', loadSiteId);
+      fetchSiteForEditing(loadSiteId);
+    }
+  }, [searchParams]);
+
+  async function fetchSiteForEditing(siteId: string) {
+    try {
+      const res = await fetch(`/api/sites/${siteId}`);
+      if (!res.ok) throw new Error('Failed to fetch site data');
+      const data = await res.json();
+      const site = data.site;
+      console.log('Fetched site data:', site);
+
+      if (site.description) {
+        setDescription(site.description);
+      }
+      if (site.plan) {
+        setPlan(site.plan);
+      }
+      if (site.html) {
+        setHtml(site.html);
+        setHistory([site.html]);
+      }
+
+      // Clear the URL parameter after loading
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('loadSite');
+        window.history.replaceState({}, '', url.toString());
+      }
+    } catch (e) {
+      console.error('Failed to load site:', e);
+      alert('Failed to load site data');
+    }
+  }
 
   useEffect(() => {
     const container = previewRef.current;
@@ -73,7 +115,7 @@ export default function Page() {
         doUndo();
         return;
       }
-      if (e.key === 'Delete' && selectedEl && container.contains(selectedEl)) {
+      if (e.key === 'Delete' && selectedEl && container && container.contains(selectedEl)) {
         e.preventDefault();
         pushHistory();
         selectedEl.remove();
