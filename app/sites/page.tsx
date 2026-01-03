@@ -60,21 +60,16 @@ export default function SitesPage() {
   return (
     <>
       <SignedOut>
-        <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center' }}>
-            <h1 style={{ marginBottom: 12 }}>My Sites</h1>
-            <p style={{ marginBottom: 20 }}>Sign in to view your saved sites.</p>
+        <div className="container flex items-center justify-center" style={{ minHeight: '100vh', padding: '2rem 1rem' }}>
+          <div className="text-center" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <h1 className="text-2xl font-semibold text-gray-900">My Sites</h1>
+              <p className="text-gray-600" style={{ maxWidth: '28rem', margin: '0 auto' }}>
+                Sign in to view and manage your saved landing pages.
+              </p>
+            </div>
             <SignInButton mode="modal">
-              <button
-                style={{
-                  padding: '10px 16px',
-                  borderRadius: 8,
-                  border: '1px solid #e5e7eb',
-                  background: 'black',
-                  color: 'white',
-                  cursor: 'pointer',
-                }}
-              >
+              <button className="btn btn-primary">
                 Sign In
               </button>
             </SignInButton>
@@ -83,82 +78,96 @@ export default function SitesPage() {
       </SignedOut>
 
       <SignedIn>
-        <main style={{ padding: 16, maxWidth: 900, margin: '0 auto' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-            <h1 style={{ margin: 0 }}>My Sites</h1>
-            <Link href="/" style={{ color: '#2563eb' }}>← Back to Generator</Link>
-          </div>
-
-          {loading ? (
-            <div style={{ color: '#6b7280' }}>Loading...</div>
-          ) : sites.length === 0 ? (
-            <div style={{ color: '#6b7280' }}>No sites yet. Generate and Save your first site.</div>
-          ) : (
-            <div style={{ display: 'grid', gap: 12 }}>
-              {sites.map((s) => (
-                <div
-                  key={s.id}
-                  style={{
-                    border: '1px solid #e5e7eb',
-                    borderRadius: 8,
-                    padding: 12,
-                    display: 'flex',
-                    gap: 12,
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontWeight: 600 }}>{s.title || 'Untitled'}</div>
-                    <div style={{ fontSize: 12, color: '#6b7280' }}>
-                      {new Date(s.created_at).toLocaleString()}
-                    </div>
-                    <div style={{ marginTop: 6, fontSize: 13, color: '#374151' }}>
-                      {s.description || ''}
-                    </div>
-                  </div>
-                  <div style={{ display: 'flex', gap: 10, alignItems: 'center', flexWrap: 'wrap' }}>
-                    <button
-                      onClick={() => handleLoadInEditor(s)}
-                      style={{
-                        padding: '6px 10px',
-                        borderRadius: 6,
-                        border: '1px solid #e5e7eb',
-                        background: '#f3f4f6',
-                        color: '#111827',
-                        cursor: 'pointer',
-                        fontSize: 13,
-                      }}
-                    >
-                      Load in Editor
-                    </button>
-                    <Link href={`/sites/${s.id}`} style={{ color: '#2563eb', fontSize: 13 }}>View</Link>
-                    {s.vercel_url ? (
-                      <a href={`https://${s.vercel_url}`} target="_blank" rel="noreferrer" style={{ color: '#16a34a', fontSize: 13 }}>
-                        Live
-                      </a>
-                    ) : null}
-                    <button
-                      onClick={() => handleDelete(s.id)}
-                      disabled={deletingId === s.id}
-                      style={{
-                        padding: '6px 10px',
-                        borderRadius: 6,
-                        border: '1px solid #e5e7eb',
-                        background: '#fef2f2',
-                        color: '#dc2626',
-                        cursor: deletingId === s.id ? 'not-allowed' : 'pointer',
-                        fontSize: 13,
-                      }}
-                    >
-                      {deletingId === s.id ? 'Deleting...' : 'Delete'}
-                    </button>
-                  </div>
-                </div>
-              ))}
+        <div style={{ minHeight: '100vh', backgroundColor: 'var(--color-gray-50)' }}>
+          <div className="container" style={{ padding: '2rem 0' }}>
+            <div className="flex items-center justify-between" style={{ marginBottom: '2rem' }}>
+              <h1 className="text-2xl font-semibold text-gray-900">My Sites</h1>
+              <Link href="/" className="link">
+                ← Back to Generator
+              </Link>
             </div>
-          )}
-        </main>
+
+            {loading ? (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem' }}>
+                <div style={{ color: 'var(--color-gray-500)' }}>Loading your sites...</div>
+              </div>
+            ) : sites.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '3rem 1rem', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                <div style={{ color: 'var(--color-gray-500)', fontSize: '1.125rem' }}>No sites yet</div>
+                <p className="text-gray-600" style={{ maxWidth: '28rem', margin: '0 auto' }}>
+                  Generate and save your first landing page to see it here.
+                </p>
+                <Link href="/" className="btn btn-primary">
+                  Create Your First Site
+                </Link>
+              </div>
+            ) : (
+              <div style={{
+                display: 'grid',
+                gap: '1rem',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))'
+              }}>
+                {sites.map((s) => (
+                  <div key={s.id} className="card" style={{
+                    padding: '1.5rem',
+                    transition: 'box-shadow var(--transition-fast)'
+                  }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', marginBottom: '1rem' }}>
+                      <div className="flex items-start justify-between">
+                        <h3 className="font-semibold text-gray-900 truncate" style={{ fontSize: '1.125rem' }}>
+                          {s.title || 'Untitled Site'}
+                        </h3>
+                        {s.vercel_url && (
+                          <span className="status status-success" style={{ fontSize: '0.75rem', marginLeft: '0.5rem' }}>Live</span>
+                        )}
+                      </div>
+                      <div style={{ fontSize: '0.75rem', color: 'var(--color-gray-500)' }}>
+                        {new Date(s.created_at).toLocaleDateString()}
+                      </div>
+                      {s.description && (
+                        <p className="text-sm text-gray-600 line-clamp-2">
+                          {s.description}
+                        </p>
+                      )}
+                    </div>
+
+                    <div className="flex gap-2" style={{ flexWrap: 'wrap' }}>
+                      <button
+                        onClick={() => handleLoadInEditor(s)}
+                        className="btn btn-secondary text-xs px-3 py-1.5"
+                      >
+                        Load in Editor
+                      </button>
+                      <Link
+                        href={`/sites/${s.id}`}
+                        className="link text-xs px-3 py-1.5 border border-gray-300 rounded-md hover:bg-gray-50"
+                      >
+                        View
+                      </Link>
+                      {s.vercel_url && (
+                        <a
+                          href={`https://${s.vercel_url}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="link text-success text-xs px-3 py-1.5 border border-green-300 rounded-md hover:bg-green-50"
+                        >
+                          Live Site
+                        </a>
+                      )}
+                      <button
+                        onClick={() => handleDelete(s.id)}
+                        disabled={deletingId === s.id}
+                        className="btn btn-danger text-xs px-3 py-1.5"
+                      >
+                        {deletingId === s.id ? 'Deleting...' : 'Delete'}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </SignedIn>
     </>
   );

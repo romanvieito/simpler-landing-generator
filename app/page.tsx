@@ -269,21 +269,16 @@ export default function Page() {
   return (
     <>
       <SignedOut>
-        <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ textAlign: 'center' }}>
-            <h1 style={{ marginBottom: 12 }}>Landing Generator</h1>
-            <p style={{ marginBottom: 20 }}>Sign in to generate and publish landing pages.</p>
+        <div className="container flex items-center justify-center" style={{ minHeight: '100vh', padding: '2rem 1rem' }}>
+          <div className="text-center" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <h1 className="text-2xl font-semibold text-gray-900">Landing Generator</h1>
+              <p className="text-gray-600" style={{ maxWidth: '28rem', margin: '0 auto' }}>
+                Create and publish landing pages with AI. Sign in to get started.
+              </p>
+            </div>
             <SignInButton mode="modal">
-              <button
-                style={{
-                  padding: '10px 16px',
-                  borderRadius: 8,
-                  border: '1px solid #e5e7eb',
-                  background: 'black',
-                  color: 'white',
-                  cursor: 'pointer',
-                }}
-              >
+              <button className="btn btn-primary">
                 Sign In
               </button>
             </SignInButton>
@@ -292,75 +287,71 @@ export default function Page() {
       </SignedOut>
 
       <SignedIn>
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
-          <header
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '12px 16px',
-              borderBottom: '1px solid #e5e7eb',
-              position: 'sticky',
-              top: 0,
-              background: 'white',
-              zIndex: 10,
-            }}
-          >
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontWeight: 700 }}>Landing Generator</span>
-              {status ? <span style={{ color: '#6b7280', fontSize: 13 }}>{status}</span> : null}
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-              <Link href="/sites" style={{ fontSize: 14, color: '#2563eb' }}>My Sites</Link>
-              <UserButton />
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--color-gray-50)' }}>
+          <header style={{
+            position: 'sticky',
+            top: 0,
+            zIndex: 10,
+            backgroundColor: 'var(--color-white)',
+            borderBottom: '1px solid var(--color-gray-200)'
+          }}>
+            <div className="container flex items-center justify-between" style={{ padding: '0.75rem 0' }}>
+              <div className="flex items-center gap-4">
+                <h1 className="text-lg font-semibold text-gray-900">Landing Generator</h1>
+                {status && (
+                  <span style={{
+                    fontSize: '0.875rem',
+                    color: 'var(--color-gray-500)',
+                    backgroundColor: 'var(--color-gray-100)',
+                    padding: '0.25rem 0.5rem',
+                    borderRadius: '9999px'
+                  }}>
+                    {status}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-4">
+                <Link href="/sites" className="link text-sm">
+                  My Sites
+                </Link>
+                <UserButton />
+              </div>
             </div>
           </header>
 
-          <main style={{ display: 'grid', gap: 16, gridTemplateColumns: '1fr', padding: 16 }}>
-            <section style={{ display: 'grid', gap: 12 }}>
-              <label htmlFor="desc" style={{ fontWeight: 600 }}>Business / website description</label>
-              <textarea
-                id="desc"
-                placeholder="Describe your business, audience, tone, unique value, etc."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={5}
-                style={{
-                  width: '100%',
-                  padding: 12,
-                  borderRadius: 8,
-                  border: '1px solid #e5e7eb',
-                  resize: 'vertical',
-                  fontFamily: 'inherit',
-                }}
-              />
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          <main className="container" style={{ padding: '2rem 0', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <section style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label htmlFor="desc" style={{
+                  display: 'block',
+                  fontSize: '0.875rem',
+                  fontWeight: 500,
+                  color: 'var(--color-gray-900)'
+                }}>
+                  Business / website description
+                </label>
+                <textarea
+                  id="desc"
+                  placeholder="Describe your business, audience, tone, unique value proposition, and what you want your landing page to achieve..."
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  rows={4}
+                  className="textarea"
+                />
+              </div>
+              <div className="flex gap-3" style={{ flexWrap: 'wrap' }}>
                 <button
                   onClick={handleGenerate}
                   disabled={!description || isGenerating}
-                  style={{
-                    padding: '10px 16px',
-                    borderRadius: 8,
-                    border: '1px solid #e5e7eb',
-                    background: isGenerating ? '#f3f4f6' : 'black',
-                    color: isGenerating ? '#6b7280' : 'white',
-                    cursor: !description || isGenerating ? 'not-allowed' : 'pointer',
-                  }}
+                  className="btn btn-primary"
                 >
-                  {isGenerating ? 'Generating...' : 'Generate'}
+                  {isGenerating ? 'Generating...' : 'Generate Landing Page'}
                 </button>
 
                 <button
                   onClick={() => setEditMode((v) => !v)}
                   disabled={!html || isGenerating}
-                  style={{
-                    padding: '10px 16px',
-                    borderRadius: 8,
-                    border: '1px solid #e5e7eb',
-                    background: editMode ? '#ede9fe' : 'white',
-                    color: 'black',
-                    cursor: !html || isGenerating ? 'not-allowed' : 'pointer',
-                  }}
+                  className={`btn ${editMode ? 'btn-secondary' : 'btn-ghost'}`}
                 >
                   {editMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
                 </button>
@@ -368,14 +359,7 @@ export default function Page() {
                 <button
                   onClick={doUndo}
                   disabled={history.length < 1}
-                  style={{
-                    padding: '10px 16px',
-                    borderRadius: 8,
-                    border: '1px solid #e5e7eb',
-                    background: 'white',
-                    color: history.length < 1 ? '#9ca3af' : 'black',
-                    cursor: history.length < 1 ? 'not-allowed' : 'pointer',
-                  }}
+                  className="btn btn-ghost"
                 >
                   Undo
                 </button>
@@ -383,95 +367,116 @@ export default function Page() {
                 <button
                   onClick={handleSave}
                   disabled={!html || isGenerating}
-                  style={{
-                    padding: '10px 16px',
-                    borderRadius: 8,
-                    border: '1px solid #e5e7eb',
-                    background: '#111827',
-                    color: 'white',
-                    cursor: !html || isGenerating ? 'not-allowed' : 'pointer',
-                  }}
+                  className={`btn ${savedSiteId ? 'btn-secondary' : 'btn-primary'}`}
                 >
-                  {loading === 'saving' ? 'Saving...' : savedSiteId ? 'Saved ✓' : 'Save'}
+                  {loading === 'saving' ? 'Saving...' : savedSiteId ? 'Saved ✓' : 'Save Draft'}
                 </button>
 
                 <button
                   onClick={handlePublish}
                   disabled={!html || isGenerating}
-                  style={{
-                    padding: '10px 16px',
-                    borderRadius: 8,
-                    border: '1px solid #e5e7eb',
-                    background: '#16a34a',
-                    color: 'white',
-                    cursor: !html || isGenerating ? 'not-allowed' : 'pointer',
-                  }}
+                  className="btn btn-success"
                 >
-                  {loading === 'publishing' ? 'Publishing...' : 'Publish'}
+                  {loading === 'publishing' ? 'Publishing...' : 'Publish Live'}
                 </button>
               </div>
 
-              {publishedUrl ? (
-                <div
-                  style={{
-                    padding: 12,
-                    border: '1px solid #e5e7eb',
-                    borderRadius: 8,
-                    background: '#f0fdf4',
-                  }}
-                >
-                  <div style={{ fontWeight: 600, marginBottom: 6 }}>Published!</div>
-                  <a href={`https://${publishedUrl}`} target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>
+              {publishedUrl && (
+                <div className="card" style={{
+                  padding: '1rem',
+                  backgroundColor: 'var(--color-success-bg)',
+                  borderColor: 'var(--color-success)'
+                }}>
+                  <div className="flex items-center gap-2" style={{ marginBottom: '0.5rem' }}>
+                    <span className="status status-success">Published</span>
+                  </div>
+                  <a
+                    href={`https://${publishedUrl}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="link"
+                    style={{ wordBreak: 'break-all' }}
+                  >
                     https://{publishedUrl}
                   </a>
                 </div>
-              ) : null}
+              )}
 
-              {savedSiteId ? (
-                <div
-                  style={{
-                    padding: 12,
-                    border: '1px solid #e5e7eb',
-                    borderRadius: 8,
-                    background: '#eff6ff',
-                  }}
-                >
-                  <div style={{ fontWeight: 600, marginBottom: 6 }}>Saved</div>
-                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-                    <Link href="/sites" style={{ color: '#2563eb' }}>Go to My Sites</Link>
-                    <Link href={`/sites/${savedSiteId}`} style={{ color: '#2563eb' }}>Open this site</Link>
+              {savedSiteId && (
+                <div className="card" style={{
+                  padding: '1rem',
+                  backgroundColor: 'var(--color-blue-50)',
+                  borderColor: 'var(--color-blue-100)'
+                }}>
+                  <div className="flex items-center gap-2" style={{ marginBottom: '0.5rem' }}>
+                    <span className="status status-info">Saved</span>
+                  </div>
+                  <div className="flex gap-4" style={{ flexWrap: 'wrap' }}>
+                    <Link href="/sites" className="link text-sm">
+                      Go to My Sites
+                    </Link>
+                    <Link href={`/sites/${savedSiteId}`} className="link text-sm">
+                      View Saved Site
+                    </Link>
                   </div>
                 </div>
-              ) : null}
+              )}
             </section>
 
-            <section style={{ display: 'grid', gap: 8 }}>
-              <div style={{ fontWeight: 600 }}>Preview</div>
+            <section style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">Preview</h2>
+                {editMode && (
+                  <span className="status status-info">Edit Mode</span>
+                )}
+              </div>
               <div
                 ref={previewRef}
+                className="card"
                 style={{
-                  border: '1px solid #e5e7eb',
-                  borderRadius: 8,
-                  overflow: 'hidden',
-                  minHeight: 300,
-                  background: '#fff',
+                  minHeight: '400px',
+                  backgroundColor: 'var(--color-white)',
+                  borderColor: 'var(--color-gray-200)'
                 }}
               />
               {!html && (
-                <div style={{ color: '#6b7280', fontSize: 14 }}>
-                  Your generated landing page preview will appear here.
+                <div style={{
+                  textAlign: 'center',
+                  padding: '3rem 1rem',
+                  color: 'var(--color-gray-500)'
+                }}>
+                  <div style={{ fontSize: '1.125rem', fontWeight: 500, marginBottom: '0.5rem' }}>
+                    Ready to generate
+                  </div>
+                  <div>Your generated landing page preview will appear here.</div>
                 </div>
               )}
               {editMode && (
-                <div style={{ color: '#6b7280', fontSize: 13 }}>
-                  Edit mode tips: Click text to edit inline. Press Delete to remove a selected element. Use Cmd/Ctrl+Z or the Undo button to revert changes.
+                <div style={{
+                  fontSize: '0.875rem',
+                  color: 'var(--color-gray-600)',
+                  backgroundColor: 'var(--color-gray-50)',
+                  padding: '0.75rem',
+                  borderRadius: 'var(--radius-lg)'
+                }}>
+                  <strong>Edit mode tips:</strong> Click text to edit inline. Press Delete to remove a selected element. Use Cmd/Ctrl+Z or the Undo button to revert changes.
                 </div>
               )}
             </section>
           </main>
 
-          <footer style={{ padding: 16, color: '#6b7280', fontSize: 13 }}>
-            <div>Mobile responsive HTML is generated using inline CSS for portability.</div>
+          <footer style={{
+            borderTop: '1px solid var(--color-gray-200)',
+            backgroundColor: 'var(--color-white)'
+          }}>
+            <div className="container" style={{
+              padding: '1.5rem',
+              textAlign: 'center',
+              fontSize: '0.875rem',
+              color: 'var(--color-gray-500)'
+            }}>
+              Mobile responsive HTML is generated using inline CSS for portability.
+            </div>
           </footer>
         </div>
       </SignedIn>
