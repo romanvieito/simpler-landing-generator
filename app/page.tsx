@@ -35,6 +35,8 @@ function LandingGeneratorContent() {
   const [publishedUrl, setPublishedUrl] = useState<string>('');
   const [savedSiteId, setSavedSiteId] = useState<string>('');
   const [view, setView] = useState<'input' | 'preview'>('input');
+  const [editingUrl, setEditingUrl] = useState<boolean>(false);
+  const [customUrlSlug, setCustomUrlSlug] = useState<string>('');
 
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -70,7 +72,7 @@ function LandingGeneratorContent() {
       if (site.html) {
         setHtml(site.html);
         setHistory([site.html]);
-        setView('preview');
+        setView('input'); // Show input form when loading site for editing
       }
 
       // Clear the URL parameter after loading
@@ -175,14 +177,17 @@ function LandingGeneratorContent() {
     const allElements = tempDiv.querySelectorAll('*');
     allElements.forEach((el) => {
       const htmlEl = el as HTMLElement;
-      // Remove outline styles added during editing
-      if (htmlEl.style.outline === '2px dashed #7c3aed') {
+
+      // Remove outline styles added during editing (any outline property)
+      if (htmlEl.style.outline) {
         htmlEl.style.outline = '';
       }
+
       // Remove contentEditable attribute
       if (el.hasAttribute('contenteditable')) {
         el.removeAttribute('contenteditable');
       }
+
       // Remove any empty style attributes
       if (el.getAttribute('style') === '') {
         el.removeAttribute('style');
