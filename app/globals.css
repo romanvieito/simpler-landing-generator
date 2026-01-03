@@ -211,6 +211,19 @@ body {
   border-color: #dc2626;
 }
 
+.btn-outline {
+  background-color: transparent;
+  color: var(--color-gray-700);
+  padding: 0.5rem 1rem;
+  border-color: var(--color-gray-300);
+}
+
+.btn-outline:hover:not(:disabled) {
+  background-color: var(--color-gray-50);
+  border-color: var(--color-gray-400);
+  color: var(--color-gray-900);
+}
+
 /* Form styles */
 .input, .textarea {
   width: 100%;
