@@ -332,7 +332,7 @@ function LandingGeneratorContent() {
                 </label>
                 <textarea
                   id="desc"
-                  placeholder="Describe your business, audience, tone, unique value proposition, and what you want your landing page to achieve..."
+                  placeholder="Describe your business, audience, and value proposition..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   rows={4}
@@ -445,10 +445,10 @@ function LandingGeneratorContent() {
                   padding: '3rem 1rem',
                   color: 'var(--color-gray-500)'
                 }}>
-                  <div style={{ fontSize: '1.125rem', fontWeight: 500, marginBottom: '0.5rem' }}>
+                  {/* <div style={{ fontSize: '1.125rem', fontWeight: 500, marginBottom: '0.5rem' }}>
                     Ready to generate
                   </div>
-                  <div>Your generated landing page preview will appear here.</div>
+                  <div>Your generated landing page preview will appear here.</div> */}
                 </div>
               )}
               {editMode && (
@@ -465,19 +465,6 @@ function LandingGeneratorContent() {
             </section>
           </main>
 
-          <footer style={{
-            borderTop: '1px solid var(--color-gray-200)',
-            backgroundColor: 'var(--color-white)'
-          }}>
-            <div className="container" style={{
-              padding: '1.5rem',
-              textAlign: 'center',
-              fontSize: '0.875rem',
-              color: 'var(--color-gray-500)'
-            }}>
-              Mobile responsive HTML is generated using inline CSS for portability.
-            </div>
-          </footer>
         </div>
       </SignedIn>
     </>
