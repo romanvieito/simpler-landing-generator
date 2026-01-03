@@ -30,6 +30,32 @@ export async function ensureContactSubmissionsTable() {
   `;
 }
 
+export async function ensureCreditsTable() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS user_credits (
+      user_id TEXT PRIMARY KEY,
+      balance INTEGER NOT NULL DEFAULT 0,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      updated_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  `;
+}
+
+export async function ensureCreditTransactionsTable() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS credit_transactions (
+      id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+      user_id TEXT NOT NULL,
+      amount INTEGER NOT NULL,
+      type TEXT NOT NULL CHECK (type IN ('purchase', 'usage', 'refund')),
+      description TEXT,
+      stripe_payment_id TEXT,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      FOREIGN KEY (user_id) REFERENCES user_credits(user_id) ON DELETE CASCADE
+    );
+  `;
+}
+
 export async function insertSite(args: {
   userId: string;
   title: string;
@@ -116,6 +142,83 @@ export async function getContactSubmissions({ siteId, userId }: { siteId: string
     FROM contact_submissions
     WHERE site_id = ${siteId}
     ORDER BY created_at DESC
+  `;
+
+  return rows;
+}
+
+// Credit management functions
+export async function getUserCredits({ userId }: { userId: string }) {
+  const { rows } = await sql`
+    SELECT balance
+    FROM user_credits
+    WHERE user_id = ${userId}
+    LIMIT 1
+  `;
+
+  return rows[0]?.balance ?? 0;
+}
+
+export async function ensureUserCredits({ userId }: { userId: string }) {
+  await sql`
+    INSERT INTO user_credits (user_id, balance)
+    VALUES (${userId}, 0)
+    ON CONFLICT (user_id) DO NOTHING
+  `;
+}
+
+export async function addCredits({ userId, amount, type, description, stripePaymentId }: {
+  userId: string;
+  amount: number;
+  type: 'purchase' | 'usage' | 'refund';
+  description?: string;
+  stripePaymentId?: string;
+}) {
+  // Ensure user has a credits record
+  await ensureUserCredits({ userId });
+
+  // Update balance
+  await sql`
+    UPDATE user_credits
+    SET balance = balance + ${amount}, updated_at = NOW()
+    WHERE user_id = ${userId}
+  `;
+
+  // Record transaction
+  await sql`
+    INSERT INTO credit_transactions (user_id, amount, type, description, stripe_payment_id)
+    VALUES (${userId}, ${amount}, ${type}, ${description || null}, ${stripePaymentId || null})
+  `;
+
+  return await getUserCredits({ userId });
+}
+
+export async function deductCredits({ userId, amount, description }: {
+  userId: string;
+  amount: number;
+  description?: string;
+}) {
+  const currentBalance = await getUserCredits({ userId });
+
+  if (currentBalance < amount) {
+    throw new Error('Insufficient credits');
+  }
+
+  return await addCredits({
+    userId,
+    amount: -amount,
+    type: 'usage',
+    description: description || 'Website generation'
+  });
+}
+
+export async function getCreditTransactions({ userId }: { userId: string }) {
+  const { rows } = await sql`
+    SELECT id, amount, type, description, stripe_payment_id, created_at
+    FROM credit_transactions
+    WHERE user_id = ${userId}
+    ORDER BY created_at DESC
+    LIMIT 50
   `;
 
   return rows;

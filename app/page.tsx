@@ -5,6 +5,8 @@ import { useEffect, useRef, useState, Suspense } from 'react';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { CreditDisplay } from '@/components/credit-display';
+import { PurchaseCreditsModal } from '@/components/purchase-credits-modal';
 
 type Plan = {
   title: string;
@@ -37,6 +39,7 @@ function LandingGeneratorContent() {
   const [view, setView] = useState<'input' | 'preview'>('input');
   const [editingUrl, setEditingUrl] = useState<boolean>(false);
   const [customUrlSlug, setCustomUrlSlug] = useState<string>('');
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
 
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -52,6 +55,32 @@ function LandingGeneratorContent() {
     if (loadSiteId) {
       console.log('Loading site from URL parameter:', loadSiteId);
       fetchSiteForEditing(loadSiteId);
+    }
+  }, [searchParams]);
+
+  // Handle Stripe redirect
+  useEffect(() => {
+    const success = searchParams.get('success');
+    const canceled = searchParams.get('canceled');
+
+    if (success) {
+      alert('Payment successful! Credits have been added to your account.');
+      // Clear the URL parameters
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('success');
+        window.history.replaceState({}, '', url.toString());
+      }
+    }
+
+    if (canceled) {
+      alert('Payment was canceled.');
+      // Clear the URL parameters
+      if (typeof window !== 'undefined') {
+        const url = new URL(window.location.href);
+        url.searchParams.delete('canceled');
+        window.history.replaceState({}, '', url.toString());
+      }
     }
   }, [searchParams]);
 
@@ -73,6 +102,13 @@ function LandingGeneratorContent() {
         setHtml(site.html);
         setHistory([site.html]);
         setView('input'); // Show input form when loading site for editing
+      }
+      if (site.vercel_url) {
+        setPublishedUrl(site.vercel_url);
+        // Extract slug from existing URL for editing
+        const url = new URL(`https://${site.vercel_url}`);
+        const slug = url.hostname.split('.')[0];
+        setCustomUrlSlug(slug);
       }
 
       // Clear the URL parameter after loading
@@ -206,12 +242,24 @@ function LandingGeneratorContent() {
       setHtml('');
       setHistory([]);
       setSelectedEl(null);
+      setEditingUrl(false);
+      setCustomUrlSlug('');
 
       const planRes = await fetch('/api/generate-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ description }),
       });
+
+      if (planRes.status === 402) {
+        // Insufficient credits
+        const errorData = await planRes.json();
+        alert(errorData.error);
+        setShowPurchaseModal(true);
+        setLoading('idle');
+        return;
+      }
+
       if (!planRes.ok) throw new Error('Failed to generate design plan');
       const planJson = await planRes.json();
       const planOut: Plan = planJson.plan;
@@ -223,6 +271,16 @@ function LandingGeneratorContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ plan: planOut }),
       });
+
+      if (htmlRes.status === 402) {
+        // Insufficient credits
+        const errorData = await htmlRes.json();
+        alert(errorData.error);
+        setShowPurchaseModal(true);
+        setLoading('idle');
+        return;
+      }
+
       if (!htmlRes.ok) throw new Error('Failed to generate HTML');
       const { html: htmlOut } = await htmlRes.json();
       setHtml(htmlOut);
@@ -263,7 +321,7 @@ function LandingGeneratorContent() {
     }
   }
 
-  async function handlePublish() {
+  async function handlePublish(urlSlug?: string) {
     try {
       if (!html) {
         alert('No HTML to publish.');
@@ -276,13 +334,27 @@ function LandingGeneratorContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           html: cleanedHtml,
-          nameHint: plan?.title ?? 'landing',
+          nameHint: urlSlug || customUrlSlug || plan?.title || 'landing',
           siteId: savedSiteId || null,
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Publish failed');
       setPublishedUrl(data.url);
+
+      // Extract and set the slug from the published URL for future editing
+      if (data.url && !customUrlSlug) {
+        const url = new URL(`https://${data.url}`);
+        const slug = url.hostname.split('.')[0];
+        setCustomUrlSlug(slug);
+      }
+
+      // If we're republishing with a new slug, update the customUrlSlug
+      if (urlSlug) {
+        setCustomUrlSlug(urlSlug);
+      }
+
+      setEditingUrl(false);
     } catch (e) {
       console.error(e);
       alert((e as Error)?.message ?? 'Error publishing');
@@ -337,6 +409,7 @@ function LandingGeneratorContent() {
                   <h1 className="text-lg font-semibold text-gray-900">Landing Generator</h1>
                 </div>
                 <div className="flex items-center gap-4">
+                  <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
                   <Link href="/sites" className="link text-sm">
                     My Sites
                   </Link>
@@ -364,7 +437,7 @@ function LandingGeneratorContent() {
                     Create Your Landing Page
                   </h2>
                   <p className="text-gray-600">
-                    Describe your business and we'll generate a beautiful landing page for you
+                    Describe your business and we&apos;ll generate a beautiful landing page for you
                   </p>
                 </div>
 
@@ -444,10 +517,10 @@ function LandingGeneratorContent() {
                   >
                     ← Edit Prompt
                   </button>
-                  <div style={{ 
-                    height: '1.5rem', 
-                    width: '1px', 
-                    backgroundColor: 'var(--color-gray-300)' 
+                  <div style={{
+                    height: '1.5rem',
+                    width: '1px',
+                    backgroundColor: 'var(--color-gray-300)'
                   }} />
                   <Link href="/sites" className="link text-sm">
                     My Sites
@@ -455,6 +528,7 @@ function LandingGeneratorContent() {
                 </div>
 
                 <div className="flex items-center gap-3">
+                  <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
                   <button
                     onClick={() => setEditMode((v) => !v)}
                     disabled={!html || isGenerating}
@@ -490,7 +564,7 @@ function LandingGeneratorContent() {
                   </button>
 
                   <button
-                    onClick={handlePublish}
+                    onClick={() => handlePublish()}
                     disabled={!html || isGenerating}
                     className="btn btn-success"
                     style={{ padding: '0.5rem 1rem' }}
@@ -520,14 +594,75 @@ function LandingGeneratorContent() {
                         <span className="status status-success" style={{ fontSize: '0.625rem', padding: '0.125rem 0.5rem' }}>
                           Published
                         </span>
-                        <a
-                          href={`https://${publishedUrl}`}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="link text-sm"
-                        >
-                          {publishedUrl}
-                        </a>
+                        {editingUrl ? (
+                          <div className="flex items-center gap-2">
+                            <span style={{ color: 'var(--color-gray-600)' }}>
+                              https://
+                            </span>
+                            <input
+                              type="text"
+                              value={customUrlSlug}
+                              onChange={(e) => setCustomUrlSlug(e.target.value)}
+                              className="input"
+                              style={{
+                                fontSize: '0.875rem',
+                                padding: '0.25rem 0.5rem',
+                                width: '120px',
+                                height: 'auto'
+                              }}
+                              placeholder="url-slug"
+                            />
+                            <span style={{ color: 'var(--color-gray-600)' }}>
+                              .vercel.app
+                            </span>
+                            <button
+                              onClick={() => handlePublish(customUrlSlug)}
+                              disabled={!customUrlSlug.trim() || loading === 'publishing'}
+                              className="btn btn-primary"
+                              style={{
+                                fontSize: '0.75rem',
+                                padding: '0.25rem 0.5rem',
+                                height: 'auto'
+                              }}
+                            >
+                              {loading === 'publishing' ? '...' : 'Update'}
+                            </button>
+                            <button
+                              onClick={() => setEditingUrl(false)}
+                              className="btn btn-ghost"
+                              style={{
+                                fontSize: '0.75rem',
+                                padding: '0.25rem 0.5rem',
+                                height: 'auto'
+                              }}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-2">
+                            <a
+                              href={`https://${publishedUrl}`}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="link text-sm"
+                            >
+                              {publishedUrl}
+                            </a>
+                            <button
+                              onClick={() => setEditingUrl(true)}
+                              className="btn btn-ghost"
+                              style={{
+                                fontSize: '0.75rem',
+                                padding: '0.125rem 0.25rem',
+                                height: 'auto'
+                              }}
+                              title="Edit URL"
+                            >
+                              ✏️
+                            </button>
+                          </div>
+                        )}
                       </div>
                     )}
                     {savedSiteId && !publishedUrl && (
@@ -580,6 +715,11 @@ function LandingGeneratorContent() {
           </div>
         )}
       </SignedIn>
+
+      <PurchaseCreditsModal
+        isOpen={showPurchaseModal}
+        onClose={() => setShowPurchaseModal(false)}
+      />
     </>
   );
 }

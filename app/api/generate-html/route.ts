@@ -2,11 +2,33 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { chatText } from '@/lib/deepseek';
+import { deductCredits } from '@/lib/db';
 
 export async function POST(req: Request) {
   const { userId } = await auth();
 
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
+    // Deduct credits for HTML generation (1 credit)
+    try {
+      await deductCredits({
+        userId,
+        amount: 1,
+        description: 'Landing page HTML generation'
+      });
+    } catch (error: any) {
+      if (error.message === 'Insufficient credits') {
+        return NextResponse.json(
+          { error: 'Insufficient credits. Please purchase more credits to continue.' },
+          { status: 402 }
+        );
+      }
+      throw error;
+    }
+
     const { plan } = await req.json();
 
     const system = `You generate complete, mobile-responsive HTML documents with inline CSS only. CRITICAL REQUIREMENTS:

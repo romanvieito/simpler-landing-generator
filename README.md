@@ -34,6 +34,27 @@ Generated landing pages now include working contact forms that store submissions
 
 Email notifications are automatically sent to the **site creator's email** (from their Clerk account). Without the Resend API key, forms still work but skip email notifications. Submissions are always stored in the database.
 
+### Credit System
+Users must purchase credits to generate landing pages. Each generation costs 2 credits (1 for plan generation + 1 for HTML generation).
+
+#### Setup
+1. **Stripe Integration**: Create a Stripe account and get your API keys
+2. **Environment variables**:
+   - `STRIPE_SECRET_KEY`: Your Stripe secret key
+   - `STRIPE_WEBHOOK_SECRET`: Webhook endpoint secret (for payment confirmations)
+   - `NEXT_PUBLIC_APP_URL`: Your app's URL (for Stripe redirects)
+
+#### Credit Packages
+- **5 Credits**: $5.00 (Perfect for testing)
+- **15 Credits**: $12.00 (Great for multiple landing pages)
+- **50 Credits**: $30.00 (Ideal for agencies)
+
+#### Webhook Setup
+1. In your Stripe dashboard, go to **Webhooks**
+2. Add endpoint: `https://your-domain.com/api/credits/webhook`
+3. Select event: `checkout.session.completed`
+4. Copy the webhook secret to `STRIPE_WEBHOOK_SECRET`
+
 ### Tests and lint
 ```bash
 npm run lint

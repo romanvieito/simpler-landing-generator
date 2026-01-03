@@ -4,11 +4,37 @@ import { auth } from '@clerk/nextjs/server';
 import { chatJSON } from '@/lib/deepseek';
 import { fetchImageForQuery } from '@/lib/pexels';
 import { extractJSON } from '@/lib/utils';
+import { deductCredits, ensureCreditsTable, ensureCreditTransactionsTable } from '@/lib/db';
 
 export async function POST(req: Request) {
   const { userId } = await auth();
 
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
+    // Ensure credit tables exist
+    await ensureCreditsTable();
+    await ensureCreditTransactionsTable();
+
+    // Deduct credits for plan generation (1 credit)
+    try {
+      await deductCredits({
+        userId,
+        amount: 1,
+        description: 'Landing page plan generation'
+      });
+    } catch (error: any) {
+      if (error.message === 'Insufficient credits') {
+        return NextResponse.json(
+          { error: 'Insufficient credits. Please purchase more credits to continue.' },
+          { status: 402 }
+        );
+      }
+      throw error;
+    }
+
     const { description } = await req.json();
 
     const system = `You are a landing page design planner. Output strictly a single JSON object that includes:
