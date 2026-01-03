@@ -23,6 +23,18 @@ export async function POST(req: Request) {
     const user = `JSON plan for the page:
 ${JSON.stringify(plan, null, 2)}
 
+IMPORTANT: For any contact forms, use this exact format:
+<form action="{{SITE_ID_PLACEHOLDER}}" method="POST">
+  <label>${plan.sectionsContent?.contact?.nameLabel || 'Name'} <input type="text" name="name" required></label>
+  <label>${plan.sectionsContent?.contact?.emailLabel || 'Email'} <input type="email" name="email" required></label>
+  <label>${plan.sectionsContent?.contact?.messageLabel || 'Message'} <textarea name="message" required></textarea></label>
+  <button type="submit">${plan.sectionsContent?.contact?.submitLabel || 'Send Message'}</button>
+</form>
+
+If there's a URL parameter 'submitted=true', show a success message: "Thank you! Your message has been sent successfully."
+
+The action URL will be replaced with the actual site ID when saved.
+
 Return ONLY the HTML (no markdown, no fences).`;
 
     const html = await chatText(system, user);

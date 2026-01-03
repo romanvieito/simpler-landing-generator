@@ -16,6 +16,20 @@ export async function ensureSitesTable() {
   `;
 }
 
+export async function ensureContactSubmissionsTable() {
+  await sql`
+    CREATE TABLE IF NOT EXISTS contact_submissions (
+      id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+      site_id TEXT NOT NULL,
+      name TEXT NOT NULL,
+      email TEXT NOT NULL,
+      message TEXT NOT NULL,
+      created_at TIMESTAMPTZ DEFAULT NOW(),
+      FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE CASCADE
+    );
+  `;
+}
+
 export async function insertSite(args: {
   userId: string;
   title: string;
@@ -73,4 +87,36 @@ export async function updateSiteUrl({
     SET vercel_url = ${vercelUrl}
     WHERE id = ${id} AND user_id = ${userId}
   `;
+}
+
+export async function insertContactSubmission(args: {
+  siteId: string;
+  name: string;
+  email: string;
+  message: string;
+}) {
+  await sql`
+    INSERT INTO contact_submissions (site_id, name, email, message)
+    VALUES (${args.siteId}, ${args.name}, ${args.email}, ${args.message})
+  `;
+}
+
+export async function getContactSubmissions({ siteId, userId }: { siteId: string; userId: string }) {
+  // First verify the user owns the site
+  const siteCheck = await sql`
+    SELECT id FROM sites WHERE id = ${siteId} AND user_id = ${userId} LIMIT 1
+  `;
+
+  if (siteCheck.rows.length === 0) {
+    throw new Error('Site not found or access denied');
+  }
+
+  const { rows } = await sql`
+    SELECT id, name, email, message, created_at
+    FROM contact_submissions
+    WHERE site_id = ${siteId}
+    ORDER BY created_at DESC
+  `;
+
+  return rows;
 }

@@ -24,6 +24,17 @@ npm run dev
    - (optional) adjust the sign-in/up URLs if you change the routes.
 3. The homepage is public, but generation (`/api/generate`) requires a signed-in user. Use the header auth button or `/sign-in` and `/sign-up`.
 
+### Contact Forms (Optional)
+Generated landing pages now include working contact forms that store submissions and send email notifications:
+
+1. **Database**: Uses your existing Vercel Postgres database
+2. **Email notifications**: Set up Resend for email alerts when forms are submitted
+3. **Environment variables** (optional):
+   - `RESEND_API_KEY`: Your Resend API key for email notifications
+   - `CONTACT_NOTIFICATION_EMAIL`: Email address to receive form submissions
+
+Without these variables, forms still work but skip email notifications. Submissions are always stored in the database.
+
 ### Tests and lint
 ```bash
 npm run lint
