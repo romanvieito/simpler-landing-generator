@@ -461,29 +461,6 @@ function LandingGeneratorContent() {
                   />
                 </div>
 
-                <div style={{
-                  backgroundColor: 'var(--color-gray-50)',
-                  border: '1px solid var(--color-gray-200)',
-                  borderRadius: '0.5rem',
-                  padding: '1rem'
-                }}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                    <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-gray-900)' }}>
-                      Credit System
-                    </span>
-                    <button
-                      onClick={() => setShowPurchaseModal(true)}
-                      className="btn btn-primary text-xs px-3 py-1"
-                    >
-                      Buy Credits
-                    </button>
-                  </div>
-                  <p style={{ fontSize: '0.875rem', color: 'var(--color-gray-600)', margin: 0 }}>
-                    Each landing page generation costs <strong>2 credits</strong> (1 for design + 1 for code).
-                    New users start with 0 credits.
-                  </p>
-                </div>
-
                 <button
                   onClick={handleGenerate}
                   disabled={!description || isGenerating}

@@ -2,10 +2,14 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { getStripe } from '@/lib/stripe';
-import { addCredits } from '@/lib/db';
+import { addCredits, ensureCreditsTable, ensureCreditTransactionsTable } from '@/lib/db';
 
 export async function POST(req: Request) {
   try {
+    // Ensure tables exist before processing webhook
+    await ensureCreditsTable();
+    await ensureCreditTransactionsTable();
+
     const body = await req.text();
     const headersList = await headers();
     const sig = headersList.get('stripe-signature');

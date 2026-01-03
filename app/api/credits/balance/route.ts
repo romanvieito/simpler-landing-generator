@@ -1,7 +1,7 @@
 // app/api/credits/balance/route.ts
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { getUserCredits } from '@/lib/db';
+import { getUserCredits, ensureCreditsTable, ensureCreditTransactionsTable } from '@/lib/db';
 
 export async function GET() {
   try {
@@ -10,6 +10,10 @@ export async function GET() {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Ensure tables exist
+    await ensureCreditsTable();
+    await ensureCreditTransactionsTable();
 
     const balance = await getUserCredits({ userId });
 

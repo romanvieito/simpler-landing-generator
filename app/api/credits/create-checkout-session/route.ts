@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { getStripe, CREDIT_PACKAGES, type CreditPackage } from '@/lib/stripe';
+import { ensureCreditsTable, ensureCreditTransactionsTable } from '@/lib/db';
 
 export async function POST(req: Request) {
   try {
@@ -10,6 +11,10 @@ export async function POST(req: Request) {
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
+
+    // Ensure tables exist
+    await ensureCreditsTable();
+    await ensureCreditTransactionsTable();
 
     const { packageType }: { packageType: CreditPackage } = await req.json();
 
