@@ -9,6 +9,10 @@ export async function GET(_req: Request, { params }: Params) {
   const { userId } = await auth();
   const { id } = await params;
 
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const site = await getSite({ id, userId });
     if (!site) return NextResponse.json({ error: 'Not found' }, { status: 404 });
@@ -22,6 +26,10 @@ export async function GET(_req: Request, { params }: Params) {
 export async function DELETE(_req: Request, { params }: Params) {
   const { userId } = await auth();
   const { id } = await params;
+
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
 
   try {
     await deleteSite({ id, userId });

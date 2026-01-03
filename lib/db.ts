@@ -62,10 +62,12 @@ export async function updateSiteUrl({
   userId,
   vercelUrl,
 }: {
-  id: string;
+  id: string | null;
   userId: string;
   vercelUrl: string;
 }) {
+  if (!id) return;
+
   await sql`
     UPDATE sites
     SET vercel_url = ${vercelUrl}

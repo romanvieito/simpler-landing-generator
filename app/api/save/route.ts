@@ -6,6 +6,10 @@ import { ensureSitesTable, insertSite } from '@/lib/db';
 export async function POST(req: Request) {
   const { userId } = await auth();
 
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
     const body = await req.json();
     const { title, description, plan, html, vercelUrl } = body || {};

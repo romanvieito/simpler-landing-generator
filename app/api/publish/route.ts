@@ -8,8 +8,14 @@ import { updateSiteUrl } from '@/lib/db';
 export async function POST(req: Request) {
   const { userId } = await auth();
 
+  if (!userId) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
   try {
-    const { html, nameHint, siteId } = await req.json();
+    const body = await req.json() as { html: string; nameHint?: string; siteId?: string | null };
+    const { html, nameHint, siteId } = body;
+
     if (!html || typeof html !== 'string') {
       return NextResponse.json({ error: 'Missing HTML' }, { status: 400 });
     }
@@ -21,7 +27,7 @@ export async function POST(req: Request) {
 
     if (siteId) {
       try {
-        await updateSiteUrl({ id: siteId, userId, vercelUrl: url });
+        await updateSiteUrl({ id: siteId, userId, vercelUrl: url } as any);
       } catch (e) {
         // non-fatal
         console.warn('Failed to update site with published URL', e);

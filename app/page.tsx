@@ -1,7 +1,7 @@
 // app/page.tsx
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, Suspense } from 'react';
 import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
@@ -23,7 +23,7 @@ type Plan = {
   images?: Array<{ query: string; url: string }>;
 };
 
-export default function Page() {
+function LandingGeneratorContent() {
   const searchParams = useSearchParams();
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState<'idle' | 'planning' | 'coding' | 'publishing' | 'saving'>('idle');
@@ -481,5 +481,17 @@ export default function Page() {
         </div>
       </SignedIn>
     </>
+  );
+}
+
+export default function Page() {
+  return (
+    <Suspense fallback={
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh' }}>
+        <div>Loading...</div>
+      </div>
+    }>
+      <LandingGeneratorContent />
+    </Suspense>
   );
 }
