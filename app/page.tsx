@@ -1,257 +1,438 @@
-"use client";
+// app/page.tsx
+'use client';
 
-import { SignedIn, SignedOut, SignInButton, useClerk, useUser } from "@clerk/nextjs";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useRef, useState } from 'react';
+import { SignedIn, SignedOut, SignInButton, UserButton } from '@clerk/nextjs';
+import Link from 'next/link';
 
-import { LandingPreview } from "@/components/landing-preview";
-import type { GeneratedLanding } from "@/lib/generator";
-
-const starterPrompt =
-  "Bookkeeping and payroll for local contractors with same-day replies";
-const styleOptions = ["Modern", "Minimal", "Bold"];
-const sectionOptions = ["Hero", "Features", "Testimonials", "FAQ", "Pricing", "CTA"];
-const MIN_PROMPT_LENGTH = 12;
-
-type PendingGenerationState = {
-  prompt: string;
-  style: string;
-  sections: string[];
+type Plan = {
+  title: string;
+  palette: { primary: string; secondary: string; background: string; text: string; accent: string };
+  fonts?: { heading?: string; body?: string };
+  sections: Array<{
+    type: 'hero' | 'features' | 'testimonials' | 'cta' | 'footer' | 'about' | 'pricing' | 'gallery' | string;
+    heading?: string;
+    subheading?: string;
+    body?: string;
+    items?: Array<{ title?: string; body?: string }>;
+    cta?: { label: string; url?: string };
+    imageQuery?: string;
+    imageUrl?: string;
+  }>;
+  images?: Array<{ query: string; url: string }>;
 };
 
-export default function Home() {
-  const [prompt, setPrompt] = useState(starterPrompt);
-  const [style, setStyle] = useState(styleOptions[0]);
-  const [sections, setSections] = useState<string[]>(["Hero", "Features", "CTA"]);
-  const [result, setResult] = useState<GeneratedLanding | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [origin, setOrigin] = useState("");
-  const [copied, setCopied] = useState(false);
-  const pendingGenerationRef = useRef(false);
-  const { openSignIn } = useClerk();
-  const { isLoaded, isSignedIn } = useUser();
+export default function Page() {
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState<'idle' | 'planning' | 'coding' | 'publishing' | 'saving'>('idle');
+  const [plan, setPlan] = useState<Plan | null>(null);
+  const [html, setHtml] = useState<string>('');
+  const [editMode, setEditMode] = useState(false);
+  const [selectedEl, setSelectedEl] = useState<HTMLElement | null>(null);
+  const [history, setHistory] = useState<string[]>([]);
+  const [publishedUrl, setPublishedUrl] = useState<string>('');
+  const [savedSiteId, setSavedSiteId] = useState<string>('');
+
+  const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    setOrigin(window.location.origin);
-  }, []);
+    if (previewRef.current && html) {
+      previewRef.current.innerHTML = html;
+    }
+  }, [html]);
 
   useEffect(() => {
-    if (!isLoaded || !isSignedIn || pendingGenerationRef.current) return;
-    const stored = localStorage.getItem("pendingPrompt");
-    if (!stored) return;
+    const container = previewRef.current;
+    if (!container) return;
 
-    try {
-      const parsed = JSON.parse(stored) as Partial<PendingGenerationState>;
-      const nextPrompt = parsed.prompt ?? starterPrompt;
-      const nextStyle = parsed.style ?? styleOptions[0];
-      const nextSections = Array.isArray(parsed.sections) && parsed.sections.length > 0
-        ? parsed.sections
-        : ["Hero", "Features", "CTA"];
+    function handleClick(e: MouseEvent) {
+      if (!editMode) return;
+      const target = e.target as HTMLElement;
+      if (!target || target === container) return;
 
-      setPrompt(nextPrompt);
-      setStyle(nextStyle);
-      setSections(nextSections);
+      if (selectedEl && selectedEl !== target) {
+        selectedEl.style.outline = '';
+        selectedEl.contentEditable = 'false';
+      }
+      setSelectedEl(target);
+      target.style.outline = '2px dashed #7c3aed';
 
-      pendingGenerationRef.current = true;
-      void handleGenerate({ prompt: nextPrompt, style: nextStyle, sections: nextSections });
-    } catch {
-      // fall back to prompt-only flow if stored value is not JSON
-      setPrompt(stored);
-      pendingGenerationRef.current = true;
-      void handleGenerate({ prompt: stored });
-    } finally {
-      localStorage.removeItem("pendingPrompt");
+      const tag = target.tagName.toLowerCase();
+      const nonEditableTags = new Set(['img', 'svg', 'a', 'button', 'input']);
+      if (!nonEditableTags.has(tag)) {
+        target.contentEditable = 'true';
+        target.focus();
+      }
     }
-  }, [isLoaded, isSignedIn]);
 
-  const shareUrl = useMemo(() => {
-    if (!result || !origin) return "";
-    return `${origin}/preview?prompt=${encodeURIComponent(result.prompt)}`;
-  }, [origin, result]);
-
-  const handleGenerate = async (override?: Partial<PendingGenerationState>) => {
-    const input = (override?.prompt ?? prompt).trim();
-    const chosenStyle = override?.style ?? style;
-    const chosenSections = override?.sections ?? sections;
-    setError("");
-    setCopied(false);
-    setLoading(true);
-
-    if (input.length < MIN_PROMPT_LENGTH) {
-      setLoading(false);
-      setError("Please add a bit more detail so we can generate useful copy.");
-      return;
+    function handleKeyDown(e: KeyboardEvent) {
+      if (!editMode) return;
+      const metaOrCtrl = e.metaKey || e.ctrlKey;
+      if (metaOrCtrl && e.key.toLowerCase() === 'z') {
+        e.preventDefault();
+        doUndo();
+        return;
+      }
+      if (e.key === 'Delete' && selectedEl && container.contains(selectedEl)) {
+        e.preventDefault();
+        pushHistory();
+        selectedEl.remove();
+        finalizeEdit();
+      }
     }
+
+    function handleBlur() {
+      if (!editMode) return;
+      pushHistory();
+      finalizeEdit();
+    }
+
+    container.addEventListener('click', handleClick);
+    window.addEventListener('keydown', handleKeyDown, true);
+    container.addEventListener('blur', handleBlur, true);
+    return () => {
+      container.removeEventListener('click', handleClick);
+      window.removeEventListener('keydown', handleKeyDown, true);
+      container.removeEventListener('blur', handleBlur, true);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editMode, selectedEl, html]);
+
+  function pushHistory() {
+    if (!previewRef.current) return;
+    const current = previewRef.current.innerHTML;
+    setHistory((h) => [...h, current]);
+  }
+
+  function doUndo() {
+    if (history.length < 1) return;
+    const latest = history[history.length - 1];
+    setHistory((h) => h.slice(0, -1));
+    setHtml(latest);
+    if (selectedEl) {
+      selectedEl.style.outline = '';
+      selectedEl.contentEditable = 'false';
+      setSelectedEl(null);
+    }
+  }
+
+  function finalizeEdit() {
+    if (!previewRef.current) return;
+    const updated = previewRef.current.innerHTML;
+    setHtml(updated);
+  }
+
+  async function handleGenerate() {
     try {
-      const response = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      setLoading('planning');
+      setPublishedUrl('');
+      setSavedSiteId('');
+      setPlan(null);
+      setHtml('');
+      setHistory([]);
+      setSelectedEl(null);
+
+      const planRes = await fetch('/api/generate-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ description }),
+      });
+      if (!planRes.ok) throw new Error('Failed to generate design plan');
+      const planJson = await planRes.json();
+      const planOut: Plan = planJson.plan;
+      setPlan(planOut);
+
+      setLoading('coding');
+      const htmlRes = await fetch('/api/generate-html', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ plan: planOut }),
+      });
+      if (!htmlRes.ok) throw new Error('Failed to generate HTML');
+      const { html: htmlOut } = await htmlRes.json();
+      setHtml(htmlOut);
+      setHistory([htmlOut]);
+      setLoading('idle');
+    } catch (err) {
+      console.error(err);
+      setLoading('idle');
+      alert((err as Error)?.message ?? 'Error generating page');
+    }
+  }
+
+  async function handleSave() {
+    try {
+      if (!html) return alert('Generate the page first.');
+      setLoading('saving');
+      const res = await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          prompt: input,
-          style: chosenStyle,
-          sections: chosenSections,
+          title: plan?.title ?? 'Landing',
+          description,
+          plan,
+          html,
+          vercelUrl: publishedUrl || null,
         }),
       });
-
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error("Please sign in to generate a landing page.");
-        }
-        const payload = (await response.json().catch(() => null)) as { error?: string } | null;
-        throw new Error(payload?.error || "Could not generate landing content. Try again.");
-      }
-
-      const data = (await response.json()) as GeneratedLanding;
-      setResult(data);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Save failed');
+      setSavedSiteId(data.id);
+    } catch (e) {
+      console.error(e);
+      alert((e as Error)?.message ?? 'Error saving');
     } finally {
-      setLoading(false);
-      pendingGenerationRef.current = false;
+      setLoading('idle');
     }
-  };
+  }
 
-  const handleGenerateSignedOut = () => {
-    localStorage.setItem(
-      "pendingPrompt",
-      JSON.stringify({ prompt, style, sections } satisfies PendingGenerationState),
-    );
-    openSignIn();
-  };
-
-  const toggleSection = (value: string) => {
-    setSections((current) =>
-      current.includes(value) ? current.filter((item) => item !== value) : [...current, value],
-    );
-  };
-
-  const handleCopy = async () => {
-    if (!shareUrl) return;
+  async function handlePublish() {
     try {
-      await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1800);
-    } catch {
-      setCopied(false);
+      if (!html) {
+        alert('No HTML to publish.');
+        return;
+      }
+      setLoading('publishing');
+      const res = await fetch('/api/publish', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          html,
+          nameHint: plan?.title ?? 'landing',
+          siteId: savedSiteId || null,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data?.error || 'Publish failed');
+      setPublishedUrl(data.url);
+    } catch (e) {
+      console.error(e);
+      alert((e as Error)?.message ?? 'Error publishing');
+    } finally {
+      setLoading('idle');
     }
-  };
+  }
+
+  const isGenerating = loading === 'planning' || loading === 'coding';
+  const status = loading === 'planning'
+    ? 'Step 1/2: Generating design plan...'
+    : loading === 'coding'
+      ? 'Step 2/2: Generating HTML...'
+      : loading === 'publishing'
+        ? 'Publishing to Vercel...'
+        : loading === 'saving'
+          ? 'Saving...'
+          : '';
 
   return (
-    <main className="min-h-screen bg-black px-6 pb-20 pt-16 text-white">
-      <div className="mx-auto flex w-full max-w-6xl flex-col gap-12">
-        <header className="flex flex-col gap-4">
-          <p className="inline-flex w-fit items-center gap-2 rounded-full bg-white/5 px-3 py-1 text-xs font-semibold uppercase tracking-[0.1em] text-[#9cc2ff] ring-1 ring-white/10">
-            Simpler Landing Generator of the World
-          </p>
-          <div className="grid gap-6 lg:grid-cols-[1.05fr,0.95fr] lg:items-end">
-            <div className="space-y-4">
-              <h1 className="text-4xl font-semibold leading-tight sm:text-5xl">
-                Generate a clean website from one prompt.
-              </h1>
-              <p className="text-lg text-neutral-200">
-                Built for busy creators. Paste your focus, get a link you can share, and test your
-                idea in minutes.
-              </p>
+    <>
+      <SignedOut>
+        <div style={{ display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ textAlign: 'center' }}>
+            <h1 style={{ marginBottom: 12 }}>Landing Generator</h1>
+            <p style={{ marginBottom: 20 }}>Sign in to generate and publish landing pages.</p>
+            <SignInButton mode="modal">
+              <button
+                style={{
+                  padding: '10px 16px',
+                  borderRadius: 8,
+                  border: '1px solid #e5e7eb',
+                  background: 'black',
+                  color: 'white',
+                  cursor: 'pointer',
+                }}
+              >
+                Sign In
+              </button>
+            </SignInButton>
+          </div>
+        </div>
+      </SignedOut>
+
+      <SignedIn>
+        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+          <header
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '12px 16px',
+              borderBottom: '1px solid #e5e7eb',
+              position: 'sticky',
+              top: 0,
+              background: 'white',
+              zIndex: 10,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontWeight: 700 }}>Landing Generator</span>
+              {status ? <span style={{ color: '#6b7280', fontSize: 13 }}>{status}</span> : null}
             </div>
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm ring-1 ring-white/10 backdrop-blur">
-              <div className="space-y-3">
-                <label className="text-sm font-semibold text-white">What do you sell? Who do you serve?</label>
-                <textarea
-                  value={prompt}
-                  onChange={(event) => setPrompt(event.target.value)}
-                  placeholder="Example: Weekend lawn care plans for busy homeowners that includes seasonal refreshes"
-                  className="min-h-[120px] w-full rounded-xl border border-white/15 bg-white/5 px-4 py-3 text-base text-white shadow-sm transition focus:border-[#6b5bff] focus:outline-none focus:ring-2 focus:ring-[#6b5bff]/40"
-                />
-                <div className="grid gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-white">Style</label>
-                    <div className="flex flex-wrap gap-2">
-                      {styleOptions.map((option) => (
-                        <button
-                          key={option}
-                          type="button"
-                          onClick={() => setStyle(option)}
-                          className={`rounded-lg border px-3 py-2 text-sm font-semibold transition ${
-                            style === option
-                              ? "border-[#6b5bff] bg-[#6b5bff]/20 text-white"
-                              : "border-white/15 bg-white/5 text-neutral-200 hover:border-white/30"
-                          }`}
-                        >
-                          {option}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-white">Include sections</label>
-                    <div className="grid grid-cols-2 gap-2 text-sm text-neutral-200 sm:grid-cols-3">
-                      {sectionOptions.map((option) => (
-                        <label
-                          key={option}
-                          className="flex items-center gap-2 rounded-lg border border-white/10 bg-white/5 px-3 py-2 shadow-sm"
-                        >
-                          <input
-                            type="checkbox"
-                            checked={sections.includes(option)}
-                            onChange={() => toggleSection(option)}
-                            className="h-4 w-4 rounded border-white/30 bg-transparent text-[#6b5bff] focus:ring-[#6b5bff]"
-                          />
-                          <span>{option}</span>
-                        </label>
-                      ))}
-                    </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+              <Link href="/sites" style={{ fontSize: 14, color: '#2563eb' }}>My Sites</Link>
+              <UserButton />
+            </div>
+          </header>
+
+          <main style={{ display: 'grid', gap: 16, gridTemplateColumns: '1fr', padding: 16 }}>
+            <section style={{ display: 'grid', gap: 12 }}>
+              <label htmlFor="desc" style={{ fontWeight: 600 }}>Business / website description</label>
+              <textarea
+                id="desc"
+                placeholder="Describe your business, audience, tone, unique value, etc."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={5}
+                style={{
+                  width: '100%',
+                  padding: 12,
+                  borderRadius: 8,
+                  border: '1px solid #e5e7eb',
+                  resize: 'vertical',
+                  fontFamily: 'inherit',
+                }}
+              />
+              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button
+                  onClick={handleGenerate}
+                  disabled={!description || isGenerating}
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: 8,
+                    border: '1px solid #e5e7eb',
+                    background: isGenerating ? '#f3f4f6' : 'black',
+                    color: isGenerating ? '#6b7280' : 'white',
+                    cursor: !description || isGenerating ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {isGenerating ? 'Generating...' : 'Generate'}
+                </button>
+
+                <button
+                  onClick={() => setEditMode((v) => !v)}
+                  disabled={!html || isGenerating}
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: 8,
+                    border: '1px solid #e5e7eb',
+                    background: editMode ? '#ede9fe' : 'white',
+                    color: 'black',
+                    cursor: !html || isGenerating ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {editMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
+                </button>
+
+                <button
+                  onClick={doUndo}
+                  disabled={history.length < 1}
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: 8,
+                    border: '1px solid #e5e7eb',
+                    background: 'white',
+                    color: history.length < 1 ? '#9ca3af' : 'black',
+                    cursor: history.length < 1 ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  Undo
+                </button>
+
+                <button
+                  onClick={handleSave}
+                  disabled={!html || isGenerating}
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: 8,
+                    border: '1px solid #e5e7eb',
+                    background: '#111827',
+                    color: 'white',
+                    cursor: !html || isGenerating ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {loading === 'saving' ? 'Saving...' : savedSiteId ? 'Saved ✓' : 'Save'}
+                </button>
+
+                <button
+                  onClick={handlePublish}
+                  disabled={!html || isGenerating}
+                  style={{
+                    padding: '10px 16px',
+                    borderRadius: 8,
+                    border: '1px solid #e5e7eb',
+                    background: '#16a34a',
+                    color: 'white',
+                    cursor: !html || isGenerating ? 'not-allowed' : 'pointer',
+                  }}
+                >
+                  {loading === 'publishing' ? 'Publishing...' : 'Publish'}
+                </button>
+              </div>
+
+              {publishedUrl ? (
+                <div
+                  style={{
+                    padding: 12,
+                    border: '1px solid #e5e7eb',
+                    borderRadius: 8,
+                    background: '#f0fdf4',
+                  }}
+                >
+                  <div style={{ fontWeight: 600, marginBottom: 6 }}>Published!</div>
+                  <a href={`https://${publishedUrl}`} target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>
+                    https://{publishedUrl}
+                  </a>
+                </div>
+              ) : null}
+
+              {savedSiteId ? (
+                <div
+                  style={{
+                    padding: 12,
+                    border: '1px solid #e5e7eb',
+                    borderRadius: 8,
+                    background: '#eff6ff',
+                  }}
+                >
+                  <div style={{ fontWeight: 600, marginBottom: 6 }}>Saved</div>
+                  <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
+                    <Link href="/sites" style={{ color: '#2563eb' }}>Go to My Sites</Link>
+                    <Link href={`/sites/${savedSiteId}`} style={{ color: '#2563eb' }}>Open this site</Link>
                   </div>
                 </div>
-                <SignedIn>
-                  <button
-                    type="button"
-                    onClick={() => handleGenerate()}
-                    disabled={loading}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#6b5bff] to-[#67d8ff] px-4 py-3 text-sm font-semibold text-white transition hover:scale-[1.01] active:scale-[0.99] disabled:cursor-not-allowed disabled:opacity-70"
-                  >
-                    {loading ? "Generating..." : "Generate"}
-                  </button>
-                </SignedIn>
-                <SignedOut>
-                  <button
-                    type="button"
-                    onClick={handleGenerateSignedOut}
-                    className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-[#6b5bff] to-[#67d8ff] px-4 py-3 text-sm font-semibold text-white transition hover:scale-[1.01] active:scale-[0.99]"
-                  >
-                    Generate
-                  </button>
-                  <p className="text-xs text-neutral-400">
-                    We’ll ask you to sign in, remember your prompt, and generate right after.
-                  </p>
-                </SignedOut>
-                {error ? <p className="text-sm text-red-400">{error}</p> : null}
-              </div>
-            </div>
-          </div>
-        </header>
+              ) : null}
+            </section>
 
-        <section className="grid gap-4 rounded-2xl border border-white/10 bg-white/5 p-6 shadow-sm ring-1 ring-white/10 backdrop-blur sm:grid-cols-3">
-          {[
-            {
-              title: "Built for speed",
-              body: "30-second prompts create a shareable link so you can get sign-off without back-and-forth.",
-            },
-            {
-              title: "Business ready",
-              body: "Track leads with built-in analytics, zero config.",
-            },
-            {
-              title: "CTA-first layouts",
-              body: "Every page ships with a primary CTA, contact form, and benefits-led copy that reads clean.",
-            },
-          ].map((item) => (
-            <div className="space-y-2" key={item.title}>
-              <h3 className="text-lg font-semibold text-white">{item.title}</h3>
-              <p className="text-sm text-neutral-300">{item.body}</p>
-            </div>
-          ))}
-        </section>
-      </div>
-    </main>
+            <section style={{ display: 'grid', gap: 8 }}>
+              <div style={{ fontWeight: 600 }}>Preview</div>
+              <div
+                ref={previewRef}
+                style={{
+                  border: '1px solid #e5e7eb',
+                  borderRadius: 8,
+                  overflow: 'hidden',
+                  minHeight: 300,
+                  background: '#fff',
+                }}
+              />
+              {!html && (
+                <div style={{ color: '#6b7280', fontSize: 14 }}>
+                  Your generated landing page preview will appear here.
+                </div>
+              )}
+              {editMode && (
+                <div style={{ color: '#6b7280', fontSize: 13 }}>
+                  Edit mode tips: Click text to edit inline. Press Delete to remove a selected element. Use Cmd/Ctrl+Z or the Undo button to revert changes.
+                </div>
+              )}
+            </section>
+          </main>
+
+          <footer style={{ padding: 16, color: '#6b7280', fontSize: 13 }}>
+            <div>Mobile responsive HTML is generated using inline CSS for portability.</div>
+          </footer>
+        </div>
+      </SignedIn>
+    </>
   );
 }

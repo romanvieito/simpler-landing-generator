@@ -1,39 +1,17 @@
-import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
-import { Inter, Geist_Mono } from "next/font/google";
-import "./globals.css";
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// app/layout.tsx
+import type { Metadata } from 'next';
+import { ClerkProvider } from '@clerk/nextjs';
 
 export const metadata: Metadata = {
-  title: "Simpler Landing Generator of the World",
-  description:
-    "Turn a quick prompt into a launch-ready landing page built for busy small business owners.",
+  title: 'Landing Generator',
+  description: 'AI-powered landing page generator',
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ClerkProvider
-      appearance={{
-        variables: { colorPrimary: "#0f766e" },
-      }}
-    >
+    <ClerkProvider>
       <html lang="en">
-        <body
-          className={`${inter.variable} ${geistMono.variable} antialiased bg-black text-white`}
-        >
+        <body style={{ margin: 0, fontFamily: 'Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif' }}>
           {children}
         </body>
       </html>
