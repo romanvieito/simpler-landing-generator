@@ -103,6 +103,7 @@ const buildPrompt = ({ prompt, style, sections }: GenerationRequest) => {
     `Brand name to use everywhere: ${brand}. Focus/offer: ${trimmed}.`,
     styleLine,
     sectionsLine,
+    "CRITICAL: Only generate content for these 3 sections: hero, audience, and contact form. Do NOT generate testimonials, or any other sections.",
     "Return raw JSON only (no markdown, no code fences, no commentary).",
     "Required keys: headline, subhead, audience, callToAction, features (array), prompt, imagePrompt, imageAlt, palette, tone, sectionsContent.",
     "sectionsContent shape: hero {headline, subhead, primaryCta, secondaryCta}, audience {title, description}, contact {title, nameLabel, emailLabel, messageLabel, submitLabel}. Keep it short and simple.",

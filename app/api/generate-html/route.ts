@@ -9,7 +9,7 @@ export async function POST(req: Request) {
   try {
     const { plan } = await req.json();
 
-    const system = `You generate complete, mobile-responsive HTML documents with inline CSS only. Requirements:
+    const system = `You generate complete, mobile-responsive HTML documents with inline CSS only. CRITICAL REQUIREMENTS:
 - Output a single complete HTML document: <!doctype html><html>...<head>...<style>... and <body>...</body></html>.
 - Use inline <style> in <head>; do not import external CSS or fonts.
 - Use provided color palette and font names (fallback to system fonts).
@@ -18,12 +18,27 @@ export async function POST(req: Request) {
 - Accessibility: sufficient contrast, alt text for images, logical headings.
 - Keep copy exactly as provided in the plan; do not add placeholders.
 - Include smooth responsive behavior for mobile first.
-- No scripts unless strictly necessary. No analytics, no external links except CTAs provided.`;
+- No scripts unless strictly necessary. No analytics, no external links except CTAs provided.
+
+Generate ONLY these 3 sections in this exact order:
+1. Hero section (with headline, subhead, primary CTA button)
+2. Audience section (with title and description)
+3. Contact form section (with the provided form fields)
+
+DO NOT add testimonials, or any other sections. Only these 3 sections.`;
 
     const user = `JSON plan for the page:
 ${JSON.stringify(plan, null, 2)}
 
-IMPORTANT: For any contact forms, use this exact format:
+CRITICAL INSTRUCTIONS:
+- Generate HTML for ONLY these 3 sections in this exact order:
+  1. Hero section using plan.sectionsContent.hero
+  2. Audience section using plan.sectionsContent.audience
+  3. Contact form section using plan.sectionsContent.contact
+
+- Use the exact content from plan.sectionsContent - do not modify or add to it
+
+IMPORTANT: For the contact form, use this exact format:
 <form action="{{SITE_ID_PLACEHOLDER}}" method="POST">
   <label>${plan.sectionsContent?.contact?.nameLabel || 'Name'} <input type="text" name="name" required></label>
   <label>${plan.sectionsContent?.contact?.emailLabel || 'Email'} <input type="email" name="email" required></label>
