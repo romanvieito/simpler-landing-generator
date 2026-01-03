@@ -254,7 +254,7 @@ function LandingGeneratorContent() {
       if (planRes.status === 402) {
         // Insufficient credits
         const errorData = await planRes.json();
-        alert(errorData.error);
+        alert(`${errorData.error}\n\nOpening credit purchase options...`);
         setShowPurchaseModal(true);
         setLoading('idle');
         return;
@@ -275,7 +275,7 @@ function LandingGeneratorContent() {
       if (htmlRes.status === 402) {
         // Insufficient credits
         const errorData = await htmlRes.json();
-        alert(errorData.error);
+        alert(`${errorData.error}\n\nOpening credit purchase options...`);
         setShowPurchaseModal(true);
         setLoading('idle');
         return;
@@ -459,6 +459,29 @@ function LandingGeneratorContent() {
                     className="textarea"
                     style={{ fontSize: '1rem' }}
                   />
+                </div>
+
+                <div style={{
+                  backgroundColor: 'var(--color-gray-50)',
+                  border: '1px solid var(--color-gray-200)',
+                  borderRadius: '0.5rem',
+                  padding: '1rem'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                    <span style={{ fontSize: '0.875rem', fontWeight: 500, color: 'var(--color-gray-900)' }}>
+                      Credit System
+                    </span>
+                    <button
+                      onClick={() => setShowPurchaseModal(true)}
+                      className="btn btn-primary text-xs px-3 py-1"
+                    >
+                      Buy Credits
+                    </button>
+                  </div>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--color-gray-600)', margin: 0 }}>
+                    Each landing page generation costs <strong>2 credits</strong> (1 for design + 1 for code).
+                    New users start with 0 credits.
+                  </p>
                 </div>
 
                 <button

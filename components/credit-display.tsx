@@ -38,19 +38,19 @@ export function CreditDisplay({ onPurchaseClick }: CreditDisplayProps) {
   }
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3">
       <div className="flex items-center gap-1 text-sm">
         <span className="text-gray-600">Credits:</span>
         <span className={`font-semibold ${credits === 0 ? 'text-red-600' : 'text-green-600'}`}>
           {credits}
         </span>
       </div>
-      {credits === 0 && onPurchaseClick && (
+      {onPurchaseClick && (
         <button
           onClick={onPurchaseClick}
-          className="btn btn-primary text-xs px-2 py-1"
+          className={`btn text-xs px-3 py-1 ${credits === 0 ? 'btn-primary' : 'btn-outline'}`}
         >
-          Buy Credits
+          {credits === 0 ? 'Buy Credits' : 'Add Credits'}
         </button>
       )}
     </div>
