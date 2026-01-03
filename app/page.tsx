@@ -34,6 +34,7 @@ function LandingGeneratorContent() {
   const [history, setHistory] = useState<string[]>([]);
   const [publishedUrl, setPublishedUrl] = useState<string>('');
   const [savedSiteId, setSavedSiteId] = useState<string>('');
+  const [view, setView] = useState<'input' | 'preview'>('input');
 
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -69,6 +70,7 @@ function LandingGeneratorContent() {
       if (site.html) {
         setHtml(site.html);
         setHistory([site.html]);
+        setView('preview');
       }
 
       // Clear the URL parameter after loading
@@ -164,6 +166,32 @@ function LandingGeneratorContent() {
     setHtml(updated);
   }
 
+  function cleanHtmlForPublishing(html: string): string {
+    // Create a temporary element to parse and clean the HTML
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = html;
+
+    // Remove editing artifacts
+    const allElements = tempDiv.querySelectorAll('*');
+    allElements.forEach((el) => {
+      const htmlEl = el as HTMLElement;
+      // Remove outline styles added during editing
+      if (htmlEl.style.outline === '2px dashed #7c3aed') {
+        htmlEl.style.outline = '';
+      }
+      // Remove contentEditable attribute
+      if (el.hasAttribute('contenteditable')) {
+        el.removeAttribute('contenteditable');
+      }
+      // Remove any empty style attributes
+      if (el.getAttribute('style') === '') {
+        el.removeAttribute('style');
+      }
+    });
+
+    return tempDiv.innerHTML;
+  }
+
   async function handleGenerate() {
     try {
       setLoading('planning');
@@ -195,6 +223,7 @@ function LandingGeneratorContent() {
       setHtml(htmlOut);
       setHistory([htmlOut]);
       setLoading('idle');
+      setView('preview');
     } catch (err) {
       console.error(err);
       setLoading('idle');
@@ -206,6 +235,7 @@ function LandingGeneratorContent() {
     try {
       if (!html) return alert('Generate the page first.');
       setLoading('saving');
+      const cleanedHtml = cleanHtmlForPublishing(html);
       const res = await fetch('/api/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -213,7 +243,7 @@ function LandingGeneratorContent() {
           title: plan?.title ?? 'Landing',
           description,
           plan,
-          html,
+          html: cleanedHtml,
           vercelUrl: publishedUrl || null,
         }),
       });
@@ -235,11 +265,12 @@ function LandingGeneratorContent() {
         return;
       }
       setLoading('publishing');
+      const cleanedHtml = cleanHtmlForPublishing(html);
       const res = await fetch('/api/publish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          html,
+          html: cleanedHtml,
           nameHint: plan?.title ?? 'landing',
           siteId: savedSiteId || null,
         }),
@@ -287,185 +318,262 @@ function LandingGeneratorContent() {
       </SignedOut>
 
       <SignedIn>
-        <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--color-gray-50)' }}>
-          <header style={{
-            position: 'sticky',
-            top: 0,
-            zIndex: 10,
-            backgroundColor: 'var(--color-white)',
-            borderBottom: '1px solid var(--color-gray-200)'
-          }}>
-            <div className="container flex items-center justify-between" style={{ padding: '0.75rem 0' }}>
-              <div className="flex items-center gap-4">
-                <h1 className="text-lg font-semibold text-gray-900">Landing Generator</h1>
-                {status && (
-                  <span style={{
-                    fontSize: '0.875rem',
-                    color: 'var(--color-gray-500)',
-                    backgroundColor: 'var(--color-gray-100)',
-                    padding: '0.25rem 0.5rem',
-                    borderRadius: '9999px'
-                  }}>
-                    {status}
-                  </span>
-                )}
+        {view === 'input' ? (
+          <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--color-gray-50)' }}>
+            <header style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
+              backgroundColor: 'var(--color-white)',
+              borderBottom: '1px solid var(--color-gray-200)'
+            }}>
+              <div className="container flex items-center justify-between" style={{ padding: '0.75rem 0' }}>
+                <div className="flex items-center gap-4">
+                  <h1 className="text-lg font-semibold text-gray-900">Landing Generator</h1>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Link href="/sites" className="link text-sm">
+                    My Sites
+                  </Link>
+                  <UserButton />
+                </div>
               </div>
-              <div className="flex items-center gap-4">
-                <Link href="/sites" className="link text-sm">
-                  My Sites
-                </Link>
-                <UserButton />
-              </div>
-            </div>
-          </header>
+            </header>
 
-          <main className="container" style={{ padding: '2rem 0', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-            <section style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label htmlFor="desc" style={{
-                  display: 'block',
-                  fontSize: '0.875rem',
-                  fontWeight: 500,
-                  color: 'var(--color-gray-900)'
-                }}>
-                  Business / website description
-                </label>
-                <textarea
-                  id="desc"
-                  placeholder="Describe your business, audience, and value proposition..."
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  rows={4}
-                  className="textarea"
-                />
-              </div>
-              <div className="flex gap-3" style={{ flexWrap: 'wrap' }}>
+            <main style={{ 
+              flex: 1, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              padding: '2rem 1rem'
+            }}>
+              <div style={{ 
+                width: '100%', 
+                maxWidth: '42rem',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1.5rem'
+              }}>
+                <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
+                  <h2 className="text-2xl font-semibold text-gray-900" style={{ marginBottom: '0.5rem' }}>
+                    Create Your Landing Page
+                  </h2>
+                  <p className="text-gray-600">
+                    Describe your business and we'll generate a beautiful landing page for you
+                  </p>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  <label htmlFor="desc" style={{
+                    display: 'block',
+                    fontSize: '0.875rem',
+                    fontWeight: 500,
+                    color: 'var(--color-gray-900)'
+                  }}>
+                    Business / website description
+                  </label>
+                  <textarea
+                    id="desc"
+                    placeholder="Describe your business, audience, and value proposition..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    rows={6}
+                    className="textarea"
+                    style={{ fontSize: '1rem' }}
+                  />
+                </div>
+
                 <button
                   onClick={handleGenerate}
                   disabled={!description || isGenerating}
                   className="btn btn-primary"
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    fontSize: '1rem',
+                    fontWeight: 600
+                  }}
                 >
                   {isGenerating ? 'Generating...' : 'Generate Landing Page'}
                 </button>
 
-                <button
-                  onClick={() => setEditMode((v) => !v)}
-                  disabled={!html || isGenerating}
-                  className={`btn ${editMode ? 'btn-secondary' : 'btn-ghost'}`}
-                >
-                  {editMode ? 'Exit Edit Mode' : 'Enter Edit Mode'}
-                </button>
-
-                <button
-                  onClick={doUndo}
-                  disabled={history.length < 1}
-                  className="btn btn-ghost"
-                >
-                  Undo
-                </button>
-
-                <button
-                  onClick={handleSave}
-                  disabled={!html || isGenerating}
-                  className={`btn ${savedSiteId ? 'btn-secondary' : 'btn-primary'}`}
-                >
-                  {loading === 'saving' ? 'Saving...' : savedSiteId ? 'Saved ✓' : 'Save Draft'}
-                </button>
-
-                <button
-                  onClick={handlePublish}
-                  disabled={!html || isGenerating}
-                  className="btn btn-success"
-                >
-                  {loading === 'publishing' ? 'Publishing...' : 'Publish Live'}
-                </button>
-              </div>
-
-              {publishedUrl && (
-                <div className="card" style={{
-                  padding: '1rem',
-                  backgroundColor: 'var(--color-success-bg)',
-                  borderColor: 'var(--color-success)'
-                }}>
-                  <div className="flex items-center gap-2" style={{ marginBottom: '0.5rem' }}>
-                    <span className="status status-success">Published</span>
+                {status && (
+                  <div style={{ textAlign: 'center', marginTop: '1rem' }}>
+                    <span style={{
+                      fontSize: '0.875rem',
+                      color: 'var(--color-gray-500)',
+                      backgroundColor: 'var(--color-gray-100)',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '9999px'
+                    }}>
+                      {status}
+                    </span>
                   </div>
-                  <a
-                    href={`https://${publishedUrl}`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="link"
-                    style={{ wordBreak: 'break-all' }}
-                  >
-                    https://{publishedUrl}
-                  </a>
-                </div>
-              )}
-
-              {savedSiteId && (
-                <div className="card" style={{
-                  padding: '1rem',
-                  backgroundColor: 'var(--color-blue-50)',
-                  borderColor: 'var(--color-blue-100)'
-                }}>
-                  <div className="flex items-center gap-2" style={{ marginBottom: '0.5rem' }}>
-                    <span className="status status-info">Saved</span>
-                  </div>
-                  <div className="flex gap-4" style={{ flexWrap: 'wrap' }}>
-                    <Link href="/sites" className="link text-sm">
-                      Go to My Sites
-                    </Link>
-                    <Link href={`/sites/${savedSiteId}`} className="link text-sm">
-                      View Saved Site
-                    </Link>
-                  </div>
-                </div>
-              )}
-            </section>
-
-            <section style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900">Preview</h2>
-                {editMode && (
-                  <span className="status status-info">Edit Mode</span>
                 )}
               </div>
+            </main>
+          </div>
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--color-white)' }}>
+            <header style={{
+              position: 'sticky',
+              top: 0,
+              zIndex: 10,
+              backgroundColor: 'var(--color-white)',
+              borderBottom: '1px solid var(--color-gray-200)',
+              boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
+            }}>
+              <div className="container flex items-center justify-between" style={{ padding: '0.75rem 0' }}>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => {
+                      setView('input');
+                      setEditMode(false);
+                      if (selectedEl) {
+                        selectedEl.style.outline = '';
+                        selectedEl.contentEditable = 'false';
+                        setSelectedEl(null);
+                      }
+                    }}
+                    className="btn btn-ghost"
+                    style={{ padding: '0.5rem 0.75rem' }}
+                  >
+                    ← Edit Prompt
+                  </button>
+                  <div style={{ 
+                    height: '1.5rem', 
+                    width: '1px', 
+                    backgroundColor: 'var(--color-gray-300)' 
+                  }} />
+                  <Link href="/sites" className="link text-sm">
+                    My Sites
+                  </Link>
+                </div>
+
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={() => setEditMode((v) => !v)}
+                    disabled={!html || isGenerating}
+                    className={`btn ${editMode ? 'btn-secondary' : 'btn-ghost'}`}
+                    style={{ padding: '0.5rem 0.75rem' }}
+                  >
+                    {editMode ? '✓ Edit Mode' : 'Edit Text'}
+                  </button>
+
+                  <button
+                    onClick={doUndo}
+                    disabled={history.length < 1}
+                    className="btn btn-ghost"
+                    style={{ padding: '0.5rem 0.75rem' }}
+                    title="Undo (Cmd/Ctrl+Z)"
+                  >
+                    ↶
+                  </button>
+
+                  <div style={{ 
+                    height: '1.5rem', 
+                    width: '1px', 
+                    backgroundColor: 'var(--color-gray-300)' 
+                  }} />
+
+                  <button
+                    onClick={handleSave}
+                    disabled={!html || isGenerating}
+                    className={`btn ${savedSiteId ? 'btn-secondary' : 'btn-ghost'}`}
+                    style={{ padding: '0.5rem 0.75rem' }}
+                  >
+                    {loading === 'saving' ? 'Saving...' : savedSiteId ? 'Saved ✓' : 'Save Draft'}
+                  </button>
+
+                  <button
+                    onClick={handlePublish}
+                    disabled={!html || isGenerating}
+                    className="btn btn-success"
+                    style={{ padding: '0.5rem 1rem' }}
+                  >
+                    {loading === 'publishing' ? 'Publishing...' : 'Publish Live'}
+                  </button>
+
+                  <div style={{ 
+                    height: '1.5rem', 
+                    width: '1px', 
+                    backgroundColor: 'var(--color-gray-300)' 
+                  }} />
+
+                  <UserButton />
+                </div>
+              </div>
+
+              {(publishedUrl || savedSiteId) && (
+                <div style={{
+                  backgroundColor: 'var(--color-gray-50)',
+                  borderTop: '1px solid var(--color-gray-200)',
+                  padding: '0.5rem 0'
+                }}>
+                  <div className="container flex items-center gap-4" style={{ fontSize: '0.875rem' }}>
+                    {publishedUrl && (
+                      <div className="flex items-center gap-2">
+                        <span className="status status-success" style={{ fontSize: '0.625rem', padding: '0.125rem 0.5rem' }}>
+                          Published
+                        </span>
+                        <a
+                          href={`https://${publishedUrl}`}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="link text-sm"
+                        >
+                          {publishedUrl}
+                        </a>
+                      </div>
+                    )}
+                    {savedSiteId && !publishedUrl && (
+                      <div className="flex items-center gap-2">
+                        <span className="status status-info" style={{ fontSize: '0.625rem', padding: '0.125rem 0.5rem' }}>
+                          Saved
+                        </span>
+                        <Link href={`/sites/${savedSiteId}`} className="link text-sm">
+                          View in My Sites
+                        </Link>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </header>
+
+            <main style={{ 
+              flex: 1,
+              overflow: 'auto',
+              backgroundColor: 'var(--color-gray-50)'
+            }}>
               <div
                 ref={previewRef}
-                className="card"
                 style={{
-                  minHeight: '400px',
-                  backgroundColor: 'var(--color-white)',
-                  borderColor: 'var(--color-gray-200)'
+                  minHeight: '100%',
+                  backgroundColor: 'var(--color-white)'
                 }}
               />
-              {!html && (
-                <div style={{
-                  textAlign: 'center',
-                  padding: '3rem 1rem',
-                  color: 'var(--color-gray-500)'
-                }}>
-                  {/* <div style={{ fontSize: '1.125rem', fontWeight: 500, marginBottom: '0.5rem' }}>
-                    Ready to generate
-                  </div>
-                  <div>Your generated landing page preview will appear here.</div> */}
-                </div>
-              )}
               {editMode && (
                 <div style={{
+                  position: 'fixed',
+                  bottom: '1rem',
+                  left: '50%',
+                  transform: 'translateX(-50%)',
                   fontSize: '0.875rem',
-                  color: 'var(--color-gray-600)',
-                  backgroundColor: 'var(--color-gray-50)',
-                  padding: '0.75rem',
-                  borderRadius: 'var(--radius-lg)'
+                  color: 'var(--color-gray-700)',
+                  backgroundColor: 'var(--color-white)',
+                  padding: '0.75rem 1rem',
+                  borderRadius: 'var(--radius-lg)',
+                  border: '1px solid var(--color-gray-300)',
+                  boxShadow: 'var(--shadow-lg)',
+                  maxWidth: '90%',
+                  zIndex: 5
                 }}>
-                  <strong>Edit mode tips:</strong> Click text to edit inline. Press Delete to remove a selected element. Use Cmd/Ctrl+Z or the Undo button to revert changes.
+                  <strong>Edit mode:</strong> Click text to edit • Press Delete to remove • Cmd/Ctrl+Z to undo
                 </div>
               )}
-            </section>
-          </main>
-
-        </div>
+            </main>
+          </div>
+        )}
       </SignedIn>
     </>
   );
