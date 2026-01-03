@@ -31,9 +31,8 @@ Generated landing pages now include working contact forms that store submissions
 2. **Email notifications**: Set up Resend for email alerts when forms are submitted
 3. **Environment variables** (optional):
    - `RESEND_API_KEY`: Your Resend API key for email notifications
-   - `CONTACT_NOTIFICATION_EMAIL`: Email address to receive form submissions
 
-Without these variables, forms still work but skip email notifications. Submissions are always stored in the database.
+Email notifications are automatically sent to the **site creator's email** (from their Clerk account). Without the Resend API key, forms still work but skip email notifications. Submissions are always stored in the database.
 
 ### Tests and lint
 ```bash

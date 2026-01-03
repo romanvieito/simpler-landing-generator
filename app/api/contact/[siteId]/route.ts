@@ -1,6 +1,6 @@
 // app/api/contact/[siteId]/route.ts
 import { NextResponse } from 'next/server';
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { ensureContactSubmissionsTable, insertContactSubmission, getSite, getContactSubmissions } from '@/lib/db';
 import { Resend } from 'resend';
 
@@ -56,7 +56,7 @@ export async function POST(
       message: message.trim(),
     });
 
-    // Get site details for email notification
+    // Get site details and user email for notification
     const { userId } = await auth();
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -70,21 +70,27 @@ export async function POST(
     // Send email notification if Resend is configured
     if (resend) {
       try {
-        await resend.emails.send({
-          from: 'Contact Forms <noreply@yourdomain.com>', // You'll need to configure this
-          to: process.env.CONTACT_NOTIFICATION_EMAIL || 'your-email@example.com',
-          subject: `New contact form submission: ${site.title || 'Landing Page'}`,
-          html: `
-            <h2>New Contact Form Submission</h2>
-            <p><strong>Site:</strong> ${site.title || 'Untitled'}</p>
-            <p><strong>Name:</strong> ${name}</p>
-            <p><strong>Email:</strong> ${email}</p>
-            <p><strong>Message:</strong></p>
-            <p>${message.replace(/\n/g, '<br>')}</p>
-            <hr>
-            <p><small>Submitted at: ${new Date().toLocaleString()}</small></p>
-          `,
-        });
+        // Get user's email from Clerk
+        const user = await currentUser();
+        const userEmail = user?.primaryEmailAddress?.emailAddress;
+
+        if (userEmail) {
+          await resend.emails.send({
+            from: 'Contact Forms <noreply@yourdomain.com>', // You'll need to configure this
+            to: userEmail,
+            subject: `New contact form submission: ${site.title || 'Landing Page'}`,
+            html: `
+              <h2>New Contact Form Submission</h2>
+              <p><strong>Site:</strong> ${site.title || 'Untitled'}</p>
+              <p><strong>Name:</strong> ${name}</p>
+              <p><strong>Email:</strong> ${email}</p>
+              <p><strong>Message:</strong></p>
+              <p>${message.replace(/\n/g, '<br>')}</p>
+              <hr>
+              <p><small>Submitted at: ${new Date().toLocaleString()}</small></p>
+            `,
+          });
+        }
       } catch (emailError) {
         console.error('Failed to send email notification:', emailError);
         // Don't fail the request if email fails
