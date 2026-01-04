@@ -399,16 +399,15 @@ function LandingGeneratorContent() {
               <div className="text-center space-y-8 md:space-y-12">
                 {/* Main heading */}
                 <div className="space-y-4 md:space-y-6">
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight max-w-4xl mx-auto">
-                    Quick, high-converting
-                    <span className="block bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
-                      landing pages
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight max-w-6xl mx-auto">
+                    World's Easiest 
+                    <span className="block bg-gradient-to-r from-yellow-300 via-orange-300 to-red-300 bg-clip-text text-transparent leading-relaxed py-1">
+                      Landing Page Builder
                     </span>
-                    without the wait.
+                    For Busy Creators.
                   </h1>
                   <p className="text-lg md:text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-                    No coding. No design skills. Just describe your business and get a quick,
-                    high-converting landing page ready to publish.
+                    No coding. No design skills. Just describe your idea and publish a high-converting landing page in no time.
                   </p>
                 </div>
 
