@@ -862,25 +862,39 @@ function LandingGeneratorContent() {
       <SignedIn>
         {view === 'input' ? (
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--color-gray-50)' }}>
-            <header className="sticky top-0 z-10 bg-white border-b border-gray-200">
-              <div className="container py-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center">
-                    <h1 className="text-lg font-semibold text-gray-900">EasyLand</h1>
+            {/* Modern Header */}
+            <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+              <div className="container py-4 md:py-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 md:gap-4 min-w-0">
+                    <div className="w-8 h-8 md:w-10 md:h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-xl flex items-center justify-center flex-shrink-0 shadow-lg">
+                      <svg className="w-4 h-4 md:w-5 md:h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                    </div>
+                    <div className="min-w-0">
+                      <h1 className="text-lg md:text-xl font-bold text-gray-900 truncate">EasyLand</h1>
+                      <p className="text-xs md:text-sm text-gray-500 hidden sm:block">Landing Page Generator</p>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 sm:gap-4">
-                    <div className="hidden sm:block">
+                  <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+                    <div className="hidden sm:block flex-shrink-0">
                       <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
                     </div>
 
-                    <Link href="/dashboard" className="link text-sm hidden sm:inline">
-                      Dashboard
+                    <Link href="/dashboard" className="btn btn-ghost text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 md:px-4 py-2 rounded-lg transition-all duration-200 flex-shrink-0 text-sm md:text-base hidden sm:inline-flex">
+                      <svg className="w-4 h-4 mr-0 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                      <span className="hidden md:inline">Dashboard</span>
                     </Link>
-                    <UserButton />
+                    <div className="flex-shrink-0">
+                      <UserButton />
+                    </div>
                   </div>
                 </div>
                 {/* Mobile credit display */}
-                <div className="sm:hidden mt-2">
+                <div className="sm:hidden mt-3">
                   <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
                 </div>
               </div>
