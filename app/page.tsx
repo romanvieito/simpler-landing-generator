@@ -841,38 +841,15 @@ function LandingGeneratorContent() {
               </div>
 
               {/* Final CTA */}
-              <div style={{ 
-                textAlign: 'center', 
-                marginTop: '4rem',
-                padding: '3rem 2rem',
-                backgroundColor: 'var(--color-gray-50)',
-                borderRadius: 'var(--radius-2xl)'
-              }}>
-                <h3 style={{
-                  fontSize: '2rem',
-                  fontWeight: 700,
-                  color: 'var(--color-gray-900)',
-                  marginBottom: '1rem'
-                }}>
+              <div className="text-center mt-16 py-12 px-4 sm:px-8 bg-gray-50 rounded-3xl">
+                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
                   How Can I Test My Ideas in Minutes?
                 </h3>
-                <p style={{
-                  fontSize: '1.125rem',
-                  color: 'var(--color-gray-600)',
-                  marginBottom: '2rem',
-                  maxWidth: '500px',
-                  margin: '0 auto 2rem'
-                }}>
+                <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl mx-auto leading-relaxed">
                   Get high-converting landing pages without the wait.
                 </p>
                 <SignInButton mode="modal">
-                  <button className="btn btn-primary" style={{
-                    padding: '1rem 2.5rem',
-                    fontSize: '1.125rem',
-                    fontWeight: 600,
-                    borderRadius: 'var(--radius-xl)',
-                    boxShadow: 'var(--shadow-lg)'
-                  }}>
+                  <button className="btn btn-primary text-base sm:text-lg px-6 sm:px-10 py-3 sm:py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
                     Start Creating for Free
                   </button>
                 </SignInButton>
@@ -885,50 +862,43 @@ function LandingGeneratorContent() {
       <SignedIn>
         {view === 'input' ? (
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--color-gray-50)' }}>
-            <header style={{
-              position: 'sticky',
-              top: 0,
-              zIndex: 10,
-              backgroundColor: 'var(--color-white)',
-              borderBottom: '1px solid var(--color-gray-200)'
-            }}>
-              <div className="container flex items-center justify-between" style={{ padding: '0.75rem 0' }}>
-                <div className="flex items-center gap-4">
-                  <h1 className="text-lg font-semibold text-gray-900">EasyLand</h1>
-                </div>
-                <div className="flex items-center gap-4">
-                  <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
+            <header className="sticky top-0 z-10 bg-white border-b border-gray-200">
+              <div className="container py-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <h1 className="text-lg font-semibold text-gray-900">EasyLand</h1>
+                  </div>
+                  <div className="flex items-center gap-2 sm:gap-4">
+                    <div className="hidden sm:block">
+                      <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
+                    </div>
 
-                  <Link href="/dashboard" className="link text-sm">
-                    Dashboard
-                  </Link>
-                  <UserButton />
+                    <Link href="/dashboard" className="link text-sm hidden sm:inline">
+                      Dashboard
+                    </Link>
+                    <UserButton />
+                  </div>
+                </div>
+                {/* Mobile credit display */}
+                <div className="sm:hidden mt-2">
+                  <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
                 </div>
               </div>
             </header>
 
-            <main style={{ 
-              flex: 1, 
-              display: 'flex', 
-              alignItems: 'center', 
-              justifyContent: 'center',
-              padding: '2rem 1rem'
-            }}>
-              <div style={{ 
-                width: '100%', 
-                maxWidth: '42rem',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '1.5rem'
-              }}>
-                <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
-                  <h2 className="text-2xl font-semibold text-gray-900" style={{ marginBottom: '0.5rem' }}>
+            <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
+              <div className="w-full max-w-2xl flex flex-col gap-6">
+                <div className="text-center mb-6">
+                  <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
                     Create Landing Page
                   </h2>
+                  <p className="text-gray-600 text-sm sm:text-base">
+                    Describe your business and generate a high-converting landing page
+                  </p>
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <div style={{ position: 'relative' }}>
+                <div className="space-y-4">
+                  <div className="relative">
                     <textarea
                       id="desc"
                       placeholder="Describe your business and audience..."
@@ -941,7 +911,7 @@ function LandingGeneratorContent() {
                       }}
                       rows={6}
                       className="textarea"
-                      style={{ 
+                      style={{
                         fontSize: '1rem',
                         paddingBottom: '3.5rem',
                         resize: 'none',
@@ -950,26 +920,11 @@ function LandingGeneratorContent() {
                         overflow: 'auto'
                       }}
                     />
-                    <div style={{
-                      position: 'absolute',
-                      bottom: '0.75rem',
-                      left: '0.75rem',
-                      right: '0.75rem',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between',
-                      gap: '0.5rem'
-                    }}>
+                    <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between gap-2">
                       <select
                         value={websiteStyle}
                         onChange={(e) => setWebsiteStyle(e.target.value as 'Professional' | 'Creative' | 'Friendly' | 'Minimalist')}
-                        className="select"
-                        style={{
-                          fontSize: '0.875rem',
-                          padding: '0.375rem 0.5rem',
-                          flex: 1,
-                          maxWidth: '200px'
-                        }}
+                        className="select text-sm py-1.5 px-3 flex-1 max-w-48"
                       >
                         <option value="Professional">Professional</option>
                         <option value="Creative">Creative</option>
@@ -979,35 +934,24 @@ function LandingGeneratorContent() {
                       <button
                         onClick={handleGenerate}
                         disabled={!description || isGenerating}
-                        className="btn btn-primary"
-                        style={{
-                          padding: '0.5rem',
-                          width: '2.5rem',
-                          height: '2.5rem',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          flexShrink: 0
-                        }}
+                        className="btn btn-primary p-2 w-10 h-10 flex items-center justify-center flex-shrink-0"
                         title={isGenerating ? 'Generating...' : 'Generate Landing Page'}
                       >
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                          <path d="M7 14l5-5 5 5z" fill="currentColor"/>
-                        </svg>
+                        {isGenerating ? (
+                          <div className="spinner w-4 h-4" />
+                        ) : (
+                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7 14l5-5 5 5z" fill="currentColor"/>
+                          </svg>
+                        )}
                       </button>
                     </div>
                   </div>
                 </div>
 
                 {status && (
-                  <div style={{ textAlign: 'center', marginTop: '1rem' }}>
-                    <span style={{
-                      fontSize: '0.875rem',
-                      color: 'var(--color-gray-500)',
-                      backgroundColor: 'var(--color-gray-100)',
-                      padding: '0.25rem 0.5rem',
-                      borderRadius: '9999px'
-                    }}>
+                  <div className="text-center mt-4">
+                    <span className="text-sm text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
                       {status}
                     </span>
                   </div>
@@ -1109,12 +1053,8 @@ function LandingGeneratorContent() {
               </div>
 
               {(publishedUrl || savedSiteId) && (
-                <div style={{
-                  backgroundColor: 'var(--color-gray-50)',
-                  borderTop: '1px solid var(--color-gray-200)',
-                  padding: '0.5rem 0'
-                }}>
-                  <div className="container flex items-center gap-4" style={{ fontSize: '0.875rem' }}>
+                <div className="bg-gray-50 border-t border-gray-200 py-2">
+                  <div className="container flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
                     {publishedUrl && (
                       <div className="flex items-center gap-2">
                         <span className="status status-success" style={{ fontSize: '0.625rem', padding: '0.125rem 0.5rem' }}>
@@ -1219,22 +1159,20 @@ function LandingGeneratorContent() {
                 }}
               />
               {editMode && (
-                <div style={{
-                  position: 'fixed',
-                  bottom: '1rem',
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  fontSize: '0.875rem',
-                  color: 'var(--color-gray-700)',
-                  backgroundColor: 'var(--color-white)',
-                  padding: '0.75rem 1rem',
-                  borderRadius: 'var(--radius-lg)',
-                  border: '1px solid var(--color-gray-300)',
-                  boxShadow: 'var(--shadow-lg)',
-                  maxWidth: '90%',
-                  zIndex: 5
-                }}>
-                  <strong>Edit mode:</strong> Click text to edit • Press Delete to remove • Cmd/Ctrl+Z to undo
+                <div className="fixed bottom-4 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
+                  <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-300 shadow-lg max-w-sm sm:max-w-md mx-auto">
+                    <div className="text-sm text-gray-700 text-center sm:text-left">
+                      <strong>Edit mode:</strong>
+                      <div className="mt-1 space-y-1 sm:hidden">
+                        <div>• Tap text to edit</div>
+                        <div>• Long press to delete</div>
+                        <div>• Undo with ↶</div>
+                      </div>
+                      <div className="hidden sm:block">
+                        Click text to edit • Press Delete to remove • Cmd/Ctrl+Z to undo
+                      </div>
+                    </div>
+                  </div>
                 </div>
               )}
             </main>
