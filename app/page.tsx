@@ -114,7 +114,7 @@ function LandingGeneratorContent() {
         // Use iframe for CSS isolation when not editing
         const iframe = document.createElement('iframe');
         iframe.style.width = '100%';
-        iframe.style.minHeight = '100%';
+        iframe.style.height = '100%';
         iframe.style.border = 'none';
         iframe.style.backgroundColor = 'var(--color-white)';
         iframe.title = 'Landing Page Preview';
@@ -1142,7 +1142,7 @@ function LandingGeneratorContent() {
               <div
                 ref={previewRef}
                 style={{
-                  minHeight: '100%',
+                  height: '100%',
                   backgroundColor: 'var(--color-white)'
                 }}
               />

@@ -156,10 +156,10 @@ Return ONLY the HTML (no markdown, no fences).`;
     --color-text: ${plan?.palette?.text ?? '#111827'};
     --color-accent: ${plan?.palette?.accent ?? '#7c3aed'};
   }
-  html, body { margin: 0; padding: 0; background: var(--color-bg); color: var(--color-text); font-family: ${plan?.fonts?.body ?? 'Inter, system-ui, sans-serif'}; }
+  html, body { margin: 0; padding: 0; height: 100%; background: var(--color-bg); color: var(--color-text); font-family: ${plan?.fonts?.body ?? 'Inter, system-ui, sans-serif'}; }
   img { max-width: 100%; height: auto; display: block; }
   a { color: var(--color-primary); text-decoration: none; }
-  .container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 16px; }
+  .container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 16px; min-height: 100%; }
 </style>
 </head>
 <body>
