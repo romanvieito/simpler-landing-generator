@@ -35,9 +35,16 @@ export async function ensureCreditsTable() {
     CREATE TABLE IF NOT EXISTS user_credits (
       user_id TEXT PRIMARY KEY,
       balance INTEGER NOT NULL DEFAULT 0,
+      last_free_credits_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
     );
+  `;
+  
+  // Migration: Add last_free_credits_at column if it doesn't exist
+  await sql`
+    ALTER TABLE user_credits 
+    ADD COLUMN IF NOT EXISTS last_free_credits_at TIMESTAMPTZ;
   `;
 }
 
@@ -47,12 +54,29 @@ export async function ensureCreditTransactionsTable() {
       id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
       user_id TEXT NOT NULL,
       amount INTEGER NOT NULL,
-      type TEXT NOT NULL CHECK (type IN ('purchase', 'usage', 'refund')),
+      type TEXT NOT NULL CHECK (type IN ('purchase', 'usage', 'refund', 'free_grant')),
       description TEXT,
       stripe_payment_id TEXT,
       created_at TIMESTAMPTZ DEFAULT NOW(),
       FOREIGN KEY (user_id) REFERENCES user_credits(user_id) ON DELETE CASCADE
     );
+  `;
+  
+  // Migration: Drop old constraint and add new one with 'free_grant'
+  // This is safe because it will fail silently if constraint doesn't exist or already has free_grant
+  await sql`
+    DO $$ 
+    BEGIN
+      -- Drop the old constraint if it exists
+      ALTER TABLE credit_transactions DROP CONSTRAINT IF EXISTS credit_transactions_type_check;
+      
+      -- Add the new constraint with all types including 'free_grant'
+      ALTER TABLE credit_transactions 
+      ADD CONSTRAINT credit_transactions_type_check 
+      CHECK (type IN ('purchase', 'usage', 'refund', 'free_grant'));
+    EXCEPTION
+      WHEN duplicate_object THEN NULL;
+    END $$;
   `;
 }
 
@@ -161,7 +185,48 @@ export async function getAllContactSubmissionsForUser({ userId }: { userId: stri
 }
 
 // Credit management functions
+export async function refreshFreeCredits({ userId }: { userId: string }) {
+  // Ensure user has a credits record
+  await ensureUserCredits({ userId });
+
+  // Check if user needs free credits top-up
+  const { rows } = await sql`
+    SELECT balance, last_free_credits_at
+    FROM user_credits
+    WHERE user_id = ${userId}
+    LIMIT 1
+  `;
+
+  if (rows.length === 0) return;
+
+  const { balance, last_free_credits_at } = rows[0];
+  const now = new Date();
+  const lastGrant = last_free_credits_at ? new Date(last_free_credits_at) : null;
+  
+  // Check if 24 hours have passed since last grant (or never granted) and balance is below 3
+  const shouldGrant = balance < 3 && (!lastGrant || (now.getTime() - lastGrant.getTime()) >= 24 * 60 * 60 * 1000);
+
+  if (shouldGrant) {
+    // Set balance to 3 and update last_free_credits_at
+    await sql`
+      UPDATE user_credits
+      SET balance = 3, last_free_credits_at = NOW(), updated_at = NOW()
+      WHERE user_id = ${userId}
+    `;
+
+    // Record the free grant transaction
+    const amountGranted = 3 - balance;
+    await sql`
+      INSERT INTO credit_transactions (user_id, amount, type, description)
+      VALUES (${userId}, ${amountGranted}, 'free_grant', 'Daily free credits top-up')
+    `;
+  }
+}
+
 export async function getUserCredits({ userId }: { userId: string }) {
+  // First, refresh free credits if eligible
+  await refreshFreeCredits({ userId });
+
   const { rows } = await sql`
     SELECT balance
     FROM user_credits
@@ -183,7 +248,7 @@ export async function ensureUserCredits({ userId }: { userId: string }) {
 export async function addCredits({ userId, amount, type, description, stripePaymentId }: {
   userId: string;
   amount: number;
-  type: 'purchase' | 'usage' | 'refund';
+  type: 'purchase' | 'usage' | 'refund' | 'free_grant';
   description?: string;
   stripePaymentId?: string;
 }) {
