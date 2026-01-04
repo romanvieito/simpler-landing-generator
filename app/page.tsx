@@ -384,312 +384,146 @@ function LandingGeneratorContent() {
       />
 
       <SignedOut>
-        <div style={{ minHeight: '100vh', backgroundColor: 'var(--color-white)' }}>
-          {/* Hero Section */}
-          <section className="gradient-hero" style={{ 
-            position: 'relative',
-            padding: '5rem 1rem',
-            overflow: 'hidden'
-          }}>
-            <div className="container" style={{ 
-              maxWidth: '1200px',
-              margin: '0 auto',
-              position: 'relative',
-              zIndex: 1
-            }}>
-              <div style={{ 
-                textAlign: 'center',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '2rem'
-              }}>
-                <h1 style={{
-                  fontSize: '3rem',
-                  fontWeight: 700,
-                  color: 'var(--color-white)',
-                  lineHeight: 1.1,
-                  maxWidth: '900px',
-                  margin: '0 auto'
-                }} className="md:text-6xl">
-                  Quick, high-converting landing pages without the wait.
-                </h1>
-                <p style={{
-                  fontSize: '1.25rem',
-                  color: 'rgba(255, 255, 255, 0.9)',
-                  maxWidth: '600px',
-                  lineHeight: 1.6
-                }}>
-                  No coding. No design skills. Just describe your business and get a quick, 
-                  high-converting landing page ready to publish.
-                </p>
-                <SignInButton mode="modal">
-                  <button className="btn" style={{
-                    backgroundColor: 'var(--color-white)',
-                    color: '#667eea',
-                    padding: '1rem 2.5rem',
-                    fontSize: '1.125rem',
-                    fontWeight: 600,
-                    borderRadius: 'var(--radius-xl)',
-                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
-                    border: 'none'
-                  }}>
-                    Start Creating for Free
-                  </button>
-                </SignInButton>
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+          {/* Modern Hero Section */}
+          <section className="relative py-20 md:py-32 lg:py-40 overflow-hidden">
+            {/* Background gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90 via-purple-600/90 to-indigo-600/90" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
+
+            {/* Decorative elements */}
+            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
+            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl" />
+
+            <div className="container relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center space-y-8 md:space-y-12">
+                {/* Main heading */}
+                <div className="space-y-4 md:space-y-6">
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight max-w-4xl mx-auto">
+                    Quick, high-converting
+                    <span className="block bg-gradient-to-r from-yellow-300 to-orange-300 bg-clip-text text-transparent">
+                      landing pages
+                    </span>
+                    without the wait.
+                  </h1>
+                  <p className="text-lg md:text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
+                    No coding. No design skills. Just describe your business and get a quick,
+                    high-converting landing page ready to publish.
+                  </p>
+                </div>
+
+                {/* CTA Button */}
+                <div className="pt-4">
+                  <SignInButton mode="modal">
+                    <button className="btn btn-primary text-lg md:text-xl px-8 md:px-12 py-4 md:py-6 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300 bg-white text-blue-600 hover:bg-gray-50 font-semibold rounded-2xl">
+                      <svg className="w-5 h-5 md:w-6 md:h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      Start Creating for Free
+                    </button>
+                  </SignInButton>
+                </div>
+
+                {/* Additional visual elements */}
+                <div className="pt-8 md:pt-12">
+                  <div className="flex items-center justify-center space-x-8 text-white/70 text-sm md:text-base">
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      <span>No credit card required</span>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                      </svg>
+                      <span>Free to start</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
-            {/* Decorative gradient overlay */}
-            <div style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
-              background: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
-              pointerEvents: 'none'
-            }} />
           </section>
 
           {/* Who Is This For Section */}
-          <section style={{ 
-            padding: '5rem 1rem',
-            backgroundColor: 'var(--color-gray-50)'
-          }}>
-            <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-              <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-                <h2 style={{
-                  fontSize: '2.5rem',
-                  fontWeight: 700,
-                  color: 'var(--color-gray-900)',
-                  marginBottom: '1rem'
-                }}>
+          <section className="py-20 md:py-32 bg-gradient-to-br from-gray-50 to-white">
+            <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="text-center mb-16 md:mb-20">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
                   Who Is This For?
                 </h2>
-                <p style={{
-                  fontSize: '1.125rem',
-                  color: 'var(--color-gray-600)',
-                  maxWidth: '600px',
-                  margin: '0 auto'
-                }}>
-                  EasyLand is perfect for creator who needs a quick landing page that converts.
+                <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                  EasyLand is perfect for creators who need a quick landing page that converts.
                 </p>
               </div>
 
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
-                gap: '2rem'
-              }}>
-                {/* Startup Founders */}
-                <div className="card" style={{
-                  padding: '2rem',
-                  textAlign: 'center',
-                  transition: 'transform var(--transition-base), box-shadow var(--transition-base)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.1)';
-                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
-                  if (icon) {
-                    icon.style.transform = 'scale(1.1)';
-                    icon.style.boxShadow = icon.style.boxShadow.replace('0.3', '0.5');
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '';
-                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
-                  if (icon) {
-                    icon.style.transform = 'scale(1)';
-                    icon.style.boxShadow = icon.style.boxShadow.replace('0.5', '0.3');
-                  }
-                }}>
-                  <div className="icon-circle" style={{
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                    color: 'white',
-                    margin: '0 auto 1.5rem',
-                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
-                    transform: 'scale(1)',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease'
-                  }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2L13.09 8.26L22 9L13.09 9.74L12 16L10.91 9.74L2 9L10.91 8.26L12 2Z" fill="currentColor"/>
-                      <path d="M12 16L13.09 22.26L22 23L13.09 23.74L12 30L10.91 23.74L2 23L10.91 22.26L12 16Z" fill="currentColor" opacity="0.6"/>
-                    </svg>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+                {/* Creators */}
+                <div className="group card hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm">
+                  <div className="p-8 text-center">
+                    <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-200">
+                      Creators
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      Launch your MVP landing page quickly to validate ideas and start collecting leads
+                    </p>
                   </div>
-                  <h3 style={{
-                    fontSize: '1.25rem',
-                    fontWeight: 600,
-                    color: 'var(--color-gray-900)',
-                    marginBottom: '0.75rem'
-                  }}>
-                    Creators
-                  </h3>
-                  <p style={{
-                    color: 'var(--color-gray-600)',
-                    lineHeight: 1.6
-                  }}>
-                    Launch your MVP landing page quickly to validate ideas and start collecting leads
-                  </p>
                 </div>
 
                 {/* Freelancers & Agencies */}
-                <div className="card" style={{
-                  padding: '2rem',
-                  textAlign: 'center',
-                  transition: 'transform var(--transition-base), box-shadow var(--transition-base)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.1)';
-                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
-                  if (icon) {
-                    icon.style.transform = 'scale(1.1)';
-                    icon.style.boxShadow = icon.style.boxShadow.replace('0.3', '0.5');
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '';
-                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
-                  if (icon) {
-                    icon.style.transform = 'scale(1)';
-                    icon.style.boxShadow = icon.style.boxShadow.replace('0.5', '0.3');
-                  }
-                }}>
-                  <div className="icon-circle" style={{
-                    background: 'linear-gradient(135deg, #764ba2 0%, #f093fb 100%)',
-                    color: 'white',
-                    margin: '0 auto 1.5rem',
-                    boxShadow: '0 8px 25px rgba(118, 75, 162, 0.3)',
-                    transform: 'scale(1)',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease'
-                  }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M20 7H16V5C16 3.89 15.11 3 14 3H10C8.89 3 8 3.89 8 5V7H4C2.89 7 2.01 7.89 2.01 9L2 19C2 20.11 2.89 21 4 21H20C21.11 21 22 20.11 22 19V9C22 7.89 21.11 7 20 7ZM14 5V7H10V5H14ZM4 9H20V19H4V9Z" fill="currentColor"/>
-                      <path d="M14 12H16V14H14V12Z" fill="currentColor"/>
-                    </svg>
+                <div className="group card hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm">
+                  <div className="p-8 text-center">
+                    <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-purple-600 transition-colors duration-200">
+                      Freelancers & Agencies
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      Deliver client landing pages faster and focus on strategy instead of coding
+                    </p>
                   </div>
-                  <h3 style={{
-                    fontSize: '1.25rem',
-                    fontWeight: 600,
-                    color: 'var(--color-gray-900)',
-                    marginBottom: '0.75rem'
-                  }}>
-                    Freelancers & Agencies
-                  </h3>
-                  <p style={{
-                    color: 'var(--color-gray-600)',
-                    lineHeight: 1.6
-                  }}>
-                    Deliver client landing pages faster and focus on strategy instead of coding
-                  </p>
                 </div>
 
                 {/* Marketing Teams */}
-                <div className="card" style={{
-                  padding: '2rem',
-                  textAlign: 'center',
-                  transition: 'transform var(--transition-base), box-shadow var(--transition-base)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.1)';
-                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
-                  if (icon) {
-                    icon.style.transform = 'scale(1.1)';
-                    icon.style.boxShadow = icon.style.boxShadow.replace('0.3', '0.5');
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '';
-                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
-                  if (icon) {
-                    icon.style.transform = 'scale(1)';
-                    icon.style.boxShadow = icon.style.boxShadow.replace('0.5', '0.3');
-                  }
-                }}>
-                  <div className="icon-circle" style={{
-                    background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
-                    color: 'white',
-                    margin: '0 auto 1.5rem',
-                    boxShadow: '0 8px 25px rgba(59, 130, 246, 0.3)',
-                    transform: 'scale(1)',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease'
-                  }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM9 17H7V10H9V17ZM13 17H11V7H13V17ZM17 17H15V13H17V17Z" fill="currentColor"/>
-                    </svg>
+                <div className="group card hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm">
+                  <div className="p-8 text-center">
+                    <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-200">
+                      Marketing Teams
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      Create campaign-specific landing pages without waiting for developers
+                    </p>
                   </div>
-                  <h3 style={{
-                    fontSize: '1.25rem',
-                    fontWeight: 600,
-                    color: 'var(--color-gray-900)',
-                    marginBottom: '0.75rem'
-                  }}>
-                    Marketing Teams
-                  </h3>
-                  <p style={{
-                    color: 'var(--color-gray-600)',
-                    lineHeight: 1.6
-                  }}>
-                    Create campaign-specific landing pages without waiting for developers
-                  </p>
                 </div>
 
                 {/* Small Business Owners */}
-                <div className="card" style={{
-                  padding: '2rem',
-                  textAlign: 'center',
-                  transition: 'transform var(--transition-base), box-shadow var(--transition-base)'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.transform = 'translateY(-4px)';
-                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.1)';
-                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
-                  if (icon) {
-                    icon.style.transform = 'scale(1.1)';
-                    icon.style.boxShadow = icon.style.boxShadow.replace('0.3', '0.5');
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = '';
-                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
-                  if (icon) {
-                    icon.style.transform = 'scale(1)';
-                    icon.style.boxShadow = icon.style.boxShadow.replace('0.5', '0.3');
-                  }
-                }}>
-                  <div className="icon-circle" style={{
-                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-                    color: 'white',
-                    margin: '0 auto 1.5rem',
-                    boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)',
-                    transform: 'scale(1)',
-                    transition: 'transform 0.3s ease, box-shadow 0.3s ease'
-                  }}>
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M19 7H18V6C18 5.45 17.55 5 17 5S16 5.45 16 6V7H8V6C8 5.45 7.55 5 7 5S6 5.45 6 6V7H5C3.89 7 3.01 7.89 3.01 9L3 19C3 20.11 3.89 21 5 21H19C20.11 21 21 20.11 21 19V9C21 7.89 20.11 7 19 7ZM5 19V9H19V19H5Z" fill="currentColor"/>
-                      <path d="M9 11H11V13H9V11ZM13 11H15V13H13V11Z" fill="currentColor"/>
-                    </svg>
+                <div className="group card hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm">
+                  <div className="p-8 text-center">
+                    <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-green-500 to-green-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
+                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-green-600 transition-colors duration-200">
+                      Small Business Owners
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      Get a professional online presence without breaking the bank or hiring developers
+                    </p>
                   </div>
-                  <h3 style={{
-                    fontSize: '1.25rem',
-                    fontWeight: 600,
-                    color: 'var(--color-gray-900)',
-                    marginBottom: '0.75rem'
-                  }}>
-                    Small Business Owners
-                  </h3>
-                  <p style={{
-                    color: 'var(--color-gray-600)',
-                    lineHeight: 1.6
-                  }}>
-                    Get a professional online presence without breaking the bank or hiring developers
-                  </p>
                 </div>
               </div>
             </div>
