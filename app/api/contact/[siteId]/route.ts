@@ -1,7 +1,7 @@
 // app/api/contact/[siteId]/route.ts
 import { NextResponse } from 'next/server';
-import { auth, currentUser } from '@clerk/nextjs/server';
-import { ensureContactSubmissionsTable, insertContactSubmission, getSite, getContactSubmissions } from '@/lib/db';
+import { auth, currentUser, clerkClient } from '@clerk/nextjs/server';
+import { ensureContactSubmissionsTable, insertContactSubmission, getSitePublic, getContactSubmissions } from '@/lib/db';
 import { Resend } from 'resend';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
@@ -12,6 +12,12 @@ export async function POST(
 ) {
   try {
     const { siteId } = await params;
+
+    // 1. Validate site exists first (publicly)
+    const site = await getSitePublic(siteId);
+    if (!site) {
+      return NextResponse.json({ error: 'Site not found' }, { status: 404 });
+    }
 
     // Handle both JSON and form-encoded data
     const contentType = req.headers.get('content-type');
@@ -56,28 +62,19 @@ export async function POST(
       message: message.trim(),
     });
 
-    // Get site details and user email for notification
-    const { userId } = await auth();
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-
-    const site = await getSite({ id: siteId, userId });
-    if (!site) {
-      return NextResponse.json({ error: 'Site not found' }, { status: 404 });
-    }
-
     // Send email notification if Resend is configured
-    if (resend) {
+    if (resend && site.user_id) {
       try {
-        // Get user's email from Clerk
-        const user = await currentUser();
-        const userEmail = user?.primaryEmailAddress?.emailAddress;
+        // Get user's email from Clerk using the site owner's ID
+        const client = await clerkClient();
+        const owner = await client.users.getUser(site.user_id);
+        const ownerEmail = owner?.emailAddresses.find(e => e.id === owner.primaryEmailAddressId)?.emailAddress 
+                        || owner?.emailAddresses[0]?.emailAddress;
 
-        if (userEmail) {
+        if (ownerEmail) {
           await resend.emails.send({
             from: 'Contact Forms <noreply@yourdomain.com>', // You'll need to configure this
-            to: userEmail,
+            to: ownerEmail,
             subject: `New contact form submission: ${site.title || 'Landing Page'}`,
             html: `
               <h2>New Contact Form Submission</h2>
@@ -104,6 +101,15 @@ export async function POST(
 
     if (isHtmlRequest) {
       // Redirect back with success message
+      // Note: req.url might be the API URL, we want to redirect back to the referrer if possible,
+      // or just add a param to the current URL if it's the landing page itself.
+      const referrer = req.headers.get('referer');
+      if (referrer) {
+        const successUrl = new URL(referrer);
+        successUrl.searchParams.set('submitted', 'true');
+        return NextResponse.redirect(successUrl.toString());
+      }
+      
       const successUrl = new URL(req.url);
       successUrl.searchParams.set('submitted', 'true');
       return NextResponse.redirect(successUrl.origin + successUrl.pathname + '?submitted=true');

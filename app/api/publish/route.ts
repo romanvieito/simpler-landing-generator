@@ -24,11 +24,36 @@ export async function POST(req: Request) {
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
     let processedHtml = html;
 
+    // 1. First, handle SITE_ID_PLACEHOLDER if it exists (handles both literal and URL-encoded versions)
+    if (siteId) {
+      // Replace the placeholder with the actual contact API path
+      // We handle {{SITE_ID_PLACEHOLDER}}, %7B%7BSITE_ID_PLACEHOLDER%7D%7D, and variations
+      processedHtml = processedHtml.replace(
+        /(\{\{SITE_ID_PLACEHOLDER\}\}|%7B%7BSITE_ID_PLACEHOLDER%7D%7D)/g,
+        `/api/contact/${siteId}`
+      );
+    }
+
+    // 2. Then convert all relative /api/contact/ URLs to absolute if appUrl is available
     if (appUrl) {
-      // Replace relative /api/contact/ URLs with absolute URLs
-      processedHtml = html.replace(
-        /\/api\/contact\/([^"'\s]+)/g,
-        `${appUrl}/api/contact/$1`
+      // Ensure appUrl doesn't have a trailing slash for consistency
+      const baseUrl = appUrl.endsWith('/') ? appUrl.slice(0, -1) : appUrl;
+      
+      processedHtml = processedHtml.replace(
+        /href="\/api\/contact\//g,
+        `href="${baseUrl}/api/contact/`
+      ).replace(
+        /action="\/api\/contact\//g,
+        `action="${baseUrl}/api/contact/`
+      ).replace(
+        /src="\/api\/contact\//g,
+        `src="${baseUrl}/api/contact/`
+      );
+
+      // Also catch any other /api/contact/ instances not in attributes
+      processedHtml = processedHtml.replace(
+        /(?<![a-zA-Z0-9])\/api\/contact\//g,
+        `${baseUrl}/api/contact/`
       );
     }
 

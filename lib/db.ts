@@ -117,6 +117,16 @@ export async function getSite({ id, userId }: { id: string; userId: string }) {
   return rows[0] || null;
 }
 
+export async function getSitePublic(id: string) {
+  const { rows } = await sql`
+    SELECT id, user_id, title, description, vercel_url, created_at
+    FROM sites
+    WHERE id = ${id}
+    LIMIT 1
+  `;
+  return rows[0] || null;
+}
+
 export async function deleteSite({ id, userId }: { id: string; userId: string }) {
   await sql`DELETE FROM sites WHERE id = ${id} AND user_id = ${userId}`;
 }

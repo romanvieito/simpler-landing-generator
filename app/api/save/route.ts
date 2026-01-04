@@ -21,19 +21,20 @@ export async function POST(req: Request) {
     await ensureSitesTable();
 
     // First insert with placeholder
+    const placeholderRegex = /(\{\{SITE_ID_PLACEHOLDER\}\}|%7B%7BSITE_ID_PLACEHOLDER%7D%7D)/g;
     const { id } = await insertSite({
       userId,
       title: title || 'Landing',
       description: description || '',
       plan: plan || null,
-      html: html.replace(/\{\{SITE_ID_PLACEHOLDER\}\}/g, `/api/contact/${crypto.randomUUID()}`), // temp placeholder
+      html: html.replace(placeholderRegex, `/api/contact/${crypto.randomUUID()}`), // temp placeholder
       vercelUrl: vercelUrl || null,
     });
 
     // Then update with the actual site ID
     await sql`
       UPDATE sites
-      SET html = ${html.replace(/\{\{SITE_ID_PLACEHOLDER\}\}/g, `/api/contact/${id}`)}
+      SET html = ${html.replace(placeholderRegex, `/api/contact/${id}`)}
       WHERE id = ${id} AND user_id = ${userId}
     `;
 

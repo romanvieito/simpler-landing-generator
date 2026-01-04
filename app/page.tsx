@@ -31,6 +31,7 @@ function LandingGeneratorContent() {
   const [websiteStyle, setWebsiteStyle] = useState<'Professional' | 'Creative' | 'Friendly' | 'Minimalist'>('Professional');
   const [loading, setLoading] = useState<'idle' | 'planning' | 'coding' | 'publishing' | 'saving'>('idle');
   const [plan, setPlan] = useState<Plan | null>(null);
+  const [planDetails, setPlanDetails] = useState<{ title?: string; sectionCount?: number; sections?: string[] } | null>(null);
   const [html, setHtml] = useState<string>('');
   const [editMode, setEditMode] = useState(false);
   const [selectedEl, setSelectedEl] = useState<HTMLElement | null>(null);
@@ -242,6 +243,7 @@ function LandingGeneratorContent() {
       setPublishedUrl('');
       setSavedSiteId('');
       setPlan(null);
+      setPlanDetails(null);
       setHtml('');
       setHistory([]);
       setSelectedEl(null);
@@ -267,6 +269,13 @@ function LandingGeneratorContent() {
       const planJson = await planRes.json();
       const planOut: Plan = planJson.plan;
       setPlan(planOut);
+
+      // Extract useful details from the plan for better loading context
+      setPlanDetails({
+        title: planOut.title,
+        sectionCount: planOut.sections?.length || 0,
+        sections: planOut.sections?.map(s => s.type) || []
+      });
 
       setLoading('coding');
       const htmlRes = await fetch('/api/generate-html', {
@@ -330,6 +339,28 @@ function LandingGeneratorContent() {
         alert('No HTML to publish.');
         return;
       }
+
+      // Save first if not already saved
+      let siteIdToUse = savedSiteId;
+      if (!siteIdToUse) {
+        const cleanedHtml = cleanHtmlForPublishing(html);
+        const saveRes = await fetch('/api/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: plan?.title ?? 'Landing',
+            description,
+            plan,
+            html: cleanedHtml,
+            vercelUrl: publishedUrl || null,
+          }),
+        });
+        const saveData = await saveRes.json();
+        if (!saveRes.ok) throw new Error(saveData?.error || 'Save failed');
+        siteIdToUse = saveData.id;
+        setSavedSiteId(siteIdToUse);
+      }
+
       setLoading('publishing');
       const cleanedHtml = cleanHtmlForPublishing(html);
       const res = await fetch('/api/publish', {
@@ -338,7 +369,7 @@ function LandingGeneratorContent() {
         body: JSON.stringify({
           html: cleanedHtml,
           nameHint: urlSlug || customUrlSlug || plan?.title || 'landing',
-          siteId: savedSiteId || null,
+          siteId: siteIdToUse,
         }),
       });
       const data = await res.json();
@@ -368,9 +399,11 @@ function LandingGeneratorContent() {
 
   const isGenerating = loading === 'planning' || loading === 'coding';
   const status = loading === 'planning'
-    ? 'Step 1/2: Generating design plan...'
+    ? 'Step 1/2: Analyzing your idea and creating a design plan...'
     : loading === 'coding'
-      ? 'Step 2/2: Generating HTML...'
+      ? planDetails?.title
+        ? `Step 2/2: Building "${planDetails.title}" with ${planDetails.sectionCount || 0} sections (${planDetails.sections?.slice(0, 3).join(', ')}${planDetails.sections && planDetails.sections.length > 3 ? '...' : ''})`
+        : 'Step 2/2: Generating HTML code...'
       : loading === 'publishing'
         ? 'Publishing to Vercel...'
         : loading === 'saving'
