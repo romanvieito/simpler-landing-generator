@@ -13,6 +13,14 @@ export function CreditDisplay({ onPurchaseClick }: CreditDisplayProps) {
   const [credits, setCredits] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
+  console.log('CreditDisplay render:', {
+    user: !!user,
+    userId: user?.id,
+    loading,
+    credits,
+    hasOnPurchaseClick: !!onPurchaseClick
+  });
+
   useEffect(() => {
     if (user) {
       fetchCredits();
@@ -21,10 +29,15 @@ export function CreditDisplay({ onPurchaseClick }: CreditDisplayProps) {
 
   const fetchCredits = async () => {
     try {
+      console.log('Fetching credits...');
       const res = await fetch('/api/credits/balance');
+      console.log('Credits API response:', res.status, res.ok);
       if (res.ok) {
         const data = await res.json();
+        console.log('Credits data:', data);
         setCredits(data.balance);
+      } else {
+        console.error('Credits API failed:', res.status, res.statusText);
       }
     } catch (error) {
       console.error('Failed to fetch credits:', error);
@@ -33,9 +46,10 @@ export function CreditDisplay({ onPurchaseClick }: CreditDisplayProps) {
     }
   };
 
-  if (!user || loading) {
-    return null;
-  }
+  // TEMP: Always render for debugging
+  // if (!user || loading) {
+  //   return null;
+  // }
 
   return (
     <div className="flex items-center gap-3">

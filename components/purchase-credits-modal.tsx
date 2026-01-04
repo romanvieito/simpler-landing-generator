@@ -12,6 +12,8 @@ interface PurchaseCreditsModalProps {
 export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalProps) {
   const [loading, setLoading] = useState<CreditPackage | null>(null);
 
+  console.log('PurchaseCreditsModal render, isOpen:', isOpen);
+
   const handlePurchase = async (packageType: CreditPackage) => {
     setLoading(packageType);
     try {
