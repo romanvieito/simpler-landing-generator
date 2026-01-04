@@ -499,7 +499,7 @@ function LandingGeneratorContent() {
                     color: 'var(--color-gray-900)',
                     marginBottom: '0.75rem'
                   }}>
-                    Startup Founders
+                    Creators
                   </h3>
                   <p style={{
                     color: 'var(--color-gray-600)',
