@@ -411,7 +411,7 @@ function LandingGeneratorContent() {
                   maxWidth: '900px',
                   margin: '0 auto'
                 }} className="md:text-6xl">
-                  Launch High-Converting Landing Pages in Minutes
+                  Quick, high-converting landing pages without the wait.
                 </h1>
                 <p style={{
                   fontSize: '1.25rem',
@@ -433,7 +433,7 @@ function LandingGeneratorContent() {
                     boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
                     border: 'none'
                   }}>
-                    Get Started Free
+                    Start Creating for Free
                   </button>
                 </SignInButton>
               </div>
