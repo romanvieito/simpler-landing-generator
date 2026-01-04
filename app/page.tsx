@@ -471,7 +471,7 @@ function LandingGeneratorContent() {
                   maxWidth: '600px',
                   margin: '0 auto'
                 }}>
-                  LandGen is perfect for anyone who needs a quick landing page that converts.
+                  LandGen is perfect for creator who needs a quick landing page that converts.
                 </p>
               </div>
 
