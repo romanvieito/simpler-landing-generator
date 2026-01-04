@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { deployStaticHtml } from '@/lib/vercel';
-import { makeSlug } from '@/lib/utils';
 import { updateSiteUrl } from '@/lib/db';
 
 export async function POST(req: Request) {
@@ -55,8 +54,10 @@ export async function POST(req: Request) {
       `$1${baseUrl}/api/contact/`
     );
 
-    const slug = makeSlug(nameHint || 'landing');
-    const name = exactName ? slug : `${slug}-${Math.random().toString(36).slice(2, 7)}`;
+    // Deploy to a stable project name per site so custom domains can be attached once and persist across republishes.
+    // Vercel's Deployments API uses `name` as the target project name.
+    // Using the stable siteId ensures uniqueness and avoids slug collisions.
+    const name = `site-${siteId}`;
 
     const url = await deployStaticHtml({ name, html: processedHtml });
 

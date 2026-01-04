@@ -11,8 +11,15 @@ export async function ensureSitesTable() {
       plan JSON,
       html TEXT NOT NULL,
       vercel_url TEXT,
+      custom_domain TEXT,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
+  `;
+
+  // Migration: add custom_domain if it doesn't exist (older deployments)
+  await sql`
+    ALTER TABLE sites
+    ADD COLUMN IF NOT EXISTS custom_domain TEXT;
   `;
 }
 
@@ -98,7 +105,7 @@ export async function insertSite(args: {
 
 export async function listSites({ userId }: { userId: string }) {
   const { rows } = await sql`
-    SELECT id, title, description, vercel_url, created_at
+    SELECT id, title, description, vercel_url, custom_domain, created_at
     FROM sites
     WHERE user_id = ${userId}
     ORDER BY created_at DESC
@@ -109,7 +116,7 @@ export async function listSites({ userId }: { userId: string }) {
 
 export async function getSite({ id, userId }: { id: string; userId: string }) {
   const { rows } = await sql`
-    SELECT id, title, description, plan, html, vercel_url, created_at
+    SELECT id, title, description, plan, html, vercel_url, custom_domain, created_at
     FROM sites
     WHERE id = ${id} AND user_id = ${userId}
     LIMIT 1
@@ -119,9 +126,41 @@ export async function getSite({ id, userId }: { id: string; userId: string }) {
 
 export async function getSitePublic(id: string) {
   const { rows } = await sql`
-    SELECT id, user_id, title, description, vercel_url, created_at
+    SELECT id, user_id, title, description, vercel_url, custom_domain, created_at
     FROM sites
     WHERE id = ${id}
+    LIMIT 1
+  `;
+  return rows[0] || null;
+}
+
+export async function updateSiteCustomDomain({
+  id,
+  userId,
+  customDomain,
+}: {
+  id: string;
+  userId: string;
+  customDomain: string | null;
+}) {
+  await sql`
+    UPDATE sites
+    SET custom_domain = ${customDomain}
+    WHERE id = ${id} AND user_id = ${userId}
+  `;
+}
+
+export async function getSiteDomainMeta({
+  id,
+  userId,
+}: {
+  id: string;
+  userId: string;
+}): Promise<{ id: string; vercel_url: string | null; custom_domain: string | null } | null> {
+  const { rows } = await sql`
+    SELECT id, vercel_url, custom_domain
+    FROM sites
+    WHERE id = ${id} AND user_id = ${userId}
     LIMIT 1
   `;
   return rows[0] || null;

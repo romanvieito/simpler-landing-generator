@@ -10,6 +10,7 @@ type Site = {
   title: string | null;
   html: string;
   vercel_url: string | null;
+  custom_domain?: string | null;
   created_at: string;
 };
 

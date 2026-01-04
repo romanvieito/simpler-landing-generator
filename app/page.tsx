@@ -256,6 +256,11 @@ function LandingGeneratorContent() {
         doUndo();
         return;
       }
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        finalizeEdit();
+        return;
+      }
       if (e.key === 'Delete' && selectedEl && container && container.contains(selectedEl)) {
         e.preventDefault();
         pushHistory();
@@ -1147,18 +1152,12 @@ function LandingGeneratorContent() {
                 }}
               />
               {editMode && (
-                <div className="fixed bottom-4 left-4 right-4 sm:left-1/2 sm:right-auto sm:transform sm:-translate-x-1/2 z-50">
-                  <div className="bg-white p-3 sm:p-4 rounded-lg border border-gray-300 shadow-lg max-w-sm sm:max-w-md mx-auto">
-                    <div className="text-sm text-gray-700 text-center sm:text-left">
-                      <strong>Edit mode:</strong>
-                      <div className="mt-1 space-y-1 sm:hidden">
-                        <div>• Tap text to edit</div>
-                        <div>• Long press to delete</div>
-                        <div>• Undo with ↶</div>
-                      </div>
-                      <div className="hidden sm:block">
-                        Click text to edit • Press Delete to remove • Cmd/Ctrl+Z to undo
-                      </div>
+                <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+                  <div className="bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
+                    <div className="text-xs text-gray-600 text-center">
+                      <span className="sm:hidden">Tap text to edit</span>
+                      <span className="hidden sm:inline">Click text to edit</span>
+                      <span className="ml-2 text-gray-400">• Esc to exit</span>
                     </div>
                   </div>
                 </div>
