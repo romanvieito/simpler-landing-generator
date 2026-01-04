@@ -20,10 +20,22 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing HTML' }, { status: 400 });
     }
 
+    // Replace relative API URLs with absolute URLs pointing to the main app
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    let processedHtml = html;
+
+    if (appUrl) {
+      // Replace relative /api/contact/ URLs with absolute URLs
+      processedHtml = html.replace(
+        /\/api\/contact\/([^"'\s]+)/g,
+        `${appUrl}/api/contact/$1`
+      );
+    }
+
     const slug = makeSlug(nameHint || 'landing');
     const name = `${slug}-${Math.random().toString(36).slice(2, 7)}`;
 
-    const url = await deployStaticHtml({ name, html });
+    const url = await deployStaticHtml({ name, html: processedHtml });
 
     if (siteId) {
       try {

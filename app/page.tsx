@@ -104,6 +104,7 @@ function LandingGeneratorContent() {
         setHtml(site.html);
         setHistory([site.html]);
         setView('input'); // Show input form when loading site for editing
+        setEditMode(true); // Automatically enable edit mode when loading site for editing
       }
       if (site.vercel_url) {
         setPublishedUrl(site.vercel_url);
@@ -706,8 +707,8 @@ function LandingGeneratorContent() {
                       </svg>
                     </div>
                     <div className="min-w-0">
-                      <h1 className="text-lg md:text-xl font-bold text-gray-900 truncate">EasyLand</h1>
-                      <p className="text-xs md:text-sm text-gray-500 hidden sm:block">Landing Page Generator</p>
+                      <h1 className="text-lg md:text-xl font-bold text-black truncate">EasyLand</h1>
+                      <p className="text-xs md:text-sm text-gray-600 hidden sm:block">Landing Page Generator</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-4 min-w-0">
@@ -715,7 +716,7 @@ function LandingGeneratorContent() {
                       <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
                     </div>
 
-                    <Link href="/dashboard" className="btn btn-ghost text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 md:px-4 py-2 rounded-lg transition-all duration-200 flex-shrink-0 text-sm md:text-base hidden sm:inline-flex">
+                    <Link href="/dashboard" className="btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base hidden sm:inline-flex">
                       <svg className="w-4 h-4 mr-0 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                       </svg>
@@ -804,8 +805,7 @@ function LandingGeneratorContent() {
               top: 0,
               zIndex: 10,
               backgroundColor: 'var(--color-white)',
-              borderBottom: '1px solid var(--color-gray-200)',
-              boxShadow: '0 1px 3px 0 rgb(0 0 0 / 0.1)'
+              borderBottom: '1px solid var(--color-gray-100)'
             }}>
               <div className="container flex items-center justify-between" style={{ padding: '0.75rem 0' }}>
                 <div className="flex items-center gap-3">
@@ -819,17 +819,16 @@ function LandingGeneratorContent() {
                         setSelectedEl(null);
                       }
                     }}
-                    className="btn btn-ghost"
-                    style={{ padding: '0.5rem 0.75rem' }}
+                    className="btn btn-ghost text-gray-700 hover:text-black px-3 py-2 transition-colors duration-200 text-sm"
                   >
                     ← Edit Prompt
                   </button>
                   <div style={{
-                    height: '1.5rem',
+                    height: '1rem',
                     width: '1px',
-                    backgroundColor: 'var(--color-gray-300)'
+                    backgroundColor: 'var(--color-gray-200)'
                   }} />
-                  <Link href="/sites" className="link text-sm">
+                  <Link href="/sites" className="text-gray-700 hover:text-black transition-colors duration-200 text-sm">
                     My Sites
                   </Link>
                 </div>
@@ -840,8 +839,7 @@ function LandingGeneratorContent() {
                   <button
                     onClick={() => setEditMode((v) => !v)}
                     disabled={!html || isGenerating}
-                    className={`btn ${editMode ? 'btn-secondary' : 'btn-ghost'}`}
-                    style={{ padding: '0.5rem 0.75rem' }}
+                    className={`btn btn-ghost text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-lg transition-all duration-200 text-sm ${editMode ? 'text-green-600' : ''}`}
                   >
                     {editMode ? '✓ Edit Mode' : 'Edit Text'}
                   </button>
@@ -849,8 +847,7 @@ function LandingGeneratorContent() {
                   <button
                     onClick={doUndo}
                     disabled={history.length < 1}
-                    className="btn btn-ghost"
-                    style={{ padding: '0.5rem 0.75rem' }}
+                    className="btn btn-ghost text-gray-700 hover:text-black px-3 py-2 transition-colors duration-200 text-sm"
                     title="Undo (Cmd/Ctrl+Z)"
                   >
                     ↶
@@ -865,8 +862,7 @@ function LandingGeneratorContent() {
                   <button
                     onClick={handleSave}
                     disabled={!html || isGenerating}
-                    className={`btn ${savedSiteId ? 'btn-secondary' : 'btn-ghost'}`}
-                    style={{ padding: '0.5rem 0.75rem' }}
+                    className="btn btn-ghost text-gray-700 hover:text-black px-3 py-2 transition-colors duration-200 text-sm"
                   >
                     {loading === 'saving' ? 'Saving...' : savedSiteId ? 'Saved ✓' : 'Save Draft'}
                   </button>
@@ -874,16 +870,15 @@ function LandingGeneratorContent() {
                   <button
                     onClick={() => handlePublish()}
                     disabled={!html || isGenerating}
-                    className="btn btn-success"
-                    style={{ padding: '0.5rem 1rem' }}
+                    className="btn btn-ghost text-gray-700 hover:text-black px-3 py-2 transition-colors duration-200 text-sm"
                   >
                     {loading === 'publishing' ? 'Publishing...' : 'Publish Live'}
                   </button>
 
-                  <div style={{ 
-                    height: '1.5rem', 
-                    width: '1px', 
-                    backgroundColor: 'var(--color-gray-300)' 
+                  <div style={{
+                    height: '1rem',
+                    width: '1px',
+                    backgroundColor: 'var(--color-gray-200)'
                   }} />
 
                   <UserButton />
