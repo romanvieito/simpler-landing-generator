@@ -384,7 +384,7 @@ function LandingGeneratorContent() {
       />
 
       <SignedOut>
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+        <div className="min-h-screen bg-black">
           {/* Modern Hero Section */}
           <section className="relative py-20 md:py-32 lg:py-40 overflow-hidden">
             {/* Background gradient overlay */}
@@ -414,7 +414,7 @@ function LandingGeneratorContent() {
                 {/* CTA Button */}
                 <div className="pt-4">
                   <SignInButton mode="modal">
-                    <button className="btn btn-primary text-lg md:text-xl px-8 md:px-12 py-4 md:py-6 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300 bg-white text-blue-600 hover:bg-gray-50 font-semibold rounded-2xl">
+                    <button className="btn btn-primary text-lg md:text-xl px-8 md:px-12 py-4 md:py-6 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300 bg-gradient-to-r from-black to-gray-900 text-white hover:from-gray-900 hover:to-gray-800 font-semibold rounded-2xl">
                       <svg className="w-5 h-5 md:w-6 md:h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
                       </svg>
