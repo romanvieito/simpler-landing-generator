@@ -62,6 +62,9 @@ function LandingGeneratorContent() {
     'Step 2/2: Adding interactive elements and animations...',
     'Step 2/2: Optimizing for performance and speed...',
     'Step 2/2: Finalizing responsive breakpoints...',
+    'Step 2/2: Adding smooth hover effects and transitions...',
+    'Step 2/2: Ensuring cross-browser compatibility...',
+    'Step 2/2: Implementing accessibility features...',
     'Step 2/2: Completing landing page generation...'
   ];
 
@@ -69,7 +72,7 @@ function LandingGeneratorContent() {
   const getDetailedCodingMessage = (index: number) => {
     if (!planDetails) return codingMessages[index % codingMessages.length];
 
-    const cycleIndex = index % 3; // Cycle through 3 different detailed messages
+    const cycleIndex = index % 6; // Cycle through 6 different detailed messages
 
     switch (cycleIndex) {
       case 0:
@@ -77,12 +80,23 @@ function LandingGeneratorContent() {
           ? `Step 2/2: Building "${planDetails.title}" with ${planDetails.sectionCount} sections (${planDetails.sections?.slice(0, 3).join(', ')}${planDetails.sections && planDetails.sections.length > 3 ? '...' : ''})`
           : codingMessages[index % codingMessages.length];
       case 1:
-        return planDetails.palette?.primary
-          ? `Step 2/2: Applying ${planDetails.palette.primary} color theme`
+        return planDetails.palette?.primary && planDetails.palette?.secondary
+          ? `Step 2/2: Applying ${planDetails.palette.primary} primary and ${planDetails.palette.secondary} accent colors`
           : codingMessages[index % codingMessages.length];
       case 2:
+        return planDetails.fonts?.heading && planDetails.fonts?.body
+          ? `Step 2/2: Setting up ${planDetails.fonts.heading} headings and ${planDetails.fonts.body} body text`
+          : codingMessages[index % codingMessages.length];
+      case 3:
         return planDetails.imageQueries?.length
-          ? `Step 2/2: Finding ${planDetails.imageQueries.length} relevant images`
+          ? `Step 2/2: Finding ${planDetails.imageQueries.length} high-quality images (${planDetails.imageQueries.slice(0, 2).join(', ')}${planDetails.imageQueries.length > 2 ? '...' : ''})`
+          : codingMessages[index % codingMessages.length];
+      case 4:
+        const sectionsList = planDetails.sections?.slice(0, 4).join(', ') || 'content sections';
+        return `Step 2/2: Creating ${sectionsList}${planDetails.sections && planDetails.sections.length > 4 ? ' and more sections' : ''}`;
+      case 5:
+        return planDetails.palette?.background
+          ? `Step 2/2: Designing with ${planDetails.palette.background} background and ${planDetails.palette.text} text for optimal readability`
           : codingMessages[index % codingMessages.length];
       default:
         return codingMessages[index % codingMessages.length];
@@ -130,7 +144,7 @@ function LandingGeneratorContent() {
 
     const interval = setInterval(() => {
       setMessageIndex(prev => (prev + 1) % messages.length);
-    }, 4000); // Change message every 4 seconds
+    }, 6000); // Change message every 6 seconds
 
     return () => clearInterval(interval);
   }, [loading]);
