@@ -31,7 +31,7 @@ function LandingGeneratorContent() {
   const [websiteStyle, setWebsiteStyle] = useState<'Professional' | 'Creative' | 'Friendly' | 'Minimalist'>('Professional');
   const [loading, setLoading] = useState<'idle' | 'planning' | 'coding' | 'publishing' | 'saving'>('idle');
   const [plan, setPlan] = useState<Plan | null>(null);
-  const [planDetails, setPlanDetails] = useState<{ title?: string; sectionCount?: number; sections?: string[] } | null>(null);
+  const [planDetails, setPlanDetails] = useState<{ title?: string; sectionCount?: number; sections?: string[]; style?: string; palette?: any; fonts?: any; imageQueries?: string[] } | null>(null);
   const [html, setHtml] = useState<string>('');
   const [editMode, setEditMode] = useState(false);
   const [selectedEl, setSelectedEl] = useState<HTMLElement | null>(null);
@@ -243,7 +243,7 @@ function LandingGeneratorContent() {
       setPublishedUrl('');
       setSavedSiteId('');
       setPlan(null);
-      setPlanDetails(null);
+      setPlanDetails({ style: websiteStyle });
       setHtml('');
       setHistory([]);
       setSelectedEl(null);
@@ -274,7 +274,11 @@ function LandingGeneratorContent() {
       setPlanDetails({
         title: planOut.title,
         sectionCount: planOut.sections?.length || 0,
-        sections: planOut.sections?.map(s => s.type) || []
+        sections: planOut.sections?.map(s => s.type) || [],
+        style: websiteStyle,
+        palette: planOut.palette,
+        fonts: planOut.fonts,
+        imageQueries: planOut.images?.map(img => img.query) || []
       });
 
       setLoading('coding');
@@ -399,11 +403,13 @@ function LandingGeneratorContent() {
 
   const isGenerating = loading === 'planning' || loading === 'coding';
   const status = loading === 'planning'
-    ? 'Step 1/2: Analyzing your idea and creating a design plan...'
+    ? planDetails?.style
+      ? `Step 1/2: Planning ${planDetails.style.toLowerCase()} layout, colors, fonts, and content structure...`
+      : 'Step 1/2: Analyzing your idea and creating a design plan...'
     : loading === 'coding'
       ? planDetails?.title
-        ? `Step 2/2: Building "${planDetails.title}" with ${planDetails.sectionCount || 0} sections (${planDetails.sections?.slice(0, 3).join(', ')}${planDetails.sections && planDetails.sections.length > 3 ? '...' : ''})`
-        : 'Step 2/2: Generating HTML code...'
+        ? `Step 2/2: Building "${planDetails.title}" with ${planDetails.sectionCount || 0} sections (${planDetails.sections?.slice(0, 3).join(', ')}${planDetails.sections && planDetails.sections.length > 3 ? '...' : ''})${planDetails.palette?.primary ? ` • ${planDetails.palette.primary} theme` : ''}${planDetails.imageQueries?.length ? ` • Finding ${planDetails.imageQueries.length} images` : ''}`
+        : 'Step 2/2: Converting design to responsive HTML and CSS...'
       : loading === 'publishing'
         ? 'Publishing to Vercel...'
         : loading === 'saving'
