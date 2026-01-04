@@ -485,13 +485,37 @@ function LandingGeneratorContent() {
                   padding: '2rem',
                   textAlign: 'center',
                   transition: 'transform var(--transition-base), box-shadow var(--transition-base)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.1)';
+                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
+                  if (icon) {
+                    icon.style.transform = 'scale(1.1)';
+                    icon.style.boxShadow = icon.style.boxShadow.replace('0.3', '0.5');
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '';
+                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
+                  if (icon) {
+                    icon.style.transform = 'scale(1)';
+                    icon.style.boxShadow = icon.style.boxShadow.replace('0.5', '0.3');
+                  }
                 }}>
                   <div className="icon-circle" style={{
-                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-                    color: '#667eea',
-                    margin: '0 auto 1.5rem'
+                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    color: 'white',
+                    margin: '0 auto 1.5rem',
+                    boxShadow: '0 8px 25px rgba(102, 126, 234, 0.3)',
+                    transform: 'scale(1)',
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease'
                   }}>
-                    🚀
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2L13.09 8.26L22 9L13.09 9.74L12 16L10.91 9.74L2 9L10.91 8.26L12 2Z" fill="currentColor"/>
+                      <path d="M12 16L13.09 22.26L22 23L13.09 23.74L12 30L10.91 23.74L2 23L10.91 22.26L12 16Z" fill="currentColor" opacity="0.6"/>
+                    </svg>
                   </div>
                   <h3 style={{
                     fontSize: '1.25rem',
@@ -514,13 +538,37 @@ function LandingGeneratorContent() {
                   padding: '2rem',
                   textAlign: 'center',
                   transition: 'transform var(--transition-base), box-shadow var(--transition-base)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.1)';
+                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
+                  if (icon) {
+                    icon.style.transform = 'scale(1.1)';
+                    icon.style.boxShadow = icon.style.boxShadow.replace('0.3', '0.5');
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '';
+                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
+                  if (icon) {
+                    icon.style.transform = 'scale(1)';
+                    icon.style.boxShadow = icon.style.boxShadow.replace('0.5', '0.3');
+                  }
                 }}>
                   <div className="icon-circle" style={{
-                    backgroundColor: 'rgba(118, 75, 162, 0.1)',
-                    color: '#764ba2',
-                    margin: '0 auto 1.5rem'
+                    background: 'linear-gradient(135deg, #764ba2 0%, #f093fb 100%)',
+                    color: 'white',
+                    margin: '0 auto 1.5rem',
+                    boxShadow: '0 8px 25px rgba(118, 75, 162, 0.3)',
+                    transform: 'scale(1)',
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease'
                   }}>
-                    💼
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M20 7H16V5C16 3.89 15.11 3 14 3H10C8.89 3 8 3.89 8 5V7H4C2.89 7 2.01 7.89 2.01 9L2 19C2 20.11 2.89 21 4 21H20C21.11 21 22 20.11 22 19V9C22 7.89 21.11 7 20 7ZM14 5V7H10V5H14ZM4 9H20V19H4V9Z" fill="currentColor"/>
+                      <path d="M14 12H16V14H14V12Z" fill="currentColor"/>
+                    </svg>
                   </div>
                   <h3 style={{
                     fontSize: '1.25rem',
@@ -543,13 +591,36 @@ function LandingGeneratorContent() {
                   padding: '2rem',
                   textAlign: 'center',
                   transition: 'transform var(--transition-base), box-shadow var(--transition-base)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.1)';
+                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
+                  if (icon) {
+                    icon.style.transform = 'scale(1.1)';
+                    icon.style.boxShadow = icon.style.boxShadow.replace('0.3', '0.5');
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '';
+                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
+                  if (icon) {
+                    icon.style.transform = 'scale(1)';
+                    icon.style.boxShadow = icon.style.boxShadow.replace('0.5', '0.3');
+                  }
                 }}>
                   <div className="icon-circle" style={{
-                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
-                    color: '#3b82f6',
-                    margin: '0 auto 1.5rem'
+                    background: 'linear-gradient(135deg, #3b82f6 0%, #1e40af 100%)',
+                    color: 'white',
+                    margin: '0 auto 1.5rem',
+                    boxShadow: '0 8px 25px rgba(59, 130, 246, 0.3)',
+                    transform: 'scale(1)',
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease'
                   }}>
-                    📊
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M19 3H5C3.9 3 3 3.9 3 5V19C3 20.1 3.9 21 5 21H19C20.1 21 21 20.1 21 19V5C21 3.9 20.1 3 19 3ZM9 17H7V10H9V17ZM13 17H11V7H13V17ZM17 17H15V13H17V17Z" fill="currentColor"/>
+                    </svg>
                   </div>
                   <h3 style={{
                     fontSize: '1.25rem',
@@ -572,13 +643,37 @@ function LandingGeneratorContent() {
                   padding: '2rem',
                   textAlign: 'center',
                   transition: 'transform var(--transition-base), box-shadow var(--transition-base)'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-4px)';
+                  e.currentTarget.style.boxShadow = '0 12px 40px rgba(0, 0, 0, 0.1)';
+                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
+                  if (icon) {
+                    icon.style.transform = 'scale(1.1)';
+                    icon.style.boxShadow = icon.style.boxShadow.replace('0.3', '0.5');
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '';
+                  const icon = e.currentTarget.querySelector('.icon-circle') as HTMLElement;
+                  if (icon) {
+                    icon.style.transform = 'scale(1)';
+                    icon.style.boxShadow = icon.style.boxShadow.replace('0.5', '0.3');
+                  }
                 }}>
                   <div className="icon-circle" style={{
-                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
-                    color: '#10b981',
-                    margin: '0 auto 1.5rem'
+                    background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+                    color: 'white',
+                    margin: '0 auto 1.5rem',
+                    boxShadow: '0 8px 25px rgba(16, 185, 129, 0.3)',
+                    transform: 'scale(1)',
+                    transition: 'transform 0.3s ease, box-shadow 0.3s ease'
                   }}>
-                    🏪
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M19 7H18V6C18 5.45 17.55 5 17 5S16 5.45 16 6V7H8V6C8 5.45 7.55 5 7 5S6 5.45 6 6V7H5C3.89 7 3.01 7.89 3.01 9L3 19C3 20.11 3.89 21 5 21H19C20.11 21 21 20.11 21 19V9C21 7.89 20.11 7 19 7ZM5 19V9H19V19H5Z" fill="currentColor"/>
+                      <path d="M9 11H11V13H9V11ZM13 11H15V13H13V11Z" fill="currentColor"/>
+                    </svg>
                   </div>
                   <h3 style={{
                     fontSize: '1.25rem',
@@ -719,7 +814,7 @@ function LandingGeneratorContent() {
                     <div className="comparison-item comparison-item-after">
                       <span style={{ fontSize: '1.25rem', color: 'var(--color-success)', flexShrink: 0 }}>✓</span>
                       <span style={{ color: 'var(--color-gray-900)', fontWeight: 500, lineHeight: 1.6 }}>
-                        Generate beautiful landing pages in minutes
+                        Quick, high-converting landing pages
                       </span>
                     </div>
                     <div className="comparison-item comparison-item-after">
@@ -737,7 +832,7 @@ function LandingGeneratorContent() {
                     <div className="comparison-item comparison-item-after">
                       <span style={{ fontSize: '1.25rem', color: 'var(--color-success)', flexShrink: 0 }}>✓</span>
                       <span style={{ color: 'var(--color-gray-900)', fontWeight: 500, lineHeight: 1.6 }}>
-                        Modern, high-converting designs powered by AI
+                        Test your ideas quickly
                       </span>
                     </div>
                   </div>
@@ -758,7 +853,7 @@ function LandingGeneratorContent() {
                   color: 'var(--color-gray-900)',
                   marginBottom: '1rem'
                 }}>
-                  Ready to Launch Your Landing Page?
+                  How Can I Test My Ideas in Minutes?
                 </h3>
                 <p style={{
                   fontSize: '1.125rem',
@@ -767,7 +862,7 @@ function LandingGeneratorContent() {
                   maxWidth: '500px',
                   margin: '0 auto 2rem'
                 }}>
-                  Join hundreds of businesses already using LandGen to create stunning landing pages
+                  Get high-converting landing pages without the wait.
                 </p>
                 <SignInButton mode="modal">
                   <button className="btn btn-primary" style={{
@@ -777,7 +872,7 @@ function LandingGeneratorContent() {
                     borderRadius: 'var(--radius-xl)',
                     boxShadow: 'var(--shadow-lg)'
                   }}>
-                    Start Building Now
+                    Start Creating for Free
                   </button>
                 </SignInButton>
               </div>
