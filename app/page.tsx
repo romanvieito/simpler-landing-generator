@@ -899,8 +899,8 @@ function LandingGeneratorContent() {
                 <div className="flex items-center gap-4">
                   <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
 
-                  <Link href="/sites" className="link text-sm">
-                    My Sites
+                  <Link href="/dashboard" className="link text-sm">
+                    Dashboard
                   </Link>
                   <UserButton />
                 </div>

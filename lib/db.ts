@@ -147,6 +147,19 @@ export async function getContactSubmissions({ siteId, userId }: { siteId: string
   return rows;
 }
 
+export async function getAllContactSubmissionsForUser({ userId }: { userId: string }) {
+  const { rows } = await sql`
+    SELECT cs.id, cs.name, cs.email, cs.message, cs.created_at, s.title as site_title, s.id as site_id
+    FROM contact_submissions cs
+    JOIN sites s ON cs.site_id = s.id
+    WHERE s.user_id = ${userId}
+    ORDER BY cs.created_at DESC
+    LIMIT 100
+  `;
+
+  return rows;
+}
+
 // Credit management functions
 export async function getUserCredits({ userId }: { userId: string }) {
   const { rows } = await sql`
