@@ -923,33 +923,31 @@ function LandingGeneratorContent() {
               }}>
                 <div style={{ textAlign: 'center', marginBottom: '1rem' }}>
                   <h2 className="text-2xl font-semibold text-gray-900" style={{ marginBottom: '0.5rem' }}>
-                    Create Your Landing Page
+                    Create Landing Page
                   </h2>
-                  <p className="text-gray-600">
-                    Describe your business and get a coffee-break-ready landing page for you
-                  </p>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                  <label htmlFor="desc" style={{
-                    display: 'block',
-                    fontSize: '0.875rem',
-                    fontWeight: 500,
-                    color: 'var(--color-gray-900)'
-                  }}>
-                    Business / website description
-                  </label>
                   <div style={{ position: 'relative' }}>
                     <textarea
                       id="desc"
-                      placeholder="Describe your business, audience, and value proposition..."
+                      placeholder="Describe your business and audience..."
                       value={description}
-                      onChange={(e) => setDescription(e.target.value)}
+                      onChange={(e) => {
+                        setDescription(e.target.value);
+                        // Auto-resize textarea
+                        e.target.style.height = 'auto';
+                        e.target.style.height = Math.min(e.target.scrollHeight, 300) + 'px';
+                      }}
                       rows={6}
                       className="textarea"
                       style={{ 
                         fontSize: '1rem',
-                        paddingBottom: '3.5rem'
+                        paddingBottom: '3.5rem',
+                        resize: 'none',
+                        minHeight: '150px',
+                        maxHeight: '300px',
+                        overflow: 'auto'
                       }}
                     />
                     <div style={{
