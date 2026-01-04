@@ -65,13 +65,58 @@ function LandingGeneratorContent() {
     'Step 2/2: Completing landing page generation...'
   ];
 
+  // Detailed coding phase messages that cycle through different aspects
+  const getDetailedCodingMessage = (index: number) => {
+    if (!planDetails) return codingMessages[index % codingMessages.length];
+
+    const cycleIndex = index % 3; // Cycle through 3 different detailed messages
+
+    switch (cycleIndex) {
+      case 0:
+        return planDetails.title && planDetails.sectionCount
+          ? `Step 2/2: Building "${planDetails.title}" with ${planDetails.sectionCount} sections (${planDetails.sections?.slice(0, 3).join(', ')}${planDetails.sections && planDetails.sections.length > 3 ? '...' : ''})`
+          : codingMessages[index % codingMessages.length];
+      case 1:
+        return planDetails.palette?.primary
+          ? `Step 2/2: Applying ${planDetails.palette.primary} color theme`
+          : codingMessages[index % codingMessages.length];
+      case 2:
+        return planDetails.imageQueries?.length
+          ? `Step 2/2: Finding ${planDetails.imageQueries.length} relevant images`
+          : codingMessages[index % codingMessages.length];
+      default:
+        return codingMessages[index % codingMessages.length];
+    }
+  };
+
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (previewRef.current && html) {
-      previewRef.current.innerHTML = html;
+      if (editMode) {
+        // Use direct HTML injection for edit mode
+        previewRef.current.innerHTML = html;
+      } else {
+        // Use iframe for CSS isolation when not editing
+        const iframe = document.createElement('iframe');
+        iframe.style.width = '100%';
+        iframe.style.minHeight = '100%';
+        iframe.style.border = 'none';
+        iframe.style.backgroundColor = 'var(--color-white)';
+        iframe.title = 'Landing Page Preview';
+
+        // Create a complete HTML document for the iframe
+        const fullHtml = html.startsWith('<!doctype') || html.startsWith('<html')
+          ? html
+          : `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview</title></head><body>${html}</body></html>`;
+        iframe.srcdoc = fullHtml;
+
+        // Clear and append the iframe
+        previewRef.current.innerHTML = '';
+        previewRef.current.appendChild(iframe);
+      }
     }
-  }, [html]);
+  }, [html, editMode]);
 
   // Cycle through detailed status messages during loading phases
   useEffect(() => {
@@ -85,7 +130,7 @@ function LandingGeneratorContent() {
 
     const interval = setInterval(() => {
       setMessageIndex(prev => (prev + 1) % messages.length);
-    }, 2000); // Change message every 2 seconds
+    }, 4000); // Change message every 4 seconds
 
     return () => clearInterval(interval);
   }, [loading]);
@@ -423,6 +468,7 @@ function LandingGeneratorContent() {
           html: savedHtml,
           nameHint: urlSlug || customUrlSlug || plan?.title || 'landing',
           siteId: siteIdToUse,
+          exactName: !!urlSlug, // Use exact name when urlSlug is provided (from URL editing)
         }),
       });
       const data = await res.json();
@@ -462,9 +508,9 @@ function LandingGeneratorContent() {
     }
 
     if (loading === 'coding') {
-      // If we have plan details, show the detailed building message; otherwise cycle through coding messages
+      // If we have plan details, cycle through detailed aspects; otherwise cycle through coding messages
       if (planDetails?.title) {
-        return `Step 2/2: Building "${planDetails.title}" with ${planDetails.sectionCount || 0} sections (${planDetails.sections?.slice(0, 3).join(', ')}${planDetails.sections && planDetails.sections.length > 3 ? '...' : ''})${planDetails.palette?.primary ? ` • ${planDetails.palette.primary} theme` : ''}${planDetails.imageQueries?.length ? ` • Finding ${planDetails.imageQueries.length} images` : ''}`;
+        return getDetailedCodingMessage(messageIndex);
       }
       return codingMessages[messageIndex] || 'Step 2/2: Converting design to responsive HTML and CSS...';
     }
@@ -1006,7 +1052,11 @@ function LandingGeneratorContent() {
                               placeholder="your-site.vercel.app"
                             />
                             <button
-                              onClick={() => handlePublish(publishedUrl.split('.')[0])}
+                              onClick={() => {
+                                // Extract slug from the full URL input
+                                const slug = publishedUrl.trim().split('.')[0];
+                                handlePublish(slug);
+                              }}
                               disabled={!publishedUrl.trim() || loading === 'publishing'}
                               className="btn btn-primary"
                               style={{

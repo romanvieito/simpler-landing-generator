@@ -1,9 +1,20 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 
+/**
+ * NOTE: This file is not used by Next.js middleware. The actual middleware entrypoint
+ * is `middleware.ts` at the project root.
+ *
+ * Kept temporarily for reference; logic should stay in sync with `middleware.ts`.
+ */
 const isProtectedRoute = createRouteMatcher(["/api/(.*)"]);
+const isPublicRoute = createRouteMatcher([
+  "/api/contact(.*)",
+  "/api/credits/webhook(.*)",
+]);
 
 export default clerkMiddleware(async (auth, request) => {
   if (isProtectedRoute(request)) {
+    if (isPublicRoute(request)) return;
     await auth.protect();
   }
 });

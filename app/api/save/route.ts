@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { sql } from '@vercel/postgres';
-import { ensureSitesTable, insertSite } from '@/lib/db';
+import { ensureSitesTable } from '@/lib/db';
 
 export async function POST(req: Request) {
   const { userId } = await auth();

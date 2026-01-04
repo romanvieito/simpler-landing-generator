@@ -6,6 +6,19 @@ import { Resend } from 'resend';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
+function withCors(resp: NextResponse) {
+  resp.headers.set('Access-Control-Allow-Origin', '*');
+  resp.headers.set('Access-Control-Allow-Methods', 'POST, GET, OPTIONS');
+  resp.headers.set('Access-Control-Allow-Headers', 'Content-Type, Accept');
+  resp.headers.set('Access-Control-Max-Age', '86400');
+  return resp;
+}
+
+export async function OPTIONS() {
+  // Needed for cross-origin fetch() from published landing pages.
+  return withCors(new NextResponse(null, { status: 204 }));
+}
+
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ siteId: string }> }
@@ -16,7 +29,7 @@ export async function POST(
     // 1. Validate site exists first (publicly)
     const site = await getSitePublic(siteId);
     if (!site) {
-      return NextResponse.json({ error: 'Site not found' }, { status: 404 });
+      return withCors(NextResponse.json({ error: 'Site not found' }, { status: 404 }));
     }
 
     // Handle both JSON and form-encoded data
@@ -36,19 +49,19 @@ export async function POST(
 
     // Basic validation
     if (!name?.trim() || !email?.trim() || !message?.trim()) {
-      return NextResponse.json(
+      return withCors(NextResponse.json(
         { error: 'Name, email, and message are required' },
         { status: 400 }
-      );
+      ));
     }
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      return NextResponse.json(
+      return withCors(NextResponse.json(
         { error: 'Invalid email format' },
         { status: 400 }
-      );
+      ));
     }
 
     // Ensure database table exists
@@ -107,25 +120,25 @@ export async function POST(
       if (referrer) {
         const successUrl = new URL(referrer);
         successUrl.searchParams.set('submitted', 'true');
-        return NextResponse.redirect(successUrl.toString());
+        return withCors(NextResponse.redirect(successUrl.toString()));
       }
       
       const successUrl = new URL(req.url);
       successUrl.searchParams.set('submitted', 'true');
-      return NextResponse.redirect(successUrl.origin + successUrl.pathname + '?submitted=true');
+      return withCors(NextResponse.redirect(successUrl.origin + successUrl.pathname + '?submitted=true'));
     }
 
-    return NextResponse.json({
+    return withCors(NextResponse.json({
       success: true,
       message: 'Contact form submitted successfully'
-    });
+    }));
 
   } catch (e: any) {
     console.error('Contact form submission error:', e);
-    return NextResponse.json(
+    return withCors(NextResponse.json(
       { error: e?.message ?? 'Failed to submit contact form' },
       { status: 500 }
-    );
+    ));
   }
 }
 

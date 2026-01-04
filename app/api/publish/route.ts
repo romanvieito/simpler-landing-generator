@@ -13,8 +13,8 @@ export async function POST(req: Request) {
   }
 
   try {
-    const body = await req.json() as { html: string; nameHint?: string; siteId?: string | null };
-    const { html, nameHint, siteId } = body;
+    const body = await req.json() as { html: string; nameHint?: string; siteId?: string | null; exactName?: boolean };
+    const { html, nameHint, siteId, exactName } = body;
 
     if (!html || typeof html !== 'string') {
       return NextResponse.json({ error: 'Missing HTML' }, { status: 400 });
@@ -25,9 +25,14 @@ export async function POST(req: Request) {
     }
 
     // Replace relative API URLs with absolute URLs pointing to the main app
-    const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    const appUrl =
+      process.env.NEXT_PUBLIC_APP_URL ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : undefined);
     if (!appUrl) {
-      return NextResponse.json({ error: 'Server configuration error: NEXT_PUBLIC_APP_URL not set' }, { status: 500 });
+      return NextResponse.json(
+        { error: 'Server configuration error: NEXT_PUBLIC_APP_URL not set' },
+        { status: 500 }
+      );
     }
 
     let processedHtml = html;
@@ -39,24 +44,19 @@ export async function POST(req: Request) {
       `/api/contact/${siteId}`
     );
 
-    // 2. Then convert all relative /api/contact/ URLs to absolute URLs
+    // 2. Then convert all relative /api/contact/ URLs (HTML attrs + inline JS fetch URLs) to absolute URLs
     // Ensure appUrl doesn't have a trailing slash for consistency
     const baseUrl = appUrl.endsWith('/') ? appUrl.slice(0, -1) : appUrl;
-    
-    // Replace in HTML attributes (action, href, src)
+
+    // Replace occurrences that are inside quotes (covers action/href/src/fetch URLs etc).
+    // Avoids touching already-absolute URLs (they won't match because they won't start with "/api/...").
     processedHtml = processedHtml.replace(
-      /action=["']\/api\/contact\//g,
-      `action="${baseUrl}/api/contact/`
-    ).replace(
-      /href=["']\/api\/contact\//g,
-      `href="${baseUrl}/api/contact/`
-    ).replace(
-      /src=["']\/api\/contact\//g,
-      `src="${baseUrl}/api/contact/`
+      /(["'])\/api\/contact\//g,
+      `$1${baseUrl}/api/contact/`
     );
 
     const slug = makeSlug(nameHint || 'landing');
-    const name = `${slug}-${Math.random().toString(36).slice(2, 7)}`;
+    const name = exactName ? slug : `${slug}-${Math.random().toString(36).slice(2, 7)}`;
 
     const url = await deployStaticHtml({ name, html: processedHtml });
 

@@ -65,6 +65,7 @@ IMPORTANT: For the contact form, use this exact format:
   <div id="success-message" style="display:none; padding: 1rem; background: #10b981; color: white; border-radius: 0.5rem; margin-bottom: 1rem;">
     ✓ Thank you! Your message has been sent successfully.
   </div>
+  <div id="error-message" style="display:none; padding: 1rem; background: #ef4444; color: white; border-radius: 0.5rem; margin-bottom: 1rem;"></div>
   <form action="{{SITE_ID_PLACEHOLDER}}" method="POST" id="contact-form">
     <label>${plan.sectionsContent?.contact?.nameLabel || 'Name'} <input type="text" name="name" required></label>
     <label>${plan.sectionsContent?.contact?.emailLabel || 'Email'} <input type="email" name="email" required></label>
@@ -74,13 +75,63 @@ IMPORTANT: For the contact form, use this exact format:
 </div>
 
 <script>
-// Show success message if redirected back with submitted=true
-if (window.location.search.includes('submitted=true')) {
+// Contact form UX:
+// - If redirected back with submitted=true, show success and hide form
+// - Otherwise, intercept submit and POST via fetch() so the page doesn't navigate
+(function () {
   const successMsg = document.getElementById('success-message');
+  const errorMsg = document.getElementById('error-message');
   const form = document.getElementById('contact-form');
-  if (successMsg) successMsg.style.display = 'block';
-  if (form) form.style.display = 'none';
-}
+
+  function showSuccess() {
+    if (errorMsg) errorMsg.style.display = 'none';
+    if (successMsg) successMsg.style.display = 'block';
+    if (form) form.style.display = 'none';
+  }
+
+  function showError(text) {
+    if (!errorMsg) return;
+    errorMsg.textContent = text || 'Something went wrong. Please try again.';
+    errorMsg.style.display = 'block';
+  }
+
+  if (window.location.search.includes('submitted=true')) {
+    showSuccess();
+    return;
+  }
+
+  if (!form) return;
+
+  form.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    try {
+      if (errorMsg) errorMsg.style.display = 'none';
+
+      const formData = new FormData(form);
+      const payload = {
+        name: String(formData.get('name') || ''),
+        email: String(formData.get('email') || ''),
+        message: String(formData.get('message') || ''),
+      };
+
+      const resp = await fetch(form.action, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await resp.json().catch(function () { return null; });
+      if (!resp.ok) {
+        showError((data && data.error) || 'Failed to send message.');
+        return;
+      }
+
+      showSuccess();
+    } catch (err) {
+      showError('Network error. Please try again.');
+    }
+  });
+})();
 </script>
 
 The action URL will be replaced with the actual site ID when saved.
