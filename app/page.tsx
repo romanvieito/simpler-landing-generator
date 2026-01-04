@@ -32,6 +32,7 @@ function LandingGeneratorContent() {
   const [loading, setLoading] = useState<'idle' | 'planning' | 'coding' | 'publishing' | 'saving'>('idle');
   const [plan, setPlan] = useState<Plan | null>(null);
   const [planDetails, setPlanDetails] = useState<{ title?: string; sectionCount?: number; sections?: string[]; style?: string; palette?: any; fonts?: any; imageQueries?: string[] } | null>(null);
+  const [messageIndex, setMessageIndex] = useState(0);
   const [html, setHtml] = useState<string>('');
   const [editMode, setEditMode] = useState(false);
   const [selectedEl, setSelectedEl] = useState<HTMLElement | null>(null);
@@ -43,6 +44,26 @@ function LandingGeneratorContent() {
   const [customUrlSlug, setCustomUrlSlug] = useState<string>('');
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
 
+  // Detailed status messages for each phase
+  const planningMessages = [
+    'Step 1/2: Analyzing your business description...',
+    'Step 1/2: Understanding your target audience...',
+    'Step 1/2: Planning content structure and sections...',
+    'Step 1/2: Designing color palette and visual theme...',
+    'Step 1/2: Selecting typography and fonts...',
+    'Step 1/2: Finding relevant images and visuals...',
+    'Step 1/2: Creating comprehensive design plan...'
+  ];
+
+  const codingMessages = [
+    'Step 2/2: Generating responsive HTML structure...',
+    'Step 2/2: Applying custom CSS styles and colors...',
+    'Step 2/2: Implementing mobile-first design...',
+    'Step 2/2: Adding interactive elements and animations...',
+    'Step 2/2: Optimizing for performance and speed...',
+    'Step 2/2: Finalizing responsive breakpoints...',
+    'Step 2/2: Completing landing page generation...'
+  ];
 
   const previewRef = useRef<HTMLDivElement>(null);
 
@@ -51,6 +72,23 @@ function LandingGeneratorContent() {
       previewRef.current.innerHTML = html;
     }
   }, [html]);
+
+  // Cycle through detailed status messages during loading phases
+  useEffect(() => {
+    if (loading === 'idle') {
+      setMessageIndex(0);
+      return;
+    }
+
+    const messages = loading === 'planning' ? planningMessages : loading === 'coding' ? codingMessages : [];
+    if (messages.length === 0) return;
+
+    const interval = setInterval(() => {
+      setMessageIndex(prev => (prev + 1) % messages.length);
+    }, 2000); // Change message every 2 seconds
+
+    return () => clearInterval(interval);
+  }, [loading]);
 
   // Load site from URL parameter on mount (for "Load in Editor" functionality)
   useEffect(() => {
@@ -244,6 +282,7 @@ function LandingGeneratorContent() {
       setSavedSiteId('');
       setPlan(null);
       setPlanDetails({ style: websiteStyle });
+      setMessageIndex(0);
       setHtml('');
       setHistory([]);
       setSelectedEl(null);
@@ -319,6 +358,7 @@ function LandingGeneratorContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          id: savedSiteId || undefined, // Pass existing ID if updating
           title: plan?.title ?? 'Landing',
           description,
           plan,
@@ -344,34 +384,43 @@ function LandingGeneratorContent() {
         return;
       }
 
-      // Save first if not already saved
-      let siteIdToUse = savedSiteId;
-      if (!siteIdToUse) {
-        const cleanedHtml = cleanHtmlForPublishing(html);
-        const saveRes = await fetch('/api/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            title: plan?.title ?? 'Landing',
-            description,
-            plan,
-            html: cleanedHtml,
-            vercelUrl: publishedUrl || null,
-          }),
-        });
-        const saveData = await saveRes.json();
-        if (!saveRes.ok) throw new Error(saveData?.error || 'Save failed');
-        siteIdToUse = saveData.id;
-        setSavedSiteId(siteIdToUse);
+      setLoading('publishing');
+
+      // Always save/update before publishing to ensure we have the latest HTML with correct form action
+      const cleanedHtml = cleanHtmlForPublishing(html);
+      const saveRes = await fetch('/api/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: savedSiteId || undefined, // Pass existing ID if updating
+          title: plan?.title ?? 'Landing',
+          description,
+          plan,
+          html: cleanedHtml,
+          vercelUrl: publishedUrl || null,
+        }),
+      });
+      const saveData = await saveRes.json();
+      if (!saveRes.ok) throw new Error(saveData?.error || 'Save failed');
+      const siteIdToUse = saveData.id;
+      setSavedSiteId(siteIdToUse);
+
+      // Fetch the saved HTML from the database (which has the placeholder replaced)
+      const siteRes = await fetch(`/api/sites/${siteIdToUse}`);
+      if (!siteRes.ok) throw new Error('Failed to fetch saved site data');
+      const siteData = await siteRes.json();
+      const savedHtml = siteData.site?.html;
+
+      if (!savedHtml) {
+        throw new Error('No HTML found in saved site');
       }
 
-      setLoading('publishing');
-      const cleanedHtml = cleanHtmlForPublishing(html);
+      // Publish using the saved HTML (which has the correct form action)
       const res = await fetch('/api/publish', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          html: cleanedHtml,
+          html: savedHtml,
           nameHint: urlSlug || customUrlSlug || plan?.title || 'landing',
           siteId: siteIdToUse,
         }),
@@ -402,19 +451,30 @@ function LandingGeneratorContent() {
   }
 
   const isGenerating = loading === 'planning' || loading === 'coding';
-  const status = loading === 'planning'
-    ? planDetails?.style
-      ? `Step 1/2: Planning ${planDetails.style.toLowerCase()} layout, colors, fonts, and content structure...`
-      : 'Step 1/2: Analyzing your idea and creating a design plan...'
-    : loading === 'coding'
-      ? planDetails?.title
-        ? `Step 2/2: Building "${planDetails.title}" with ${planDetails.sectionCount || 0} sections (${planDetails.sections?.slice(0, 3).join(', ')}${planDetails.sections && planDetails.sections.length > 3 ? '...' : ''})${planDetails.palette?.primary ? ` • ${planDetails.palette.primary} theme` : ''}${planDetails.imageQueries?.length ? ` • Finding ${planDetails.imageQueries.length} images` : ''}`
-        : 'Step 2/2: Converting design to responsive HTML and CSS...'
-      : loading === 'publishing'
-        ? 'Publishing to Vercel...'
-        : loading === 'saving'
-          ? 'Saving...'
-          : '';
+
+  const getStatusMessage = () => {
+    if (loading === 'planning') {
+      // If we have plan details, show detailed info; otherwise cycle through planning messages
+      if (planDetails?.title) {
+        return `Step 1/2: Planning ${planDetails.style?.toLowerCase() || 'professional'} layout, colors, fonts, and content structure...`;
+      }
+      return planningMessages[messageIndex] || 'Step 1/2: Analyzing your idea and creating a design plan...';
+    }
+
+    if (loading === 'coding') {
+      // If we have plan details, show the detailed building message; otherwise cycle through coding messages
+      if (planDetails?.title) {
+        return `Step 2/2: Building "${planDetails.title}" with ${planDetails.sectionCount || 0} sections (${planDetails.sections?.slice(0, 3).join(', ')}${planDetails.sections && planDetails.sections.length > 3 ? '...' : ''})${planDetails.palette?.primary ? ` • ${planDetails.palette.primary} theme` : ''}${planDetails.imageQueries?.length ? ` • Finding ${planDetails.imageQueries.length} images` : ''}`;
+      }
+      return codingMessages[messageIndex] || 'Step 2/2: Converting design to responsive HTML and CSS...';
+    }
+
+    if (loading === 'publishing') return 'Publishing to Vercel...';
+    if (loading === 'saving') return 'Saving...';
+    return '';
+  };
+
+  const status = getStatusMessage();
 
   return (
     <>
@@ -839,46 +899,37 @@ function LandingGeneratorContent() {
           </div>
         ) : (
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', backgroundColor: 'var(--color-white)' }}>
-            <header style={{
-              position: 'sticky',
-              top: 0,
-              zIndex: 10,
-              backgroundColor: 'var(--color-white)',
-              borderBottom: '1px solid var(--color-gray-100)'
-            }}>
-              <div className="container flex items-center justify-between" style={{ padding: '0.75rem 0' }}>
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => {
-                      setView('input');
-                      setEditMode(false);
-                      if (selectedEl) {
-                        selectedEl.style.outline = '';
-                        selectedEl.contentEditable = 'false';
-                        setSelectedEl(null);
-                      }
-                    }}
-                    className="btn btn-ghost text-gray-700 hover:text-black px-3 py-2 transition-colors duration-200 text-sm"
-                  >
-                    ← Edit Prompt
-                  </button>
-                  <div style={{
-                    height: '1rem',
-                    width: '1px',
-                    backgroundColor: 'var(--color-gray-200)'
-                  }} />
-                  <Link href="/sites" className="text-gray-700 hover:text-black transition-colors duration-200 text-sm">
-                    My Sites
-                  </Link>
-                </div>
+            <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+              <div className="container py-4 md:py-6">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 md:gap-4 min-w-0">
+                    <button
+                      onClick={() => {
+                        setView('input');
+                        setEditMode(false);
+                        if (selectedEl) {
+                          selectedEl.style.outline = '';
+                          selectedEl.contentEditable = 'false';
+                          setSelectedEl(null);
+                        }
+                      }}
+                      className="btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base"
+                    >
+                      ← Back
+                    </button>
+                    <div style={{
+                      height: '1rem',
+                      width: '1px',
+                      backgroundColor: 'var(--color-gray-200)'
+                    }} />
+                   
+                  </div>
 
-                <div className="flex items-center gap-3">
-                  <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
-
+                  <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                   <button
                     onClick={() => setEditMode((v) => !v)}
                     disabled={!html || isGenerating}
-                    className={`btn btn-ghost text-gray-600 hover:text-gray-900 hover:bg-gray-50 px-3 py-2 rounded-lg transition-all duration-200 text-sm ${editMode ? 'text-green-600' : ''}`}
+                    className={`btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base ${editMode ? 'text-green-600' : ''}`}
                   >
                     {editMode ? '✓ Edit Mode' : 'Edit Text'}
                   </button>
@@ -886,22 +937,22 @@ function LandingGeneratorContent() {
                   <button
                     onClick={doUndo}
                     disabled={history.length < 1}
-                    className="btn btn-ghost text-gray-700 hover:text-black px-3 py-2 transition-colors duration-200 text-sm"
+                    className="btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base"
                     title="Undo (Cmd/Ctrl+Z)"
                   >
                     ↶
                   </button>
 
-                  <div style={{ 
-                    height: '1.5rem', 
-                    width: '1px', 
-                    backgroundColor: 'var(--color-gray-300)' 
-                  }} />
+                    <div style={{
+                      height: '1rem',
+                      width: '1px',
+                      backgroundColor: 'var(--color-gray-200)'
+                    }} />
 
                   <button
                     onClick={handleSave}
                     disabled={!html || isGenerating}
-                    className="btn btn-ghost text-gray-700 hover:text-black px-3 py-2 transition-colors duration-200 text-sm"
+                    className="btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base"
                   >
                     {loading === 'saving' ? 'Saving...' : savedSiteId ? 'Saved ✓' : 'Save Draft'}
                   </button>
@@ -909,7 +960,7 @@ function LandingGeneratorContent() {
                   <button
                     onClick={() => handlePublish()}
                     disabled={!html || isGenerating}
-                    className="btn btn-ghost text-gray-700 hover:text-black px-3 py-2 transition-colors duration-200 text-sm"
+                    className="btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base"
                   >
                     {loading === 'publishing' ? 'Publishing...' : 'Publish Live'}
                   </button>
@@ -920,7 +971,14 @@ function LandingGeneratorContent() {
                     backgroundColor: 'var(--color-gray-200)'
                   }} />
 
-                  <UserButton />
+                    <div className="flex-shrink-0">
+                      <UserButton />
+                    </div>
+                  </div>
+                </div>
+                {/* Mobile credit display */}
+                <div className="sm:hidden mt-3">
+                  <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
                 </div>
               </div>
 
@@ -934,28 +992,22 @@ function LandingGeneratorContent() {
                         </span>
                         {editingUrl ? (
                           <div className="flex items-center gap-2">
-                            <span style={{ color: 'var(--color-gray-600)' }}>
-                              https://
-                            </span>
                             <input
                               type="text"
-                              value={customUrlSlug}
-                              onChange={(e) => setCustomUrlSlug(e.target.value)}
+                              value={publishedUrl || ''}
+                              onChange={(e) => setPublishedUrl(e.target.value)}
                               className="input"
                               style={{
                                 fontSize: '0.875rem',
                                 padding: '0.25rem 0.5rem',
-                                width: '120px',
+                                width: '200px',
                                 height: 'auto'
                               }}
-                              placeholder="url-slug"
+                              placeholder="your-site.vercel.app"
                             />
-                            <span style={{ color: 'var(--color-gray-600)' }}>
-                              .vercel.app
-                            </span>
                             <button
-                              onClick={() => handlePublish(customUrlSlug)}
-                              disabled={!customUrlSlug.trim() || loading === 'publishing'}
+                              onClick={() => handlePublish(publishedUrl.split('.')[0])}
+                              disabled={!publishedUrl.trim() || loading === 'publishing'}
                               className="btn btn-primary"
                               style={{
                                 fontSize: '0.75rem',

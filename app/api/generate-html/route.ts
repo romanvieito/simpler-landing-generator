@@ -61,14 +61,27 @@ CRITICAL INSTRUCTIONS:
 - Use the exact content from plan.sectionsContent - do not modify or add to it
 
 IMPORTANT: For the contact form, use this exact format:
-<form action="{{SITE_ID_PLACEHOLDER}}" method="POST">
-  <label>${plan.sectionsContent?.contact?.nameLabel || 'Name'} <input type="text" name="name" required></label>
-  <label>${plan.sectionsContent?.contact?.emailLabel || 'Email'} <input type="email" name="email" required></label>
-  <label>${plan.sectionsContent?.contact?.messageLabel || 'Message'} <textarea name="message" required></textarea></label>
-  <button type="submit">${plan.sectionsContent?.contact?.submitLabel || 'Send Message'}</button>
-</form>
+<div id="contact-section">
+  <div id="success-message" style="display:none; padding: 1rem; background: #10b981; color: white; border-radius: 0.5rem; margin-bottom: 1rem;">
+    ✓ Thank you! Your message has been sent successfully.
+  </div>
+  <form action="{{SITE_ID_PLACEHOLDER}}" method="POST" id="contact-form">
+    <label>${plan.sectionsContent?.contact?.nameLabel || 'Name'} <input type="text" name="name" required></label>
+    <label>${plan.sectionsContent?.contact?.emailLabel || 'Email'} <input type="email" name="email" required></label>
+    <label>${plan.sectionsContent?.contact?.messageLabel || 'Message'} <textarea name="message" required></textarea></label>
+    <button type="submit">${plan.sectionsContent?.contact?.submitLabel || 'Send Message'}</button>
+  </form>
+</div>
 
-If there's a URL parameter 'submitted=true', show a success message: "Thank you! Your message has been sent successfully."
+<script>
+// Show success message if redirected back with submitted=true
+if (window.location.search.includes('submitted=true')) {
+  const successMsg = document.getElementById('success-message');
+  const form = document.getElementById('contact-form');
+  if (successMsg) successMsg.style.display = 'block';
+  if (form) form.style.display = 'none';
+}
+</script>
 
 The action URL will be replaced with the actual site ID when saved.
 

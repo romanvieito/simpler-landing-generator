@@ -20,55 +20,51 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Missing HTML' }, { status: 400 });
     }
 
+    if (!siteId) {
+      return NextResponse.json({ error: 'Missing siteId - site must be saved before publishing' }, { status: 400 });
+    }
+
     // Replace relative API URLs with absolute URLs pointing to the main app
     const appUrl = process.env.NEXT_PUBLIC_APP_URL;
+    if (!appUrl) {
+      return NextResponse.json({ error: 'Server configuration error: NEXT_PUBLIC_APP_URL not set' }, { status: 500 });
+    }
+
     let processedHtml = html;
 
     // 1. First, handle SITE_ID_PLACEHOLDER if it exists (handles both literal and URL-encoded versions)
-    if (siteId) {
-      // Replace the placeholder with the actual contact API path
-      // We handle {{SITE_ID_PLACEHOLDER}}, %7B%7BSITE_ID_PLACEHOLDER%7D%7D, and variations
-      processedHtml = processedHtml.replace(
-        /(\{\{SITE_ID_PLACEHOLDER\}\}|%7B%7BSITE_ID_PLACEHOLDER%7D%7D)/g,
-        `/api/contact/${siteId}`
-      );
-    }
+    // Replace the placeholder with the actual contact API path
+    processedHtml = processedHtml.replace(
+      /(\{\{SITE_ID_PLACEHOLDER\}\}|%7B%7BSITE_ID_PLACEHOLDER%7D%7D)/g,
+      `/api/contact/${siteId}`
+    );
 
-    // 2. Then convert all relative /api/contact/ URLs to absolute if appUrl is available
-    if (appUrl) {
-      // Ensure appUrl doesn't have a trailing slash for consistency
-      const baseUrl = appUrl.endsWith('/') ? appUrl.slice(0, -1) : appUrl;
-      
-      processedHtml = processedHtml.replace(
-        /href="\/api\/contact\//g,
-        `href="${baseUrl}/api/contact/`
-      ).replace(
-        /action="\/api\/contact\//g,
-        `action="${baseUrl}/api/contact/`
-      ).replace(
-        /src="\/api\/contact\//g,
-        `src="${baseUrl}/api/contact/`
-      );
-
-      // Also catch any other /api/contact/ instances not in attributes
-      processedHtml = processedHtml.replace(
-        /(?<![a-zA-Z0-9])\/api\/contact\//g,
-        `${baseUrl}/api/contact/`
-      );
-    }
+    // 2. Then convert all relative /api/contact/ URLs to absolute URLs
+    // Ensure appUrl doesn't have a trailing slash for consistency
+    const baseUrl = appUrl.endsWith('/') ? appUrl.slice(0, -1) : appUrl;
+    
+    // Replace in HTML attributes (action, href, src)
+    processedHtml = processedHtml.replace(
+      /action=["']\/api\/contact\//g,
+      `action="${baseUrl}/api/contact/`
+    ).replace(
+      /href=["']\/api\/contact\//g,
+      `href="${baseUrl}/api/contact/`
+    ).replace(
+      /src=["']\/api\/contact\//g,
+      `src="${baseUrl}/api/contact/`
+    );
 
     const slug = makeSlug(nameHint || 'landing');
     const name = `${slug}-${Math.random().toString(36).slice(2, 7)}`;
 
     const url = await deployStaticHtml({ name, html: processedHtml });
 
-    if (siteId) {
-      try {
-        await updateSiteUrl({ id: siteId, userId, vercelUrl: url } as any);
-      } catch (e) {
-        // non-fatal
-        console.warn('Failed to update site with published URL', e);
-      }
+    try {
+      await updateSiteUrl({ id: siteId, userId, vercelUrl: url } as any);
+    } catch (e) {
+      // non-fatal
+      console.warn('Failed to update site with published URL', e);
     }
 
     return NextResponse.json({ url });
