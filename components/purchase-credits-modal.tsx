@@ -12,8 +12,6 @@ interface PurchaseCreditsModalProps {
 export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalProps) {
   const [loading, setLoading] = useState<CreditPackage | null>(null);
 
-  console.log('PurchaseCreditsModal render, isOpen:', isOpen);
-
   const handlePurchase = async (packageType: CreditPackage) => {
     setLoading(packageType);
     try {
@@ -42,10 +40,28 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
+    <div
+      className="fixed inset-0 flex items-center justify-center z-50"
+      style={{
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backdropFilter: 'blur(4px)'
+      }}
+    >
+      <div
+        className="rounded-lg p-6 max-w-md w-full mx-4"
+        style={{
+          backgroundColor: 'var(--color-white)',
+          border: '1px solid var(--color-gray-200)',
+          boxShadow: 'var(--shadow-xl)'
+        }}
+      >
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">Purchase Credits</h2>
+          <h2
+            className="text-xl font-semibold"
+            style={{ color: 'var(--color-gray-900)' }}
+          >
+            Purchase Credits
+          </h2>
           <button
             onClick={onClose}
             className="text-gray-400 hover:text-gray-600 text-2xl"
@@ -54,7 +70,10 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
           </button>
         </div>
 
-        <p className="text-gray-600 mb-6">
+        <p
+          className="mb-6"
+          style={{ color: 'var(--color-gray-600)', fontSize: '0.875rem' }}
+        >
           Each landing page generation costs 2 credits (1 for plan + 1 for HTML).
         </p>
 
@@ -92,7 +111,17 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
         <div className="mt-6 text-center">
           <button
             onClick={onClose}
-            className="text-sm text-gray-500 hover:text-gray-700"
+            className="text-sm"
+            style={{
+              color: 'var(--color-gray-500)',
+              transition: 'color var(--transition-fast)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.color = 'var(--color-gray-700)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.color = 'var(--color-gray-500)';
+            }}
           >
             Cancel
           </button>
