@@ -383,20 +383,406 @@ function LandingGeneratorContent() {
       />
 
       <SignedOut>
-        <div className="container flex items-center justify-center" style={{ minHeight: '100vh', padding: '2rem 1rem' }}>
-          <div className="text-center" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <h1 className="text-2xl font-semibold text-gray-900">Landing Generator</h1>
-              <p className="text-gray-600" style={{ maxWidth: '28rem', margin: '0 auto' }}>
-                Create and publish landing pages with AI. Sign in to get started.
-              </p>
+        <div style={{ minHeight: '100vh', backgroundColor: 'var(--color-white)' }}>
+          {/* Hero Section */}
+          <section className="gradient-hero" style={{ 
+            position: 'relative',
+            padding: '5rem 1rem',
+            overflow: 'hidden'
+          }}>
+            <div className="container" style={{ 
+              maxWidth: '1200px',
+              margin: '0 auto',
+              position: 'relative',
+              zIndex: 1
+            }}>
+              <div style={{ 
+                textAlign: 'center',
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '2rem'
+              }}>
+                <h1 style={{
+                  fontSize: '3rem',
+                  fontWeight: 700,
+                  color: 'var(--color-white)',
+                  lineHeight: 1.1,
+                  maxWidth: '900px',
+                  margin: '0 auto'
+                }} className="md:text-6xl">
+                  Launch High-Converting Landing Pages in Minutes
+                </h1>
+                <p style={{
+                  fontSize: '1.25rem',
+                  color: 'rgba(255, 255, 255, 0.9)',
+                  maxWidth: '600px',
+                  lineHeight: 1.6
+                }}>
+                  No coding. No design skills. Just describe your business and get a quick, 
+                  high-converting landing page ready to publish.
+                </p>
+                <SignInButton mode="modal">
+                  <button className="btn" style={{
+                    backgroundColor: 'var(--color-white)',
+                    color: '#667eea',
+                    padding: '1rem 2.5rem',
+                    fontSize: '1.125rem',
+                    fontWeight: 600,
+                    borderRadius: 'var(--radius-xl)',
+                    boxShadow: '0 10px 40px rgba(0, 0, 0, 0.2)',
+                    border: 'none'
+                  }}>
+                    Get Started Free
+                  </button>
+                </SignInButton>
+              </div>
             </div>
-            <SignInButton mode="modal">
-              <button className="btn btn-primary">
-                Sign In
-              </button>
-            </SignInButton>
-          </div>
+            {/* Decorative gradient overlay */}
+            <div style={{
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              background: 'radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, transparent 50%)',
+              pointerEvents: 'none'
+            }} />
+          </section>
+
+          {/* Who Is This For Section */}
+          <section style={{ 
+            padding: '5rem 1rem',
+            backgroundColor: 'var(--color-gray-50)'
+          }}>
+            <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+              <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                <h2 style={{
+                  fontSize: '2.5rem',
+                  fontWeight: 700,
+                  color: 'var(--color-gray-900)',
+                  marginBottom: '1rem'
+                }}>
+                  Who Is This For?
+                </h2>
+                <p style={{
+                  fontSize: '1.125rem',
+                  color: 'var(--color-gray-600)',
+                  maxWidth: '600px',
+                  margin: '0 auto'
+                }}>
+                  LandGen is perfect for anyone who needs a quick landing page that converts.
+                </p>
+              </div>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+                gap: '2rem'
+              }}>
+                {/* Startup Founders */}
+                <div className="card" style={{
+                  padding: '2rem',
+                  textAlign: 'center',
+                  transition: 'transform var(--transition-base), box-shadow var(--transition-base)'
+                }}>
+                  <div className="icon-circle" style={{
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    color: '#667eea',
+                    margin: '0 auto 1.5rem'
+                  }}>
+                    🚀
+                  </div>
+                  <h3 style={{
+                    fontSize: '1.25rem',
+                    fontWeight: 600,
+                    color: 'var(--color-gray-900)',
+                    marginBottom: '0.75rem'
+                  }}>
+                    Startup Founders
+                  </h3>
+                  <p style={{
+                    color: 'var(--color-gray-600)',
+                    lineHeight: 1.6
+                  }}>
+                    Launch your MVP landing page quickly to validate ideas and start collecting leads
+                  </p>
+                </div>
+
+                {/* Freelancers & Agencies */}
+                <div className="card" style={{
+                  padding: '2rem',
+                  textAlign: 'center',
+                  transition: 'transform var(--transition-base), box-shadow var(--transition-base)'
+                }}>
+                  <div className="icon-circle" style={{
+                    backgroundColor: 'rgba(118, 75, 162, 0.1)',
+                    color: '#764ba2',
+                    margin: '0 auto 1.5rem'
+                  }}>
+                    💼
+                  </div>
+                  <h3 style={{
+                    fontSize: '1.25rem',
+                    fontWeight: 600,
+                    color: 'var(--color-gray-900)',
+                    marginBottom: '0.75rem'
+                  }}>
+                    Freelancers & Agencies
+                  </h3>
+                  <p style={{
+                    color: 'var(--color-gray-600)',
+                    lineHeight: 1.6
+                  }}>
+                    Deliver client landing pages faster and focus on strategy instead of coding
+                  </p>
+                </div>
+
+                {/* Marketing Teams */}
+                <div className="card" style={{
+                  padding: '2rem',
+                  textAlign: 'center',
+                  transition: 'transform var(--transition-base), box-shadow var(--transition-base)'
+                }}>
+                  <div className="icon-circle" style={{
+                    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                    color: '#3b82f6',
+                    margin: '0 auto 1.5rem'
+                  }}>
+                    📊
+                  </div>
+                  <h3 style={{
+                    fontSize: '1.25rem',
+                    fontWeight: 600,
+                    color: 'var(--color-gray-900)',
+                    marginBottom: '0.75rem'
+                  }}>
+                    Marketing Teams
+                  </h3>
+                  <p style={{
+                    color: 'var(--color-gray-600)',
+                    lineHeight: 1.6
+                  }}>
+                    Create campaign-specific landing pages without waiting for developers
+                  </p>
+                </div>
+
+                {/* Small Business Owners */}
+                <div className="card" style={{
+                  padding: '2rem',
+                  textAlign: 'center',
+                  transition: 'transform var(--transition-base), box-shadow var(--transition-base)'
+                }}>
+                  <div className="icon-circle" style={{
+                    backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                    color: '#10b981',
+                    margin: '0 auto 1.5rem'
+                  }}>
+                    🏪
+                  </div>
+                  <h3 style={{
+                    fontSize: '1.25rem',
+                    fontWeight: 600,
+                    color: 'var(--color-gray-900)',
+                    marginBottom: '0.75rem'
+                  }}>
+                    Small Business Owners
+                  </h3>
+                  <p style={{
+                    color: 'var(--color-gray-600)',
+                    lineHeight: 1.6
+                  }}>
+                    Get a professional online presence without breaking the bank or hiring developers
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Before & After Section */}
+          <section style={{ 
+            padding: '5rem 1rem',
+            backgroundColor: 'var(--color-white)'
+          }}>
+            <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+              <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
+                <h2 style={{
+                  fontSize: '2.5rem',
+                  fontWeight: 700,
+                  color: 'var(--color-gray-900)',
+                  marginBottom: '1rem'
+                }}>
+                  The Old Way vs. The LandGen Way
+                </h2>
+                <p style={{
+                  fontSize: '1.125rem',
+                  color: 'var(--color-gray-600)',
+                  maxWidth: '600px',
+                  margin: '0 auto'
+                }}>
+                  Stop wasting time and money on outdated solutions
+                </p>
+              </div>
+
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                gap: '3rem',
+                maxWidth: '1000px',
+                margin: '0 auto'
+              }}>
+                {/* Before - The Old Way */}
+                <div>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    marginBottom: '1.5rem'
+                  }}>
+                    <div style={{
+                      width: '3rem',
+                      height: '3rem',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--color-error-bg)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.5rem'
+                    }}>
+                      ❌
+                    </div>
+                    <h3 style={{
+                      fontSize: '1.5rem',
+                      fontWeight: 600,
+                      color: 'var(--color-gray-900)'
+                    }}>
+                      The Old Way
+                    </h3>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div className="comparison-item comparison-item-before">
+                      <span style={{ fontSize: '1.25rem', color: 'var(--color-error)', flexShrink: 0 }}>✗</span>
+                      <span style={{ color: 'var(--color-gray-700)', lineHeight: 1.6 }}>
+                        Hire a freelance developer and wait weeks for results
+                      </span>
+                    </div>
+                    <div className="comparison-item comparison-item-before">
+                      <span style={{ fontSize: '1.25rem', color: 'var(--color-error)', flexShrink: 0 }}>✗</span>
+                      <span style={{ color: 'var(--color-gray-700)', lineHeight: 1.6 }}>
+                        Learn to code or struggle with WordPress/CMS/Shopify
+                      </span>
+                    </div>
+                    <div className="comparison-item comparison-item-before">
+                      <span style={{ fontSize: '1.25rem', color: 'var(--color-error)', flexShrink: 0 }}>✗</span>
+                      <span style={{ color: 'var(--color-gray-700)', lineHeight: 1.6 }}>
+                        Pay thousands to an expensive agency
+                      </span>
+                    </div>
+                    <div className="comparison-item comparison-item-before">
+                      <span style={{ fontSize: '1.25rem', color: 'var(--color-error)', flexShrink: 0 }}>✗</span>
+                      <span style={{ color: 'var(--color-gray-700)', lineHeight: 1.6 }}>
+                        Struggle with outdated, clunky no-code tools
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* After - With LandGen */}
+                <div>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    marginBottom: '1.5rem'
+                  }}>
+                    <div style={{
+                      width: '3rem',
+                      height: '3rem',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--color-success-bg)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '1.5rem'
+                    }}>
+                      ✨
+                    </div>
+                    <h3 style={{
+                      fontSize: '1.5rem',
+                      fontWeight: 600,
+                      color: 'var(--color-gray-900)'
+                    }}>
+                      With LandGen
+                    </h3>
+                  </div>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                    <div className="comparison-item comparison-item-after">
+                      <span style={{ fontSize: '1.25rem', color: 'var(--color-success)', flexShrink: 0 }}>✓</span>
+                      <span style={{ color: 'var(--color-gray-900)', fontWeight: 500, lineHeight: 1.6 }}>
+                        Generate beautiful landing pages in minutes
+                      </span>
+                    </div>
+                    <div className="comparison-item comparison-item-after">
+                      <span style={{ fontSize: '1.25rem', color: 'var(--color-success)', flexShrink: 0 }}>✓</span>
+                      <span style={{ color: 'var(--color-gray-900)', fontWeight: 500, lineHeight: 1.6 }}>
+                        No coding or design skills required
+                      </span>
+                    </div>
+                    <div className="comparison-item comparison-item-after">
+                      <span style={{ fontSize: '1.25rem', color: 'var(--color-success)', flexShrink: 0 }}>✓</span>
+                      <span style={{ color: 'var(--color-gray-900)', fontWeight: 500, lineHeight: 1.6 }}>
+                        Affordable, pay-per-use pricing
+                      </span>
+                    </div>
+                    <div className="comparison-item comparison-item-after">
+                      <span style={{ fontSize: '1.25rem', color: 'var(--color-success)', flexShrink: 0 }}>✓</span>
+                      <span style={{ color: 'var(--color-gray-900)', fontWeight: 500, lineHeight: 1.6 }}>
+                        Modern, high-converting designs powered by AI
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Final CTA */}
+              <div style={{ 
+                textAlign: 'center', 
+                marginTop: '4rem',
+                padding: '3rem 2rem',
+                backgroundColor: 'var(--color-gray-50)',
+                borderRadius: 'var(--radius-2xl)'
+              }}>
+                <h3 style={{
+                  fontSize: '2rem',
+                  fontWeight: 700,
+                  color: 'var(--color-gray-900)',
+                  marginBottom: '1rem'
+                }}>
+                  Ready to Launch Your Landing Page?
+                </h3>
+                <p style={{
+                  fontSize: '1.125rem',
+                  color: 'var(--color-gray-600)',
+                  marginBottom: '2rem',
+                  maxWidth: '500px',
+                  margin: '0 auto 2rem'
+                }}>
+                  Join hundreds of businesses already using LandGen to create stunning landing pages
+                </p>
+                <SignInButton mode="modal">
+                  <button className="btn btn-primary" style={{
+                    padding: '1rem 2.5rem',
+                    fontSize: '1.125rem',
+                    fontWeight: 600,
+                    borderRadius: 'var(--radius-xl)',
+                    boxShadow: 'var(--shadow-lg)'
+                  }}>
+                    Start Building Now
+                  </button>
+                </SignInButton>
+              </div>
+            </div>
+          </section>
         </div>
       </SignedOut>
 
