@@ -41,6 +41,11 @@ function LandingGeneratorContent() {
   const [customUrlSlug, setCustomUrlSlug] = useState<string>('');
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
 
+  const handlePurchaseClick = () => {
+    console.log('Credits button clicked!');
+    setShowPurchaseModal(true);
+  };
+
   const previewRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -409,7 +414,7 @@ function LandingGeneratorContent() {
                   <h1 className="text-lg font-semibold text-gray-900">Landing Generator</h1>
                 </div>
                 <div className="flex items-center gap-4">
-                  <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
+                  <CreditDisplay onPurchaseClick={handlePurchaseClick} />
 
                   <Link href="/sites" className="link text-sm">
                     My Sites
@@ -529,7 +534,7 @@ function LandingGeneratorContent() {
                 </div>
 
                 <div className="flex items-center gap-3">
-                  <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
+                  <CreditDisplay onPurchaseClick={handlePurchaseClick} />
 
                   <button
                     onClick={() => setEditMode((v) => !v)}

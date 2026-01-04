@@ -12,6 +12,8 @@ interface PurchaseCreditsModalProps {
 export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalProps) {
   const [loading, setLoading] = useState<CreditPackage | null>(null);
 
+  console.log('PurchaseCreditsModal: isOpen =', isOpen);
+
   const handlePurchase = async (packageType: CreditPackage) => {
     setLoading(packageType);
     try {
@@ -43,24 +45,24 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
     <div
       className="fixed inset-0 flex items-center justify-center z-50"
       style={{
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(255, 0, 0, 0.8)', // TEMP: Bright red for visibility
         backdropFilter: 'blur(4px)'
       }}
     >
       <div
         className="rounded-lg p-6 max-w-md w-full mx-4"
         style={{
-          backgroundColor: 'var(--color-white)',
-          border: '1px solid var(--color-gray-200)',
+          backgroundColor: 'yellow', // TEMP: Yellow background for visibility
+          border: '5px solid red', // TEMP: Red border for visibility
           boxShadow: 'var(--shadow-xl)'
         }}
       >
         <div className="flex justify-between items-center mb-4">
           <h2
             className="text-xl font-semibold"
-            style={{ color: 'var(--color-gray-900)' }}
+            style={{ color: 'black', fontSize: '24px', fontWeight: 'bold' }}
           >
-            Purchase Credits
+            🚨 MODAL IS VISIBLE 🚨 Purchase Credits
           </h2>
           <button
             onClick={onClose}
