@@ -947,20 +947,26 @@ function LandingGeneratorContent() {
                     className="textarea"
                     style={{ fontSize: '1rem' }}
                   />
+                  <button
+                    onClick={handleGenerate}
+                    disabled={!description || isGenerating}
+                    className="btn btn-primary"
+                    style={{
+                      alignSelf: 'flex-end',
+                      padding: '0.5rem',
+                      width: '2.5rem',
+                      height: '2.5rem',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    title={isGenerating ? 'Generating...' : 'Generate Landing Page'}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M7 14l5-5 5 5z" fill="currentColor"/>
+                    </svg>
+                  </button>
                 </div>
-
-                <button
-                  onClick={handleGenerate}
-                  disabled={!description || isGenerating}
-                  className="btn btn-primary"
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    fontSize: '1rem',
-                    fontWeight: 600
-                  }}
-                >
-                  {isGenerating ? 'Generating...' : 'Generate Landing Page'}
-                </button>
 
                 {status && (
                   <div style={{ textAlign: 'center', marginTop: '1rem' }}>
