@@ -932,14 +932,14 @@ function LandingGeneratorContent() {
                       <button
                         onClick={handleGenerate}
                         disabled={!description || isGenerating}
-                        className="btn btn-primary p-2 w-10 h-10 flex items-center justify-center flex-shrink-0"
+                        className="btn btn-primary p-3 w-12 h-12 flex items-center justify-center flex-shrink-0"
                         title={isGenerating ? 'Generating...' : 'Generate Landing Page'}
                       >
                         {isGenerating ? (
                           <div className="spinner w-4 h-4" />
                         ) : (
-                          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M7 14l5-5 5 5z" fill="currentColor"/>
+                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M5 12h14M12 5l7 7-7 7"/>
                           </svg>
                         )}
                       </button>
