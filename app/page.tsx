@@ -925,7 +925,7 @@ function LandingGeneratorContent() {
                     Create Your Landing Page
                   </h2>
                   <p className="text-gray-600">
-                    Describe your business and we&apos;ll generate a beautiful landing page for you
+                    Describe your business and get a coffee-break-ready landing page for you
                   </p>
                 </div>
 
