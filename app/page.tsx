@@ -471,7 +471,7 @@ function LandingGeneratorContent() {
                   maxWidth: '600px',
                   margin: '0 auto'
                 }}>
-                  LandGen is perfect for creator who needs a quick landing page that converts.
+                  EasyLand is perfect for creator who needs a quick landing page that converts.
                 </p>
               </div>
 
@@ -707,7 +707,7 @@ function LandingGeneratorContent() {
                   color: 'var(--color-gray-900)',
                   marginBottom: '1rem'
                 }}>
-                  The Old Way vs. The LandGen Way
+                  The Old Way vs. The EasyLand Way
                 </h2>
                 <p style={{
                   fontSize: '1.125rem',
@@ -782,7 +782,7 @@ function LandingGeneratorContent() {
                   </div>
                 </div>
 
-                {/* After - With LandGen */}
+                {/* After - With EasyLand */}
                 <div>
                   <div style={{
                     display: 'flex',
@@ -807,7 +807,7 @@ function LandingGeneratorContent() {
                       fontWeight: 600,
                       color: 'var(--color-gray-900)'
                     }}>
-                      With LandGen
+                      With EasyLand
                     </h3>
                   </div>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
