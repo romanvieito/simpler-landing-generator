@@ -893,7 +893,7 @@ function LandingGeneratorContent() {
             }}>
               <div className="container flex items-center justify-between" style={{ padding: '0.75rem 0' }}>
                 <div className="flex items-center gap-4">
-                  <h1 className="text-lg font-semibold text-gray-900">Landing Generator</h1>
+                  <h1 className="text-lg font-semibold text-gray-900">EasyLand</h1>
                 </div>
                 <div className="flex items-center gap-4">
                   <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
