@@ -12,8 +12,6 @@ interface PurchaseCreditsModalProps {
 export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalProps) {
   const [loading, setLoading] = useState<CreditPackage | null>(null);
 
-  console.log('PurchaseCreditsModal: isOpen =', isOpen);
-
   const handlePurchase = async (packageType: CreditPackage) => {
     setLoading(packageType);
     try {
@@ -45,24 +43,24 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
     <div
       className="fixed inset-0 flex items-center justify-center z-50"
       style={{
-        backgroundColor: 'rgba(255, 0, 0, 0.8)', // TEMP: Bright red for visibility
-        backdropFilter: 'blur(4px)'
+        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+        backdropFilter: 'blur(8px)'
       }}
     >
       <div
         className="rounded-lg p-6 max-w-md w-full mx-4"
         style={{
-          backgroundColor: 'yellow', // TEMP: Yellow background for visibility
-          border: '5px solid red', // TEMP: Red border for visibility
-          boxShadow: 'var(--shadow-xl)'
+          backgroundColor: '#ffffff',
+          border: '1px solid #e5e7eb',
+          boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 1px rgba(255, 255, 255, 0.05)'
         }}
       >
         <div className="flex justify-between items-center mb-4">
           <h2
             className="text-xl font-semibold"
-            style={{ color: 'black', fontSize: '24px', fontWeight: 'bold' }}
+            style={{ color: '#111827' }}
           >
-            🚨 MODAL IS VISIBLE 🚨 Purchase Credits
+            Purchase Credits
           </h2>
           <button
             onClick={onClose}
@@ -74,7 +72,7 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
 
         <p
           className="mb-6"
-          style={{ color: 'var(--color-gray-600)', fontSize: '0.875rem' }}
+          style={{ color: '#6b7280', fontSize: '0.875rem' }}
         >
           Each landing page generation costs 2 credits (1 for plan + 1 for HTML).
         </p>
@@ -115,14 +113,21 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
             onClick={onClose}
             className="text-sm"
             style={{
-              color: 'var(--color-gray-500)',
-              transition: 'color var(--transition-fast)'
+              color: '#6b7280',
+              transition: 'color 0.15s ease',
+              cursor: 'pointer',
+              padding: '0.5rem 1rem',
+              borderRadius: '0.375rem',
+              border: 'none',
+              background: 'transparent'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.color = 'var(--color-gray-700)';
+              e.currentTarget.style.color = '#374151';
+              e.currentTarget.style.backgroundColor = '#f9fafb';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.color = 'var(--color-gray-500)';
+              e.currentTarget.style.color = '#6b7280';
+              e.currentTarget.style.backgroundColor = 'transparent';
             }}
           >
             Cancel
