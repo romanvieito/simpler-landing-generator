@@ -377,6 +377,11 @@ function LandingGeneratorContent() {
 
   return (
     <>
+      <PurchaseCreditsModal
+        isOpen={showPurchaseModal}
+        onClose={() => setShowPurchaseModal(false)}
+      />
+
       <SignedOut>
         <div className="container flex items-center justify-center" style={{ minHeight: '100vh', padding: '2rem 1rem' }}>
           <div className="text-center" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -718,11 +723,6 @@ function LandingGeneratorContent() {
           </div>
         )}
       </SignedIn>
-
-      <PurchaseCreditsModal
-        isOpen={showPurchaseModal}
-        onClose={() => setShowPurchaseModal(false)}
-      />
     </>
   );
 }
