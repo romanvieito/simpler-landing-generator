@@ -35,7 +35,14 @@ export async function POST(req: Request) {
       throw error;
     }
 
-    const { description } = await req.json();
+    const { description, style = 'Professional' } = await req.json();
+
+    const styleGuidelines: Record<string, string> = {
+      Professional: 'Use clean lines, corporate colors (blues, grays), structured layouts, and formal tone. Emphasize trust and credibility.',
+      Creative: 'Use bold colors, unique layouts, playful fonts, and engaging visuals. Emphasize innovation and originality.',
+      Friendly: 'Use warm colors (oranges, yellows, soft blues), rounded corners, casual tone, and approachable imagery. Emphasize warmth and accessibility.',
+      Minimalist: 'Use lots of white space, monochromatic or limited color palette, simple typography, and clean design. Emphasize simplicity and clarity.'
+    };
 
     const system = `You are a landing page design planner. Output strictly a single JSON object that includes:
 {
@@ -59,7 +66,8 @@ Rules:
 - Provide 5-7 total sections with reasonable defaults for a modern startup landing page.
 - Keep copy concise and friendly. Avoid placeholder words like 'Lorem'.
 - Use accessible color contrast; prefer neutral background and clear text color.
-- Include up to 3 image queries for hero/gallery/feature visuals.`;
+- Include up to 3 image queries for hero/gallery/feature visuals.
+- Design Style: ${styleGuidelines[style as keyof typeof styleGuidelines] || styleGuidelines.Professional}`;
 
     const user = `Business description:
 """

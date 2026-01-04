@@ -28,6 +28,7 @@ type Plan = {
 function LandingGeneratorContent() {
   const searchParams = useSearchParams();
   const [description, setDescription] = useState('');
+  const [websiteStyle, setWebsiteStyle] = useState<'Professional' | 'Creative' | 'Friendly' | 'Minimalist'>('Professional');
   const [loading, setLoading] = useState<'idle' | 'planning' | 'coding' | 'publishing' | 'saving'>('idle');
   const [plan, setPlan] = useState<Plan | null>(null);
   const [html, setHtml] = useState<string>('');
@@ -249,7 +250,7 @@ function LandingGeneratorContent() {
       const planRes = await fetch('/api/generate-plan', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ description }),
+        body: JSON.stringify({ description, style: websiteStyle }),
       });
 
       if (planRes.status === 402) {
@@ -938,34 +939,66 @@ function LandingGeneratorContent() {
                   }}>
                     Business / website description
                   </label>
-                  <textarea
-                    id="desc"
-                    placeholder="Describe your business, audience, and value proposition..."
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    rows={6}
-                    className="textarea"
-                    style={{ fontSize: '1rem' }}
-                  />
-                  <button
-                    onClick={handleGenerate}
-                    disabled={!description || isGenerating}
-                    className="btn btn-primary"
-                    style={{
-                      alignSelf: 'flex-end',
-                      padding: '0.5rem',
-                      width: '2.5rem',
-                      height: '2.5rem',
+                  <div style={{ position: 'relative' }}>
+                    <textarea
+                      id="desc"
+                      placeholder="Describe your business, audience, and value proposition..."
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      rows={6}
+                      className="textarea"
+                      style={{ 
+                        fontSize: '1rem',
+                        paddingBottom: '3.5rem'
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '0.75rem',
+                      left: '0.75rem',
+                      right: '0.75rem',
                       display: 'flex',
                       alignItems: 'center',
-                      justifyContent: 'center'
-                    }}
-                    title={isGenerating ? 'Generating...' : 'Generate Landing Page'}
-                  >
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M7 14l5-5 5 5z" fill="currentColor"/>
-                    </svg>
-                  </button>
+                      justifyContent: 'space-between',
+                      gap: '0.5rem'
+                    }}>
+                      <select
+                        value={websiteStyle}
+                        onChange={(e) => setWebsiteStyle(e.target.value as 'Professional' | 'Creative' | 'Friendly' | 'Minimalist')}
+                        className="select"
+                        style={{
+                          fontSize: '0.875rem',
+                          padding: '0.375rem 0.5rem',
+                          flex: 1,
+                          maxWidth: '200px'
+                        }}
+                      >
+                        <option value="Professional">Professional</option>
+                        <option value="Creative">Creative</option>
+                        <option value="Friendly">Friendly</option>
+                        <option value="Minimalist">Minimalist</option>
+                      </select>
+                      <button
+                        onClick={handleGenerate}
+                        disabled={!description || isGenerating}
+                        className="btn btn-primary"
+                        style={{
+                          padding: '0.5rem',
+                          width: '2.5rem',
+                          height: '2.5rem',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          flexShrink: 0
+                        }}
+                        title={isGenerating ? 'Generating...' : 'Generate Landing Page'}
+                      >
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                          <path d="M7 14l5-5 5 5z" fill="currentColor"/>
+                        </svg>
+                      </button>
+                    </div>
+                  </div>
                 </div>
 
                 {status && (
