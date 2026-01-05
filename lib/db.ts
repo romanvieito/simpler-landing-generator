@@ -163,7 +163,7 @@ export async function getSiteDomainMeta({
     WHERE id = ${id} AND user_id = ${userId}
     LIMIT 1
   `;
-  return rows[0] || null;
+  return rows[0] as { id: string; vercel_url: string | null; custom_domain: string | null } || null;
 }
 
 export async function deleteSite({ id, userId }: { id: string; userId: string }) {
