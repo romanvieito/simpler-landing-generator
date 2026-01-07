@@ -13,6 +13,12 @@ type DeployArgs = {
   html: string;
 };
 
+function getDeploymentUrl(hostname: string): string {
+  if (!hostname) return '';
+  if (hostname.startsWith('http://') || hostname.startsWith('https://')) return hostname;
+  return `https://${hostname}`;
+}
+
 export async function deployStaticHtml({ name, html }: DeployArgs): Promise<string> {
   if (!VERCEL_TOKEN) {
     throw new Error('Server missing VERCEL_TOKEN');
@@ -70,6 +76,8 @@ export async function deployStaticHtml({ name, html }: DeployArgs): Promise<stri
   }
 
   // If we have a projectId, try to update the project settings to ensure it's public
+  // and not protected by "Vercel Authentication / Deployment Protection".
+  // Note: Vercel feature availability + schema can vary by plan/team settings; keep this best-effort.
   if (data.projectId) {
     try {
       console.log('Updating project privacy settings for project:', data.projectId);
@@ -88,6 +96,13 @@ export async function deployStaticHtml({ name, html }: DeployArgs): Promise<stri
           // We keep this best-effort, but avoid putting these into projectSettings.
           public: true,
           privacy: 'public',
+          // Best-effort: disable any deployment protection that would cause "Log in to Vercel" prompts.
+          // Different accounts/plans expose these fields differently, so failures are non-fatal.
+          deploymentProtection: 'none',
+          security: { deploymentProtection: 'none' },
+          passwordProtection: null,
+          trustedIps: null,
+          ssoProtection: null,
         }),
       });
 
@@ -98,6 +113,24 @@ export async function deployStaticHtml({ name, html }: DeployArgs): Promise<stri
       }
     } catch (e) {
       console.warn('Error updating project privacy settings:', e);
+    }
+  }
+
+  // Post-deploy: best-effort check that the deployment is publicly reachable.
+  // If the Vercel account/team has Deployment Protection enabled for production, the URL may require auth.
+  try {
+    const url = getDeploymentUrl(String(data.url));
+    const probe = await fetch(url, { method: 'GET', redirect: 'manual' });
+    if (probe.status === 401 || probe.status === 403) {
+      throw new Error(
+        `Published URL is protected by Vercel Deployment Protection (HTTP ${probe.status}). ` +
+          `To make links free to share, disable "Deployment Protection / Vercel Authentication" for the generated project "${name}" in your Vercel dashboard (Project → Settings → Deployment Protection → None).`
+      );
+    }
+  } catch (e) {
+    // If the probe errors for network reasons, don't fail publishing; only fail on explicit auth statuses.
+    if (e instanceof Error && e.message.includes('Vercel Deployment Protection')) {
+      throw e;
     }
   }
 

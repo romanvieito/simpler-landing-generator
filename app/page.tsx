@@ -33,6 +33,64 @@ type Plan = {
   images?: Array<{ query: string; url: string }>;
 };
 
+type DraftSnapshot = {
+  description: string;
+  websiteStyle: 'Professional' | 'Creative' | 'Friendly' | 'Minimalist';
+  loading: 'idle' | 'planning' | 'coding' | 'publishing' | 'saving';
+  plan: Plan | null;
+  planDetails: { title?: string; sectionCount?: number; sections?: string[]; style?: string; palette?: any; fonts?: any; imageQueries?: string[] } | null;
+  html: string;
+  history: string[];
+  publishedUrl: string;
+  savedSiteId: string;
+  view: 'input' | 'preview';
+  editMode: boolean;
+  editingUrl: boolean;
+  customUrlSlug: string;
+};
+
+type DraftPayloadV1 = {
+  version: 1;
+  updatedAt: number;
+  snapshot: DraftSnapshot;
+};
+
+function readDraft(key: string): DraftPayloadV1 | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(key);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as DraftPayloadV1;
+    if (!parsed || parsed.version !== 1 || !parsed.snapshot) return null;
+    return parsed;
+  } catch {
+    return null;
+  }
+}
+
+function safeWriteDraft(key: string, payload: DraftPayloadV1) {
+  if (typeof window === 'undefined') return;
+  try {
+    const json = JSON.stringify(payload);
+    // Avoid blowing up localStorage quota if HTML is huge.
+    if (json.length > 4_500_000) return;
+    window.localStorage.setItem(key, json);
+  } catch {
+    // ignore (quota / private mode / etc.)
+  }
+}
+
+function clearSearchParam(param: string) {
+  if (typeof window === 'undefined') return;
+  try {
+    const url = new URL(window.location.href);
+    url.searchParams.delete(param);
+    window.history.replaceState({}, '', url.toString());
+  } catch {
+    // ignore
+  }
+}
+
 function LandingGeneratorContent() {
   const searchParams = useSearchParams();
   const [description, setDescription] = useState('');
@@ -51,6 +109,14 @@ function LandingGeneratorContent() {
   const [editingUrl, setEditingUrl] = useState<boolean>(false);
   const [customUrlSlug, setCustomUrlSlug] = useState<string>('');
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [draftHydrated, setDraftHydrated] = useState(false);
+
+  const loadSiteIdFromUrl = searchParams.get('loadSite');
+  const activeDraftKey = loadSiteIdFromUrl
+    ? `easyland:draft:v1:site:${loadSiteIdFromUrl}`
+    : savedSiteId
+      ? `easyland:draft:v1:site:${savedSiteId}`
+      : 'easyland:draft:v1:last';
 
   // Detailed status messages for each phase
   const planningMessages = [
@@ -112,6 +178,109 @@ function LandingGeneratorContent() {
   };
 
   const previewRef = useRef<HTMLDivElement>(null);
+
+  // Restore draft state on mount (and when loading a specific site via URL).
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const siteKey = loadSiteIdFromUrl ? `easyland:draft:v1:site:${loadSiteIdFromUrl}` : null;
+    const normalizedLastKey = 'easyland:draft:v1:last';
+
+    const applySnapshot = (snapshot: DraftSnapshot) => {
+      setDescription(snapshot.description ?? '');
+      setWebsiteStyle(snapshot.websiteStyle ?? 'Professional');
+      // Never resume mid-loading on refresh.
+      setLoading('idle');
+      setPlan(snapshot.plan ?? null);
+      setPlanDetails(snapshot.planDetails ?? null);
+      setHtml(snapshot.html ?? '');
+      // Cap history to avoid huge localStorage writes and memory usage.
+      const cappedHistory = Array.isArray(snapshot.history) ? snapshot.history.slice(-20) : [];
+      setHistory(cappedHistory);
+      setPublishedUrl(snapshot.publishedUrl ?? '');
+      setSavedSiteId(snapshot.savedSiteId ?? '');
+      setView(snapshot.view ?? 'input');
+      setEditMode(!!snapshot.editMode);
+      setEditingUrl(!!snapshot.editingUrl);
+      setCustomUrlSlug(snapshot.customUrlSlug ?? '');
+    };
+
+    if (siteKey) {
+      const siteDraft = readDraft(siteKey);
+      if (siteDraft?.snapshot) {
+        const useDraft = window.confirm(
+          'We found unsaved changes for this site from a previous session.\n\nRestore them?',
+        );
+        if (useDraft) {
+          applySnapshot(siteDraft.snapshot);
+          // Clear the URL param so we don't keep prompting.
+          clearSearchParam('loadSite');
+          setDraftHydrated(true);
+          return;
+        }
+      }
+    } else {
+      const lastDraft = readDraft(normalizedLastKey);
+      if (lastDraft?.snapshot) {
+        applySnapshot(lastDraft.snapshot);
+        setDraftHydrated(true);
+        return;
+      }
+    }
+
+    setDraftHydrated(true);
+  }, [loadSiteIdFromUrl]);
+
+  // Autosave draft state (debounced) so refresh/navigation doesn't lose work.
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!draftHydrated) return;
+
+    const snapshot: DraftSnapshot = {
+      description,
+      websiteStyle,
+      loading,
+      plan,
+      planDetails,
+      html,
+      history: history.slice(-20),
+      publishedUrl,
+      savedSiteId,
+      view,
+      editMode,
+      editingUrl,
+      customUrlSlug,
+    };
+
+    const payload: DraftPayloadV1 = {
+      version: 1,
+      updatedAt: Date.now(),
+      snapshot,
+    };
+
+    const timer = window.setTimeout(() => {
+      safeWriteDraft(activeDraftKey, payload);
+      safeWriteDraft('easyland:draft:v1:last', payload);
+    }, 500);
+
+    return () => window.clearTimeout(timer);
+  }, [
+    activeDraftKey,
+    draftHydrated,
+    description,
+    websiteStyle,
+    loading,
+    plan,
+    planDetails,
+    html,
+    history,
+    publishedUrl,
+    savedSiteId,
+    view,
+    editMode,
+    editingUrl,
+    customUrlSlug,
+  ]);
 
   useEffect(() => {
     if (previewRef.current && html) {
@@ -195,12 +364,14 @@ function LandingGeneratorContent() {
 
   // Load site from URL parameter on mount (for "Load in Editor" functionality)
   useEffect(() => {
+    if (!draftHydrated) return;
+    // If the user chose to restore a local draft, we already cleared `loadSite`.
     const loadSiteId = searchParams.get('loadSite');
     if (loadSiteId) {
       console.log('Loading site from URL parameter:', loadSiteId);
       fetchSiteForEditing(loadSiteId);
     }
-  }, [searchParams]);
+  }, [searchParams, draftHydrated]);
 
   // Handle Stripe redirect
   useEffect(() => {
