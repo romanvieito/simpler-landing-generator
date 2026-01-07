@@ -900,6 +900,9 @@ function LandingGeneratorContent() {
 
             <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
               <div className="w-full max-w-2xl flex flex-col gap-6">
+                <div className="text-gray-600 text-lg text-center font-bold">
+                  What landing page do you want to create?
+                </div>
                 <div className="space-y-4">
                   <div className="relative">
                     <textarea
