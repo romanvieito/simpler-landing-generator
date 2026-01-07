@@ -66,3 +66,11 @@ npm run lint
 3. Framework: Next.js. No extra build settings needed (`npm run build`).
 4. Add the Clerk environment variables in Vercel → **Settings → Environment Variables** (same keys as `.env.local`).
 5. Deploy and set a production domain. Preview links work automatically from the deployed origin.
+
+### Publishing “free to share” landing pages (Vercel Deployments API)
+This app can publish generated HTML to Vercel using `VERCEL_TOKEN`.
+
+- **Recommended**: set `VERCEL_PUBLISH_PROJECT` to a dedicated project name (e.g. `simpler-published-sites`) so we **do not create one Vercel project per site**.
+- **Important**: do **not** set `VERCEL_PUBLISH_PROJECT` to your main app’s project name, or you’ll overwrite its deployments.
+- If published links prompt for login, disable it once on that dedicated project:
+  - **Project → Settings → Deployment Protection → None** (and ensure **Vercel Authentication** is disabled)

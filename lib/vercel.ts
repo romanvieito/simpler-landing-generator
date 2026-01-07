@@ -19,10 +19,25 @@ function getDeploymentUrl(hostname: string): string {
   return `https://${hostname}`;
 }
 
+async function probePublic(url: string): Promise<{ ok: boolean; status?: number }> {
+  try {
+    const res = await fetch(url, { method: 'GET', redirect: 'manual' });
+    if (res.status === 401 || res.status === 403) return { ok: false, status: res.status };
+    // Treat any non-401/403 response as "public enough" for our purposes (even 404, which can happen briefly).
+    return { ok: true, status: res.status };
+  } catch {
+    // Network/probe errors should not block publishing.
+    return { ok: true };
+  }
+}
+
 export async function deployStaticHtml({ name, html }: DeployArgs): Promise<string> {
   if (!VERCEL_TOKEN) {
     throw new Error('Server missing VERCEL_TOKEN');
   }
+
+  const sharedPublishProject = (process.env.VERCEL_PUBLISH_PROJECT || '').trim();
+  const isSharedPublishProject = !!sharedPublishProject && sharedPublishProject === name;
 
   const full = ensureFullHtml(html);
   const query = new URLSearchParams();
@@ -93,9 +108,7 @@ export async function deployStaticHtml({ name, html }: DeployArgs): Promise<stri
         },
         body: JSON.stringify({
           // Note: Vercel's project schema varies by account/team settings.
-          // We keep this best-effort, but avoid putting these into projectSettings.
-          public: true,
-          privacy: 'public',
+          // Keep this best-effort and only include fields that may exist on some accounts/plans.
           // Best-effort: disable any deployment protection that would cause "Log in to Vercel" prompts.
           // Different accounts/plans expose these fields differently, so failures are non-fatal.
           deploymentProtection: 'none',
@@ -116,23 +129,30 @@ export async function deployStaticHtml({ name, html }: DeployArgs): Promise<stri
     }
   }
 
-  // Post-deploy: best-effort check that the deployment is publicly reachable.
-  // If the Vercel account/team has Deployment Protection enabled for production, the URL may require auth.
-  try {
-    const url = getDeploymentUrl(String(data.url));
-    const probe = await fetch(url, { method: 'GET', redirect: 'manual' });
-    if (probe.status === 401 || probe.status === 403) {
-      throw new Error(
-        `Published URL is protected by Vercel Deployment Protection (HTTP ${probe.status}). ` +
-          `To make links free to share, disable "Deployment Protection / Vercel Authentication" for the generated project "${name}" in your Vercel dashboard (Project → Settings → Deployment Protection → None).`
-      );
-    }
-  } catch (e) {
-    // If the probe errors for network reasons, don't fail publishing; only fail on explicit auth statuses.
-    if (e instanceof Error && e.message.includes('Vercel Deployment Protection')) {
-      throw e;
+  // Prefer returning the stable production domain if it's publicly reachable.
+  // BUT: when publishing into a shared project, the stable domain would always point to the *latest*
+  // deployment (not per-site). In that mode, we return the unique deployment URL instead.
+  const candidates = [
+    ...(isSharedPublishProject ? [] : [`${name}.vercel.app`]),
+    String(data.url),
+  ].filter(Boolean);
+
+  for (const host of candidates) {
+    const url = getDeploymentUrl(host);
+    const { ok, status } = await probePublic(url);
+    if (ok) return host;
+    if (status === 401 || status === 403) {
+      // Continue trying other candidates first.
+      continue;
     }
   }
 
-  return data.url as string;
+  // If we got here, every candidate was explicitly protected.
+  const deploymentUrl = getDeploymentUrl(String(data.url));
+  throw new Error(
+    `Published URL is protected by Vercel Deployment Protection (HTTP 401/403). ` +
+      `Important: this publish flow creates/uses a Vercel project named "${name}" (not your main app project). ` +
+      `Open that project in Vercel → Settings → Deployment Protection, and set protection to "None" (and ensure Vercel Authentication is disabled). ` +
+      `Protected URL: ${deploymentUrl}`
+  );
 }
