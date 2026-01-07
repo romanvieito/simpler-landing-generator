@@ -32,7 +32,7 @@ export async function POST(req: Request) {
 
 Generate ONLY these 3 sections in this exact order:
 1. Hero section (with headline, subhead, primary CTA button)
-2. Audience section (with title and description)
+2. Audience section (with title, description, and the 3 problem/solution segments in a grid/list)
 3. Contact form section (with the provided form fields)
 
 DO NOT add testimonials, or any other sections. Only these 3 sections.`;
@@ -43,7 +43,7 @@ ${JSON.stringify(plan, null, 2)}
 CRITICAL INSTRUCTIONS:
 |- Generate HTML for ONLY these 3 sections in this exact order:
   1. Hero section using plan.sectionsContent.hero
-  2. Audience section using plan.sectionsContent.audience
+  2. Audience section using plan.sectionsContent.audience. IMPORTANT: Render the 'segments' as a responsive 3-column grid (or stacked on mobile). Each segment title is the Pain Point (bold), description is the Solution.
   3. Contact form section using plan.sectionsContent.contact
 
 |- Use the exact content from plan.sectionsContent - do not modify or add to it

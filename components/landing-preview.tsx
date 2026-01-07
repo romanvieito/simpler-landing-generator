@@ -54,6 +54,16 @@ export function LandingPreview({ content, showHeader = true }: LandingPreviewPro
           <div className="space-y-2">
             <p className="text-sm font-semibold text-[var(--text-strong)]">{sections.audience.title}</p>
             <p className="text-sm text-[var(--text-secondary)]">{sections.audience.description}</p>
+            {sections.audience.segments && sections.audience.segments.length > 0 && (
+              <div className="mt-4 grid gap-3">
+                {sections.audience.segments.map((segment, i) => (
+                  <div key={i} className="rounded-md border border-[var(--border-soft)] bg-white p-3 shadow-sm">
+                    <p className="text-xs font-bold text-[var(--text-strong)]">{segment.title}</p>
+                    <p className="text-xs text-[var(--text-secondary)]">{segment.description}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           {(content.imagePrompt || content.imageAlt) && (
             <div className="rounded-[var(--radius-md)] border border-[var(--border-soft)] bg-white px-4 py-3" style={{ boxShadow: "var(--shadow-subtle)" }}>

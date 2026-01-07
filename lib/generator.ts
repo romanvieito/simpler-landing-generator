@@ -29,6 +29,7 @@ export type GeneratedSections = {
   audience: {
     title: string;
     description: string;
+    segments?: { title: string; description: string }[];
   };
   contact: {
     title: string;
@@ -105,8 +106,9 @@ const buildPrompt = ({ prompt, style, sections }: GenerationRequest) => {
     "CRITICAL: Only generate content for these 3 sections: hero, audience, and contact form. Do NOT generate testimonials, or any other sections.",
     "Return raw JSON only (no markdown, no code fences, no commentary).",
     "Required keys: headline, subhead, audience, callToAction, features (array), prompt, imagePrompt, imageAlt, palette, tone, sectionsContent.",
-    "sectionsContent shape: hero {headline, subhead, primaryCta}, audience {title, description}, contact {title, nameLabel, emailLabel, messageLabel, submitLabel}. Keep it short and simple.",
+    "sectionsContent shape: hero {headline, subhead, primaryCta}, audience {title, description, segments: [{title, description}]}, contact {title, nameLabel, emailLabel, messageLabel, submitLabel}. Keep it short and simple.",
     "Constraints: headline must include the brand; callToAction is 2-5 words and points to booking/contact; features are 3 short benefit bullets.",
+    "Audience segments: Generate exactly 3 'Problem vs Solution' pairs. Title = The struggle/pain point. Description = How you solve it.",
     "Add a concise hero imagePrompt plus a 3-6 word imageAlt; keep them generic and safe.",
     "Tone: clear, benefit-led, avoid fluff. If unsure, make reasonable assumptions while keeping output usable.",
   ].join(" ");
@@ -191,6 +193,20 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
     audience: {
       title: "Who this is for",
       description: audience,
+      segments: [
+        {
+          title: "Struggling with complexity",
+          description: "We make it simple so you can focus on work.",
+        },
+        {
+          title: "Wasting time on setup",
+          description: "Launch in minutes, not days.",
+        },
+        {
+          title: "Unsure where to start",
+          description: "Guided process takes you from zero to live.",
+        },
+      ],
     },
     contact: {
       title: "Get in touch",

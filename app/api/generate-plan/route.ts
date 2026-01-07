@@ -57,7 +57,8 @@ export async function POST(req: Request) {
     },
     "audience": {
       "title": string,
-      "description": string
+      "description": string,
+      "segments": [{ "title": string, "description": string }]
     },
     "contact": {
       "title": string,
@@ -76,6 +77,7 @@ Rules:
 - Include up to 3 image queries for hero visuals.
 - Hero section: compelling headline, clear subhead, and 1 primary CTA button only.
 - Audience section: title and description explaining who the landing page is for.
+- Audience segments: exactly 3 items. Title = specific pain point (e.g. "Overwhelmed by X"). Description = how the offer solves it.
 - Contact section: form labels and submit button text.
 - Design Style: ${styleGuidelines[style as keyof typeof styleGuidelines] || styleGuidelines.Professional}`;
 
