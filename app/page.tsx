@@ -205,26 +205,51 @@ function LandingGeneratorContent() {
       setCustomUrlSlug(snapshot.customUrlSlug ?? '');
     };
 
-    if (siteKey) {
-      const siteDraft = readDraft(siteKey);
-      if (siteDraft?.snapshot) {
+    // Helper function to get the best available draft
+    const getBestDraft = () => {
+      // If we have a specific site key from URL, try that first
+      if (siteKey) {
+        const siteDraft = readDraft(siteKey);
+        if (siteDraft?.snapshot) {
+          return { draft: siteDraft, shouldConfirm: true };
+        }
+      }
+
+      // Try the last draft
+      const lastDraft = readDraft(normalizedLastKey);
+      if (lastDraft?.snapshot) {
+        // If the last draft has a savedSiteId, also check the site-specific draft
+        if (lastDraft.snapshot.savedSiteId) {
+          const siteSpecificKey = `easyland:draft:v1:site:${lastDraft.snapshot.savedSiteId}`;
+          const siteSpecificDraft = readDraft(siteSpecificKey);
+
+          // Use the more recent draft
+          if (siteSpecificDraft?.snapshot &&
+              siteSpecificDraft.updatedAt > lastDraft.updatedAt) {
+            return { draft: siteSpecificDraft, shouldConfirm: false };
+          }
+        }
+
+        return { draft: lastDraft, shouldConfirm: false };
+      }
+
+      return null;
+    };
+
+    const bestDraft = getBestDraft();
+
+    if (bestDraft) {
+      if (bestDraft.shouldConfirm) {
         const useDraft = window.confirm(
           'We found unsaved changes for this site from a previous session.\n\nRestore them?',
         );
         if (useDraft) {
-          applySnapshot(siteDraft.snapshot);
+          applySnapshot(bestDraft.draft.snapshot);
           // Clear the URL param so we don't keep prompting.
           clearSearchParam('loadSite');
-          setDraftHydrated(true);
-          return;
         }
-      }
-    } else {
-      const lastDraft = readDraft(normalizedLastKey);
-      if (lastDraft?.snapshot) {
-        applySnapshot(lastDraft.snapshot);
-        setDraftHydrated(true);
-        return;
+      } else {
+        applySnapshot(bestDraft.draft.snapshot);
       }
     }
 
