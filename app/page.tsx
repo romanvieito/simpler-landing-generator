@@ -12,16 +12,24 @@ type Plan = {
   title: string;
   palette: { primary: string; secondary: string; background: string; text: string; accent: string };
   fonts?: { heading?: string; body?: string };
-  sections: Array<{
-    type: 'hero' | 'features' | 'testimonials' | 'cta' | 'footer' | 'about' | 'pricing' | 'gallery' | string;
-    heading?: string;
-    subheading?: string;
-    body?: string;
-    items?: Array<{ title?: string; body?: string }>;
-    cta?: { label: string; url?: string };
-    imageQuery?: string;
-    imageUrl?: string;
-  }>;
+  sectionsContent: {
+    hero: {
+      headline: string;
+      subhead: string;
+      primaryCta: string;
+    };
+    audience: {
+      title: string;
+      description: string;
+    };
+    contact: {
+      title: string;
+      nameLabel: string;
+      emailLabel: string;
+      messageLabel: string;
+      submitLabel: string;
+    };
+  };
   images?: Array<{ query: string; url: string }>;
 };
 
@@ -114,10 +122,12 @@ function LandingGeneratorContent() {
         // Use iframe for CSS isolation when not editing
         const iframe = document.createElement('iframe');
         iframe.style.width = '100%';
-        iframe.style.height = '100%';
+        // Height is set after load to fit content (prevents the large blank area below short pages)
+        iframe.style.height = '1px';
         iframe.style.border = 'none';
-        iframe.style.backgroundColor = 'var(--color-white)';
+        iframe.style.display = 'block';
         iframe.title = 'Landing Page Preview';
+        iframe.setAttribute('scrolling', 'no');
 
         // Create a complete HTML document for the iframe
         const fullHtml = html.startsWith('<!doctype') || html.startsWith('<html')
@@ -125,9 +135,43 @@ function LandingGeneratorContent() {
           : `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview</title></head><body>${html}</body></html>`;
         iframe.srcdoc = fullHtml;
 
+        const resizeToContent = () => {
+          try {
+            const doc = iframe.contentDocument;
+            if (!doc) return;
+            const height = Math.max(
+              doc.body?.scrollHeight ?? 0,
+              doc.documentElement?.scrollHeight ?? 0,
+              doc.body?.offsetHeight ?? 0,
+              doc.documentElement?.offsetHeight ?? 0,
+            );
+            if (height > 0) iframe.style.height = `${height}px`;
+          } catch {
+            // ignore (should not happen for srcdoc, but keep safe)
+          }
+        };
+
+        const scheduleResizes = () => {
+          // Resize a few times to account for fonts/images painting after load.
+          resizeToContent();
+          requestAnimationFrame(resizeToContent);
+          setTimeout(resizeToContent, 50);
+          setTimeout(resizeToContent, 250);
+          setTimeout(resizeToContent, 1000);
+        };
+
+        iframe.addEventListener('load', scheduleResizes);
+
         // Clear and append the iframe
         previewRef.current.innerHTML = '';
         previewRef.current.appendChild(iframe);
+
+        // Best-effort immediate sizing (sometimes srcdoc paints before load fires)
+        scheduleResizes();
+
+        return () => {
+          iframe.removeEventListener('load', scheduleResizes);
+        };
       }
     }
   }, [html, editMode]);
@@ -376,8 +420,8 @@ function LandingGeneratorContent() {
       // Extract useful details from the plan for better loading context
       setPlanDetails({
         title: planOut.title,
-        sectionCount: planOut.sections?.length || 0,
-        sections: planOut.sections?.map(s => s.type) || [],
+        sectionCount: 3, // Always 3 sections: hero, audience, contact
+        sections: ['hero', 'audience', 'contact'],
         style: websiteStyle,
         palette: planOut.palette,
         fonts: planOut.fonts,
@@ -877,7 +921,12 @@ function LandingGeneratorContent() {
                   </div>
                   <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                     <div className="hidden sm:block flex-shrink-0">
-                      <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
+                      <button
+                        onClick={() => setShowPurchaseModal(true)}
+                        className="btn btn-outline text-xs px-3 py-1"
+                      >
+                        Add Credits
+                      </button>
                     </div>
 
                     <Link href="/dashboard" className="btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base hidden sm:inline-flex">
@@ -891,9 +940,14 @@ function LandingGeneratorContent() {
                     </div>
                   </div>
                 </div>
-                {/* Mobile credit display */}
+                {/* Mobile add credits button */}
                 <div className="sm:hidden mt-3">
-                  <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
+                  <button
+                    onClick={() => setShowPurchaseModal(true)}
+                    className="btn btn-outline text-xs px-3 py-1 w-full"
+                  >
+                    Add Credits
+                  </button>
                 </div>
               </div>
             </header>
@@ -937,20 +991,31 @@ function LandingGeneratorContent() {
                         <option value="Friendly">Friendly</option>
                         <option value="Minimalist">Minimalist</option>
                       </select>
-                      <button
-                        onClick={handleGenerate}
-                        disabled={!description || isGenerating}
-                        className="btn btn-primary p-3 w-12 h-12 flex items-center justify-center flex-shrink-0"
-                        title={isGenerating ? 'Generating...' : 'Generate Landing Page'}
-                      >
-                        {isGenerating ? (
-                          <div className="spinner w-4 h-4" />
-                        ) : (
-                          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M5 12h14M12 5l7 7-7 7"/>
-                          </svg>
-                        )}
-                      </button>
+                      <div className="flex items-center gap-2">
+                        <CreditDisplay showButton={false} />
+                        <button
+                          onClick={handleGenerate}
+                          disabled={!description || isGenerating}
+                          className="btn btn-primary p-2 w-8 h-8 flex items-center justify-center flex-shrink-0"
+                          title={isGenerating ? 'Generating...' : 'Generate Landing Page'}
+                        >
+                          {isGenerating ? (
+                            <div className="spinner w-5 h-5" />
+                          ) : (
+                            <svg 
+                              viewBox="0 0 24 24" 
+                              fill="none" 
+                              stroke="currentColor" 
+                              strokeWidth="2.5" 
+                              strokeLinecap="round" 
+                              strokeLinejoin="round"
+                              style={{ width: '1.75rem', height: '1.75rem', minWidth: '1.75rem', minHeight: '1.75rem' }}
+                            >
+                              <path d="M5 12h14M12 5l7 7-7 7"/>
+                            </svg>
+                          )}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -1044,9 +1109,14 @@ function LandingGeneratorContent() {
                     </div>
                   </div>
                 </div>
-                {/* Mobile credit display */}
+                {/* Mobile add credits button */}
                 <div className="sm:hidden mt-3">
-                  <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
+                  <button
+                    onClick={() => setShowPurchaseModal(true)}
+                    className="btn btn-outline text-xs px-3 py-1 w-full"
+                  >
+                    Add Credits
+                  </button>
                 </div>
               </div>
 
@@ -1142,16 +1212,21 @@ function LandingGeneratorContent() {
               )}
             </header>
 
-            <main style={{ 
-              flex: 1,
-              overflow: 'auto',
-              backgroundColor: 'var(--color-gray-50)'
-            }}>
+            <main
+              style={{
+                flex: 1,
+                // Critical for nested scrolling inside a column flex container
+                minHeight: 0,
+                overflow: 'auto',
+                position: 'relative',
+              }}
+            >
               <div
                 ref={previewRef}
                 style={{
-                  height: '100%',
-                  backgroundColor: 'var(--color-white)'
+                  width: '100%',
+                  // Let the iframe/content define height; main handles scrolling.
+                  overflow: 'visible',
                 }}
               />
               {editMode && (

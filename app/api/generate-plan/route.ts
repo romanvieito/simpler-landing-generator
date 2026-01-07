@@ -44,29 +44,39 @@ export async function POST(req: Request) {
       Minimalist: 'Use lots of white space, monochromatic or limited color palette, simple typography, and clean design. Emphasize simplicity and clarity.'
     };
 
-    const system = `You are a landing page design planner. Output strictly a single JSON object that includes:
+    const system = `You are a landing page content generator. Output strictly a single JSON object that includes:
 {
   "title": string,
   "palette": { "primary": string, "secondary": string, "background": string, "text": string, "accent": string },
   "fonts": { "heading": string, "body": string },
-  "sections": [
-    {
-      "type": "hero" | "features" | "about" | "testimonials" | "pricing" | "gallery" | "cta" | "footer",
-      "heading": string?,
-      "subheading": string?,
-      "body": string?,
-      "items": [{ "title": string?, "body": string? }]?,
-      "cta": { "label": string, "url": string? }?,
-      "imageQuery": string?
+  "sectionsContent": {
+    "hero": {
+      "headline": string,
+      "subhead": string,
+      "primaryCta": string
+    },
+    "audience": {
+      "title": string,
+      "description": string
+    },
+    "contact": {
+      "title": string,
+      "nameLabel": string,
+      "emailLabel": string,
+      "messageLabel": string,
+      "submitLabel": string
     }
-  ],
+  },
   "images": [{ "query": string }]
 }
 Rules:
-- Provide 5-7 total sections with reasonable defaults for a modern startup landing page.
+- Generate content for exactly 3 sections: hero, audience (who is this for), and contact form.
 - Keep copy concise and friendly. Avoid placeholder words like 'Lorem'.
 - Use accessible color contrast; prefer neutral background and clear text color.
-- Include up to 3 image queries for hero/gallery/feature visuals.
+- Include up to 3 image queries for hero visuals.
+- Hero section: compelling headline, clear subhead, and 1 primary CTA button only.
+- Audience section: title and description explaining who the landing page is for.
+- Contact section: form labels and submit button text.
 - Design Style: ${styleGuidelines[style as keyof typeof styleGuidelines] || styleGuidelines.Professional}`;
 
     const user = `Business description:
@@ -82,7 +92,7 @@ Return ONLY the JSON.`;
     const imageSet: Array<{ query: string; url: string }> = [];
     const queries: string[] = [
       ...(plan?.images?.map((i: any) => i.query) ?? []),
-      ...(plan?.sections?.map((s: any) => s.imageQuery).filter(Boolean) ?? []),
+      // No imageQuery in sectionsContent, only in images array
     ];
     const uniqueQueries = Array.from(new Set(queries)).slice(0, 5);
 
@@ -91,15 +101,8 @@ Return ONLY the JSON.`;
       if (url) imageSet.push({ query: q, url });
     }
 
-    if (plan?.sections) {
-      plan.sections = plan.sections.map((s: any) => {
-        if (s.imageQuery) {
-          const hit = imageSet.find((i) => i.query === s.imageQuery);
-          if (hit) s.imageUrl = hit.url;
-        }
-        return s;
-      });
-    }
+    // Update the images array with fetched URLs
+    plan.images = imageSet;
     plan.images = imageSet;
 
     return NextResponse.json({ plan });

@@ -25,7 +25,6 @@ export type GeneratedSections = {
     headline: string;
     subhead: string;
     primaryCta: string;
-    secondaryCta?: string;
   };
   audience: {
     title: string;
@@ -106,7 +105,7 @@ const buildPrompt = ({ prompt, style, sections }: GenerationRequest) => {
     "CRITICAL: Only generate content for these 3 sections: hero, audience, and contact form. Do NOT generate testimonials, or any other sections.",
     "Return raw JSON only (no markdown, no code fences, no commentary).",
     "Required keys: headline, subhead, audience, callToAction, features (array), prompt, imagePrompt, imageAlt, palette, tone, sectionsContent.",
-    "sectionsContent shape: hero {headline, subhead, primaryCta, secondaryCta}, audience {title, description}, contact {title, nameLabel, emailLabel, messageLabel, submitLabel}. Keep it short and simple.",
+    "sectionsContent shape: hero {headline, subhead, primaryCta}, audience {title, description}, contact {title, nameLabel, emailLabel, messageLabel, submitLabel}. Keep it short and simple.",
     "Constraints: headline must include the brand; callToAction is 2-5 words and points to booking/contact; features are 3 short benefit bullets.",
     "Add a concise hero imagePrompt plus a 3-6 word imageAlt; keep them generic and safe.",
     "Tone: clear, benefit-led, avoid fluff. If unsure, make reasonable assumptions while keeping output usable.",
@@ -188,7 +187,6 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
       headline: `${brand} — ${headline}`,
       subhead,
       primaryCta: callToAction,
-      secondaryCta: "Contact us",
     },
     audience: {
       title: "Who this is for",

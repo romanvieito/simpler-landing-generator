@@ -45,11 +45,6 @@ export function LandingPreview({ content, showHeader = true }: LandingPreviewPro
             <button className="rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-semibold text-white shadow-[0_12px_40px_-20px_rgba(37,99,235,0.8)] transition hover:bg-[var(--accent-strong)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)] active:scale-[0.99]">
               {sections.hero.primaryCta || content.callToAction}
             </button>
-            {sections.hero.secondaryCta ? (
-              <button className="rounded-full border border-[var(--border-soft)] bg-[var(--surface-muted)] px-4 py-2 text-sm font-semibold text-[var(--text-strong)] transition hover:border-[var(--border-strong)] hover:bg-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--accent)]">
-                {sections.hero.secondaryCta}
-              </button>
-            ) : null}
           </div>
           <p className="text-sm text-[var(--text-muted)]">
             Simple, single-page site generated from your prompt.

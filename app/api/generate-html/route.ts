@@ -2,7 +2,6 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { chatText } from '@/lib/deepseek';
-import { deductCredits } from '@/lib/db';
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -12,35 +11,24 @@ export async function POST(req: Request) {
   }
 
   try {
-    // Deduct credits for HTML generation (1 credit)
-    try {
-      await deductCredits({
-        userId,
-        amount: 1,
-        description: 'Landing page HTML generation'
-      });
-    } catch (error: any) {
-      if (error.message === 'Insufficient credits') {
-        return NextResponse.json(
-          { error: 'Insufficient credits. Please purchase more credits to continue.' },
-          { status: 402 }
-        );
-      }
-      throw error;
-    }
-
     const { plan } = await req.json();
 
     const system = `You generate complete, mobile-responsive HTML documents with inline CSS only. CRITICAL REQUIREMENTS:
-- Output a single complete HTML document: <!doctype html><html>...<head>...<style>... and <body>...</body></html>.
-- Use inline <style> in <head>; do not import external CSS or fonts.
-- Use provided color palette and font names (fallback to system fonts).
-- Layout: modern, clean, responsive. Use semantic sections.
-- Images: use provided image URLs if available; otherwise omit images.
-- Accessibility: sufficient contrast, alt text for images, logical headings.
-- Keep copy exactly as provided in the plan; do not add placeholders.
-- Include smooth responsive behavior for mobile first.
-- No scripts unless strictly necessary. No analytics, no external links except CTAs provided.
+|- Output a single complete HTML document: <!doctype html><html>...<head>...<style>... and <body>...</body></html>.
+|- Use inline <style> in <head>; do not import external CSS or fonts.
+|- Use provided color palette and font names (fallback to system fonts).
+|- Layout: modern, clean, responsive. Use semantic sections.
+|- Images: use provided image URLs if available; otherwise omit images.
+|- Accessibility: sufficient contrast, alt text for images, logical headings.
+|- Keep copy exactly as provided in the plan; do not add placeholders.
+|- Include smooth responsive behavior for mobile first.
+|- No scripts unless strictly necessary. No analytics, no external links except CTAs provided.
+|- CRITICAL TEXT HANDLING: All text content must be fully visible and NOT cut off or hidden.
+  * Use word-wrap: break-word; and overflow-wrap: break-word; for all text containers.
+  * Ensure headlines, paragraphs, and all text can wrap properly on mobile devices.
+  * Avoid fixed heights on text containers that could cause text overflow.
+  * Use max-width with appropriate padding to ensure text is never clipped.
+  * Test that all content is readable and fully visible on narrow viewports (320px+).
 
 Generate ONLY these 3 sections in this exact order:
 1. Hero section (with headline, subhead, primary CTA button)
@@ -53,12 +41,12 @@ DO NOT add testimonials, or any other sections. Only these 3 sections.`;
 ${JSON.stringify(plan, null, 2)}
 
 CRITICAL INSTRUCTIONS:
-- Generate HTML for ONLY these 3 sections in this exact order:
+|- Generate HTML for ONLY these 3 sections in this exact order:
   1. Hero section using plan.sectionsContent.hero
   2. Audience section using plan.sectionsContent.audience
   3. Contact form section using plan.sectionsContent.contact
 
-- Use the exact content from plan.sectionsContent - do not modify or add to it
+|- Use the exact content from plan.sectionsContent - do not modify or add to it
 
 IMPORTANT: For the contact form, use this exact format:
 <div id="contact-section">
@@ -156,10 +144,12 @@ Return ONLY the HTML (no markdown, no fences).`;
     --color-text: ${plan?.palette?.text ?? '#111827'};
     --color-accent: ${plan?.palette?.accent ?? '#7c3aed'};
   }
-  html, body { margin: 0; padding: 0; height: 100%; background: var(--color-bg); color: var(--color-text); font-family: ${plan?.fonts?.body ?? 'Inter, system-ui, sans-serif'}; }
+  html, body { margin: 0; padding: 0; background: var(--color-bg); color: var(--color-text); font-family: ${plan?.fonts?.body ?? 'Inter, system-ui, sans-serif'}; }
+  * { word-wrap: break-word; overflow-wrap: break-word; }
   img { max-width: 100%; height: auto; display: block; }
   a { color: var(--color-primary); text-decoration: none; }
-  .container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 16px; min-height: 100%; }
+  .container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 16px; }
+  h1, h2, h3, h4, h5, h6, p { margin: 0; padding: 0; }
 </style>
 </head>
 <body>
