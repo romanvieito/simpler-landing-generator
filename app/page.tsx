@@ -298,10 +298,18 @@ function LandingGeneratorContent() {
         iframe.title = 'Landing Page Preview';
         iframe.setAttribute('scrolling', 'no');
 
-        // Create a complete HTML document for the iframe
-        const fullHtml = html.startsWith('<!doctype') || html.startsWith('<html')
+        // Create a complete HTML document for the iframe with immediate image constraints
+        let fullHtml = html.startsWith('<!doctype') || html.startsWith('<html')
           ? html
           : `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview</title></head><body>${html}</body></html>`;
+
+        // Add immediate image constraints to prevent large images in preview
+        if (fullHtml.includes('<style>')) {
+          fullHtml = fullHtml.replace('<style>', '<style>img { max-width: 100% !important; height: auto !important; display: block !important; } ');
+        } else if (fullHtml.includes('<head>')) {
+          fullHtml = fullHtml.replace('<head>', '<head><style>img { max-width: 100% !important; height: auto !important; display: block !important; }</style>');
+        }
+
         iframe.srcdoc = fullHtml;
 
         const resizeToContent = () => {

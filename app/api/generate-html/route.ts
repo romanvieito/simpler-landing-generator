@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 |- Use inline <style> in <head>; do not import external CSS or fonts.
 |- Use provided color palette and font names (fallback to system fonts).
 |- Layout: modern, clean, responsive. Use semantic sections.
-|- Images: use provided image URLs if available; otherwise omit images.
+|- Images: use provided image URLs if available; otherwise omit images. For hero images, use class="hero-image" for proper sizing.
 |- Accessibility: sufficient contrast, alt text for images, logical headings.
 |- Keep copy exactly as provided in the plan; do not add placeholders.
 |- Include smooth responsive behavior for mobile first.
@@ -146,7 +146,8 @@ Return ONLY the HTML (no markdown, no fences).`;
   }
   html, body { margin: 0; padding: 0; background: var(--color-bg); color: var(--color-text); font-family: ${plan?.fonts?.body ?? 'Inter, system-ui, sans-serif'}; }
   * { word-wrap: break-word; overflow-wrap: break-word; }
-  img { max-width: 100%; height: auto; display: block; }
+  img { max-width: 100%; height: auto; display: block; object-fit: cover; }
+  .hero-image { max-height: 400px; width: 100%; object-fit: cover; border-radius: 8px; }
   a { color: var(--color-primary); text-decoration: none; }
   .container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 16px; }
   h1, h2, h3, h4, h5, h6, p { margin: 0; padding: 0; }
