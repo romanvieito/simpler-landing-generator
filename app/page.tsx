@@ -178,6 +178,7 @@ function LandingGeneratorContent() {
   };
 
   const previewRef = useRef<HTMLDivElement>(null);
+  const previewIframeRef = useRef<HTMLIFrameElement | null>(null);
 
   // Restore draft state on mount (and when loading a specific site via URL).
   useEffect(() => {
@@ -308,75 +309,74 @@ function LandingGeneratorContent() {
   ]);
 
   useEffect(() => {
-    if (previewRef.current && html) {
-      if (editMode) {
-        // Use direct HTML injection for edit mode
-        previewRef.current.innerHTML = html;
-      } else {
-        // Use iframe for CSS isolation when not editing
-        const iframe = document.createElement('iframe');
-        iframe.style.width = '100%';
-        // Height is set after load to fit content (prevents the large blank area below short pages)
-        iframe.style.height = '1px';
-        iframe.style.border = 'none';
-        iframe.style.display = 'block';
-        iframe.title = 'Landing Page Preview';
-        iframe.setAttribute('scrolling', 'no');
+    const container = previewRef.current;
+    if (!container) return;
 
-        // Create a complete HTML document for the iframe with immediate image constraints
-        let fullHtml = html.startsWith('<!doctype') || html.startsWith('<html')
-          ? html
-          : `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview</title></head><body>${html}</body></html>`;
+    // Always render the generated page inside an iframe so its CSS never affects the editor UI.
+    // (Direct HTML injection can leak <style> into the parent document.)
+    container.innerHTML = '';
+    previewIframeRef.current = null;
 
-        // Add immediate image constraints to prevent large images in preview
-        if (fullHtml.includes('<style>')) {
-          fullHtml = fullHtml.replace('<style>', '<style>img { max-width: 100% !important; height: auto !important; display: block !important; } ');
-        } else if (fullHtml.includes('<head>')) {
-          fullHtml = fullHtml.replace('<head>', '<head><style>img { max-width: 100% !important; height: auto !important; display: block !important; }</style>');
-        }
+    if (!html) return;
 
-        iframe.srcdoc = fullHtml;
+    const iframe = document.createElement('iframe');
+    previewIframeRef.current = iframe;
 
-        const resizeToContent = () => {
-          try {
-            const doc = iframe.contentDocument;
-            if (!doc) return;
-            const height = Math.max(
-              doc.body?.scrollHeight ?? 0,
-              doc.documentElement?.scrollHeight ?? 0,
-              doc.body?.offsetHeight ?? 0,
-              doc.documentElement?.offsetHeight ?? 0,
-            );
-            if (height > 0) iframe.style.height = `${height}px`;
-          } catch {
-            // ignore (should not happen for srcdoc, but keep safe)
-          }
-        };
+    // Position absolutely to fill the container completely
+    iframe.style.position = 'absolute';
+    iframe.style.top = '0';
+    iframe.style.left = '0';
+    iframe.style.width = '100%';
+    iframe.style.height = '100%';
+    iframe.style.border = 'none';
+    iframe.style.display = 'block';
+    iframe.title = 'Landing Page Preview';
+    // Disable scripts for safety; keep same-origin so we can support edit-mode interactions.
+    iframe.setAttribute('sandbox', 'allow-same-origin allow-forms');
 
-        const scheduleResizes = () => {
-          // Resize a few times to account for fonts/images painting after load.
-          resizeToContent();
-          requestAnimationFrame(resizeToContent);
-          setTimeout(resizeToContent, 50);
-          setTimeout(resizeToContent, 250);
-          setTimeout(resizeToContent, 1000);
-        };
+    // Create a complete HTML document for the iframe
+    const fullHtml =
+      html.startsWith('<!doctype') || html.startsWith('<html')
+        ? html
+        : `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview</title></head><body>${html}</body></html>`;
 
-        iframe.addEventListener('load', scheduleResizes);
+    iframe.srcdoc = fullHtml;
 
-        // Clear and append the iframe
-        previewRef.current.innerHTML = '';
-        previewRef.current.appendChild(iframe);
+    container.appendChild(iframe);
 
-        // Best-effort immediate sizing (sometimes srcdoc paints before load fires)
-        scheduleResizes();
+    return () => {
+      if (previewIframeRef.current === iframe) previewIframeRef.current = null;
+    };
+  }, [html]);
 
-        return () => {
-          iframe.removeEventListener('load', scheduleResizes);
-        };
+  function getPreviewHtml(): string | null {
+    const iframe = previewIframeRef.current;
+    const doc = iframe?.contentDocument;
+    if (!doc?.body) return null;
+    return doc.body.innerHTML;
+  }
+
+  function clearEditArtifactsInPreview() {
+    const iframe = previewIframeRef.current;
+    const doc = iframe?.contentDocument;
+    if (!doc) return;
+
+    // Remove any lingering edit-mode artifacts (outline + contenteditable) inside the iframe.
+    const editableEls = doc.querySelectorAll<HTMLElement>('[contenteditable]');
+    editableEls.forEach((el) => el.removeAttribute('contenteditable'));
+
+    const allEls = doc.querySelectorAll<HTMLElement>('*');
+    allEls.forEach((el) => {
+      const outline = el.style.outline || '';
+      // Only remove inline outlines that look like our selection outline.
+      if (
+        outline.includes('dashed') &&
+        (outline.includes('#7c3aed') || outline.includes('rgb(124, 58, 237)'))
+      ) {
+        el.style.outline = '';
       }
-    }
-  }, [html, editMode]);
+    });
+  }
 
   // Cycle through detailed status messages during loading phases
   useEffect(() => {
@@ -473,70 +473,96 @@ function LandingGeneratorContent() {
   }
 
   useEffect(() => {
-    const container = previewRef.current;
-    if (!container) return;
+    if (!editMode) return;
+    const iframe = previewIframeRef.current;
+    if (!iframe) return;
 
-    function handleClick(e: MouseEvent) {
-      if (!editMode) return;
-      const target = e.target as HTMLElement;
-      if (!target || target === container) return;
+    const attach = () => {
+      const doc = iframe.contentDocument;
+      if (!doc) return;
+      const docEl = doc.documentElement;
+      const bodyEl = doc.body;
 
-      if (selectedEl && selectedEl !== target) {
-        selectedEl.style.outline = '';
-        selectedEl.contentEditable = 'false';
-      }
-      setSelectedEl(target);
-      target.style.outline = '2px dashed #7c3aed';
+      function handleClick(e: MouseEvent) {
+        if (!editMode) return;
+        const target = e.target as HTMLElement;
+        if (!target || target === docEl || target === bodyEl) return;
 
-      const tag = target.tagName.toLowerCase();
-      const nonEditableTags = new Set(['img', 'svg', 'a', 'button', 'input']);
-      if (!nonEditableTags.has(tag)) {
-        target.contentEditable = 'true';
-        target.focus();
-      }
-    }
+        if (selectedEl && selectedEl !== target) {
+          selectedEl.style.outline = '';
+          selectedEl.contentEditable = 'false';
+        }
+        setSelectedEl(target);
+        target.style.outline = '2px dashed #7c3aed';
 
-    function handleKeyDown(e: KeyboardEvent) {
-      if (!editMode) return;
-      const metaOrCtrl = e.metaKey || e.ctrlKey;
-      if (metaOrCtrl && e.key.toLowerCase() === 'z') {
-        e.preventDefault();
-        doUndo();
-        return;
+        const tag = target.tagName.toLowerCase();
+        const nonEditableTags = new Set(['img', 'svg', 'a', 'button', 'input']);
+        if (!nonEditableTags.has(tag)) {
+          target.contentEditable = 'true';
+          target.focus();
+        }
       }
-      if (e.key === 'Escape') {
-        e.preventDefault();
-        finalizeEdit();
-        return;
+
+      function handleKeyDown(e: KeyboardEvent) {
+        if (!editMode) return;
+        const metaOrCtrl = e.metaKey || e.ctrlKey;
+        if (metaOrCtrl && e.key.toLowerCase() === 'z') {
+          e.preventDefault();
+          doUndo();
+          return;
+        }
+        if (e.key === 'Escape') {
+          e.preventDefault();
+          finalizeEdit();
+          return;
+        }
+        if (e.key === 'Delete' && selectedEl && bodyEl?.contains(selectedEl)) {
+          e.preventDefault();
+          pushHistory();
+          selectedEl.remove();
+          finalizeEdit();
+        }
       }
-      if (e.key === 'Delete' && selectedEl && container && container.contains(selectedEl)) {
-        e.preventDefault();
+
+      function handleFocusOut() {
+        if (!editMode) return;
         pushHistory();
-        selectedEl.remove();
         finalizeEdit();
       }
-    }
 
-    function handleBlur() {
-      if (!editMode) return;
-      pushHistory();
-      finalizeEdit();
-    }
+      doc.addEventListener('click', handleClick);
+      // capture focus changes inside the iframe document
+      doc.addEventListener('focusout', handleFocusOut, true);
+      window.addEventListener('keydown', handleKeyDown, true);
 
-    container.addEventListener('click', handleClick);
-    window.addEventListener('keydown', handleKeyDown, true);
-    container.addEventListener('blur', handleBlur, true);
+      return () => {
+        doc.removeEventListener('click', handleClick);
+        doc.removeEventListener('focusout', handleFocusOut, true);
+        window.removeEventListener('keydown', handleKeyDown, true);
+      };
+    };
+
+    // iframe doc may not be ready immediately after srcdoc update
+    let detach: void | (() => void);
+    const onLoad = () => {
+      detach?.();
+      detach = attach();
+    };
+
+    iframe.addEventListener('load', onLoad);
+    // Try immediately too (covers cases where load already fired)
+    detach = attach();
+
     return () => {
-      container.removeEventListener('click', handleClick);
-      window.removeEventListener('keydown', handleKeyDown, true);
-      container.removeEventListener('blur', handleBlur, true);
+      iframe.removeEventListener('load', onLoad);
+      detach?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editMode, selectedEl, html]);
+  }, [editMode, selectedEl]);
 
   function pushHistory() {
-    if (!previewRef.current) return;
-    const current = previewRef.current.innerHTML;
+    const current = getPreviewHtml() ?? html;
+    if (typeof current !== 'string') return;
     setHistory((h) => [...h, current]);
   }
 
@@ -553,8 +579,8 @@ function LandingGeneratorContent() {
   }
 
   function finalizeEdit() {
-    if (!previewRef.current) return;
-    const updated = previewRef.current.innerHTML;
+    const updated = getPreviewHtml();
+    if (typeof updated !== 'string') return;
     setHtml(updated);
   }
 
@@ -1264,7 +1290,21 @@ function LandingGeneratorContent() {
 
                   <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                   <button
-                    onClick={() => setEditMode((v) => !v)}
+                    onClick={() => {
+                      setEditMode((v) => {
+                        const next = !v;
+                        if (!next) {
+                          if (selectedEl) {
+                            selectedEl.style.outline = '';
+                            selectedEl.contentEditable = 'false';
+                            setSelectedEl(null);
+                          }
+                          clearEditArtifactsInPreview();
+                          finalizeEdit();
+                        }
+                        return next;
+                      });
+                    }}
                     disabled={!html || isGenerating}
                     className={`btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base ${editMode ? 'text-green-600' : ''}`}
                   >
@@ -1417,34 +1457,25 @@ function LandingGeneratorContent() {
             </header>
 
             <main
+              ref={previewRef}
               style={{
                 flex: 1,
                 // Critical for nested scrolling inside a column flex container
                 minHeight: 0,
-                overflow: 'auto',
                 position: 'relative',
               }}
-            >
-              <div
-                ref={previewRef}
-                style={{
-                  width: '100%',
-                  // Let the iframe/content define height; main handles scrolling.
-                  overflow: 'visible',
-                }}
-              />
-              {editMode && (
-                <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-                  <div className="bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
-                    <div className="text-xs text-gray-600 text-center">
-                      <span className="sm:hidden">Tap text to edit</span>
-                      <span className="hidden sm:inline">Click text to edit</span>
-                      <span className="ml-2 text-gray-400">• Esc to exit</span>
-                    </div>
+            />
+            {editMode && (
+              <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
+                <div className="bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
+                  <div className="text-xs text-gray-600 text-center">
+                    <span className="sm:hidden">Tap text to edit</span>
+                    <span className="hidden sm:inline">Click text to edit</span>
+                    <span className="ml-2 text-gray-400">• Esc to exit</span>
                   </div>
                 </div>
-              )}
-            </main>
+              </div>
+            )}
           </div>
         )}
       </SignedIn>
