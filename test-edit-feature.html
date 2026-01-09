@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Edit Feature Test - Standalone</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .controls {
+            margin-top: 1rem;
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.375rem;
+            background: white;
+            color: #374151;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            background: #f9fafb;
+            border-color: #9ca3af;
+        }
+
+        .btn-primary {
+            background: #7c3aed;
+            color: white;
+            border-color: #7c3aed;
+        }
+
+        .btn-primary:hover {
+            background: #6d28d9;
+            border-color: #6d28d9;
+        }
+
+        .btn.active {
+            background: #7c3aed;
+            color: white;
+        }
+
+        .preview-container {
+            position: relative;
+            min-height: 100vh;
+            background: white;
+            margin: 0;
+        }
+
+        .preview-iframe {
+            width: 100%;
+            height: 100vh;
+            border: none;
+            display: block;
+        }
+
+        /* Edit mode styles that will be injected */
+        .edit-mode-styles {
+            /* Edit mode hover states */
+            body *:not(html):not(body):not(script):not(style):hover {
+                outline: 2px solid rgba(59, 130, 246, 0.3) !important;
+                cursor: pointer !important;
+                background-color: rgba(59, 130, 246, 0.05) !important;
+            }
+
+            /* Selected element indicator */
+            .edit-mode-selected {
+                outline: 3px solid #7c3aed !important;
+                box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.2), 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+                position: relative !important;
+            }
+
+            /* Element type badge */
+            .edit-mode-badge {
+                position: absolute !important;
+                top: -24px !important;
+                left: 0 !important;
+                background: #7c3aed !important;
+                color: white !important;
+                padding: 2px 8px !important;
+                border-radius: 4px !important;
+                font-size: 11px !important;
+                font-weight: 600 !important;
+                text-transform: uppercase !important;
+                letter-spacing: 0.5px !important;
+                z-index: 10000 !important;
+                pointer-events: none !important;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+            }
+
+            /* Image replace button */
+            .edit-mode-replace-btn {
+                position: absolute !important;
+                top: 50% !important;
+                left: 50% !important;
+                transform: translate(-50%, -50%) !important;
+                background: #7c3aed !important;
+                color: white !important;
+                border: none !important;
+                padding: 8px 16px !important;
+                border-radius: 6px !important;
+                font-size: 14px !important;
+                font-weight: 600 !important;
+                cursor: pointer !important;
+                z-index: 10001 !important;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+            }
+        }
+
+        .edit-mode-hint {
+            position: fixed;
+            bottom: 1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 0.875rem;
+            color: #6b7280;
+            z-index: 1000;
+        }
+
+        .edit-mode-hint strong {
+            color: #374151;
+        }
+
+        .history-panel {
+            position: fixed;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 250px;
+            display: none;
+        }
+
+        .history-panel.show {
+            display: block;
+        }
+
+        .history-panel h3 {
+            margin: 0 0 0.5rem 0;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .status-panel {
+            position: fixed;
+            bottom: 1rem;
+            right: 1rem;
+            background: white;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+            padding: 1rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            max-width: 300px;
+            font-size: 0.75rem;
+            color: #6b7280;
+            display: none;
+        }
+
+        .status-panel.show {
+            display: block;
+        }
+
+        .status-item {
+            margin-bottom: 0.25rem;
+        }
+
+        .status-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .history-item {
+            padding: 0.25rem 0;
+            font-size: 0.75rem;
+            color: #6b7280;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .history-item:last-child {
+            border-bottom: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Edit Feature Test</h1>
+        <div class="controls">
+            <button id="editModeBtn" class="btn">Edit Text</button>
+            <button id="undoBtn" class="btn" disabled>↶ Undo</button>
+            <button id="redoBtn" class="btn" disabled>↷ Redo</button>
+            <button id="saveBtn" class="btn btn-primary">Save Changes</button>
+            <button id="historyBtn" class="btn">📋 History</button>
+        </div>
+    </div>
+
+    <div class="preview-container">
+        <iframe id="previewIframe" class="preview-iframe" title="Landing Page Preview"></iframe>
+    </div>
+
+    <div id="editModeHint" class="edit-mode-hint" style="display: none;">
+        <strong>Edit Mode:</strong> Click text to edit • Press <kbd>Esc</kbd> to exit • <kbd>Ctrl+Z</kbd> to undo
+    </div>
+
+    <div id="historyPanel" class="history-panel">
+        <h3>Edit History</h3>
+        <div id="historyList"></div>
+    </div>
+
+    <div id="statusPanel" class="status-panel show">
+        <h3>Edit Feature Test Status</h3>
+        <div id="statusList">
+            <div class="status-item">✓ Page loaded</div>
+            <div class="status-item">○ Edit mode: disabled</div>
+            <div class="status-item">○ Selected element: none</div>
+            <div class="status-item">○ History: 1 state</div>
+        </div>
+    </div>
+
+    <input type="file" id="imageInput" accept="image/*" style="display: none;">
+
+    <script>
+        let editMode = false;
+        let selectedElement = null;
+        let history = [];
+        let redoStack = [];
+        let currentHistoryIndex = -1;
+        const iframe = document.getElementById('previewIframe');
+        const editModeBtn = document.getElementById('editModeBtn');
+        const undoBtn = document.getElementById('undoBtn');
+        const redoBtn = document.getElementById('redoBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const historyBtn = document.getElementById('historyBtn');
+        const editModeHint = document.getElementById('editModeHint');
+        const historyPanel = document.getElementById('historyPanel');
+        const historyList = document.getElementById('historyList');
+        const statusPanel = document.getElementById('statusPanel');
+        const statusList = document.getElementById('statusList');
+        const imageInput = document.getElementById('imageInput');
+
+        // Test HTML content
+        const testHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Test Landing Page - Edit Me</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+            color: #333;
+        }
+        .hero {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4rem 2rem;
+            text-align: center;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+        .hero p {
+            font-size: 1.25rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        .btn {
+            background: #ff6b35;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 0.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .section {
+            padding: 4rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .audience {
+            background: #f8f9fa;
+        }
+        .contact {
+            background: white;
+        }
+        .contact form {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .contact input, .contact textarea {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 0.25rem;
+            font-size: 1rem;
+        }
+        .contact textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+    </style>
+</head>
+<body>
+    <section class="hero">
+        <h1>Welcome to Test Landing</h1>
+        <p>This is a test landing page for editing functionality. Click on any text to start editing!</p>
+        <a href="#contact" class="btn">Get Started</a>
+    </section>
+
+    <section class="section audience">
+        <h2>Who This Is For</h2>
+        <p>This landing page is perfect for testing the edit feature. You can click on any text element and modify it directly.</p>
+        <div>
+            <h3>Easy Editing</h3>
+            <p>Simply click on text to make it editable. No complex interfaces needed.</p>
+        </div>
+        <div>
+            <h3>Real-time Changes</h3>
+            <p>See your changes instantly as you type. The preview updates immediately.</p>
+        </div>
+        <div>
+            <h3>Save & Publish</h3>
+            <p>When you're done editing, save your changes and publish your site.</p>
+        </div>
+    </section>
+
+    <section class="section contact" id="contact">
+        <h2>Get In Touch</h2>
+        <p>Ready to get started? Send us a message and we'll help you create the perfect landing page.</p>
+        <form>
+            <input type="text" name="name" placeholder="Your Name" required>
+            <input type="email" name="email" placeholder="your@email.com" required>
+            <textarea name="message" placeholder="Tell us about your project..." required></textarea>
+            <button type="submit" class="btn">Send Message</button>
+        </form>
+    </section>
+</body>
+</html>`;
+
+        // Load initial content
+        function loadContent() {
+            const fullHtml = testHtml;
+            iframe.srcdoc = fullHtml;
+            history = [fullHtml];
+            currentHistoryIndex = 0;
+            updateHistoryDisplay();
+            updateButtons();
+        }
+
+        // Inject edit mode styles
+        function injectEditStyles(doc) {
+            let styleEl = doc.getElementById('edit-mode-styles');
+            if (!styleEl) {
+                styleEl = doc.createElement('style');
+                styleEl.id = 'edit-mode-styles';
+                styleEl.textContent = document.querySelector('.edit-mode-styles').textContent;
+                doc.head.appendChild(styleEl);
+            }
+        }
+
+        // Remove edit mode artifacts
+        function clearEditArtifacts(doc) {
+            // Remove edit-mode CSS
+            const editModeStyle = doc.getElementById('edit-mode-styles');
+            if (editModeStyle) editModeStyle.remove();
+
+            // Remove any lingering edit-mode artifacts
+            const editableEls = doc.querySelectorAll('[contenteditable]');
+            editableEls.forEach(el => el.removeAttribute('contenteditable'));
+
+            // Remove selection classes and badges
+            const selectedEls = doc.querySelectorAll('.edit-mode-selected');
+            selectedEls.forEach(el => el.classList.remove('edit-mode-selected'));
+
+            const badges = doc.querySelectorAll('.edit-mode-badge');
+            badges.forEach(badge => badge.remove());
+
+            const replaceBtns = doc.querySelectorAll('.edit-mode-replace-btn');
+            replaceBtns.forEach(btn => btn.remove());
+
+            const allEls = doc.querySelectorAll('*');
+            allEls.forEach(el => {
+                const outline = el.style.outline || '';
+                if (outline.includes('dashed') &&
+                    (outline.includes('#7c3aed') || outline.includes('rgb(124, 58, 237)'))) {
+                    el.style.outline = '';
+                }
+            });
+        }
+
+        // Get element type name
+        function getElementTypeName(tag) {
+            const typeMap = {
+                h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3',
+                h4: 'Heading 4', h5: 'Heading 5', h6: 'Heading 6',
+                p: 'Paragraph', span: 'Text', div: 'Container',
+                img: 'Image', a: 'Link', button: 'Button',
+                ul: 'List', ol: 'List', li: 'List Item',
+                section: 'Section', header: 'Header', footer: 'Footer',
+                nav: 'Navigation', article: 'Article', aside: 'Sidebar'
+            };
+            return typeMap[tag] || tag.toUpperCase();
+        }
+
+        // Handle element selection
+        function handleElementClick(e) {
+            if (!editMode) return;
+
+            const doc = iframe.contentDocument;
+            if (!doc) return;
+
+            console.log('Element clicked:', e.target);
+
+            // Prevent default behavior for links and buttons
+            const clickedElement = e.target;
+            const clickedTag = clickedElement?.tagName.toLowerCase();
+            if (clickedTag === 'a' || clickedTag === 'button') {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            const target = e.target;
+            if (!target || target === doc.documentElement || target === doc.body) return;
+
+            // Don't select if clicking on badges or buttons
+            if (target.classList.contains('edit-mode-badge') ||
+                target.classList.contains('edit-mode-replace-btn')) {
+                return;
+            }
+
+            // Remove previous selection
+            if (selectedElement && selectedElement !== target) {
+                selectedElement.classList.remove('edit-mode-selected');
+                const oldBadge = selectedElement.querySelector('.edit-mode-badge');
+                if (oldBadge) oldBadge.remove();
+                const oldReplaceBtn = selectedElement.querySelector('.edit-mode-replace-btn');
+                if (oldReplaceBtn) oldReplaceBtn.remove();
+                selectedElement.contentEditable = 'false';
+            }
+
+            selectedElement = target;
+            console.log('Element selected:', tag, target.textContent?.slice(0, 50));
+
+            // Add selection styling
+            target.classList.add('edit-mode-selected');
+
+            // Add element type badge
+            const tag = target.tagName.toLowerCase();
+            const existingBadge = target.querySelector('.edit-mode-badge');
+            if (!existingBadge) {
+                const badge = doc.createElement('div');
+                badge.className = 'edit-mode-badge';
+                badge.textContent = getElementTypeName(tag);
+                target.style.position = target.style.position || 'relative';
+                target.insertBefore(badge, target.firstChild);
+            }
+
+            updateStatus();
+
+            const nonEditableTags = new Set(['img', 'svg', 'a', 'button', 'input']);
+            if (!nonEditableTags.has(tag)) {
+                target.contentEditable = 'true';
+                target.focus();
+            } else if (tag === 'img') {
+                // Add replace button for images
+                const existingReplaceBtn = target.querySelector('.edit-mode-replace-btn');
+                if (!existingReplaceBtn) {
+                    const replaceBtn = doc.createElement('button');
+                    replaceBtn.className = 'edit-mode-replace-btn';
+                    replaceBtn.textContent = '📷 Replace Image';
+                    replaceBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        imageInput.click();
+                    };
+                    target.style.position = 'relative';
+                    target.appendChild(replaceBtn);
+                }
+            }
+        }
+
+        // Handle key events
+        function handleKeyDown(e) {
+            if (!editMode) return;
+            const metaOrCtrl = e.metaKey || e.ctrlKey;
+
+            // Undo: Ctrl+Z / Cmd+Z
+            if (metaOrCtrl && e.key.toLowerCase() === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                doUndo();
+                return;
+            }
+
+            // Redo: Ctrl+Y / Cmd+Shift+Z
+            if ((metaOrCtrl && e.key.toLowerCase() === 'y') || (metaOrCtrl && e.shiftKey && e.key.toLowerCase() === 'z')) {
+                e.preventDefault();
+                doRedo();
+                return;
+            }
+
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                finalizeEdit();
+                return;
+            }
+
+            if (e.key === 'Delete' && selectedElement && iframe.contentDocument?.body?.contains(selectedElement)) {
+                e.preventDefault();
+                pushHistory();
+                selectedElement.remove();
+                finalizeEdit();
+            }
+        }
+
+        // Push to history
+        function pushHistory() {
+            const doc = iframe.contentDocument;
+            if (!doc) return;
+
+            const currentHtml = doc.documentElement.outerHTML;
+            if (typeof currentHtml !== 'string') return;
+
+            // Remove current redo stack when new edits are made
+            redoStack = [];
+
+            // Add to history (keep last 20)
+            history = history.slice(0, currentHistoryIndex + 1);
+            history.push(currentHtml);
+            currentHistoryIndex = history.length - 1;
+
+            // Limit history size
+            if (history.length > 20) {
+                history = history.slice(-20);
+                currentHistoryIndex = history.length - 1;
+            }
+
+            updateHistoryDisplay();
+            updateButtons();
+        }
+
+        // Undo
+        function doUndo() {
+            if (currentHistoryIndex > 0) {
+                // Push current state to redo stack
+                const currentHtml = iframe.contentDocument?.documentElement.outerHTML;
+                if (currentHtml) {
+                    redoStack.push(currentHtml);
+                }
+
+                currentHistoryIndex--;
+                const previousHtml = history[currentHistoryIndex];
+                iframe.srcdoc = previousHtml;
+
+                if (selectedElement) {
+                    selectedElement.classList.remove('edit-mode-selected');
+                    const badge = selectedElement.querySelector('.edit-mode-badge');
+                    if (badge) badge.remove();
+                    const replaceBtn = selectedElement.querySelector('.edit-mode-replace-btn');
+                    if (replaceBtn) replaceBtn.remove();
+                    selectedElement.contentEditable = 'false';
+                    selectedElement = null;
+                }
+
+                updateHistoryDisplay();
+                updateButtons();
+            }
+        }
+
+        // Redo
+        function doRedo() {
+            if (redoStack.length > 0) {
+                const redoHtml = redoStack.pop();
+                // Push current state to history
+                const currentHtml = iframe.contentDocument?.documentElement.outerHTML;
+                if (currentHtml) {
+                    history.push(currentHtml);
+                    currentHistoryIndex++;
+                }
+
+                iframe.srcdoc = redoHtml;
+
+                if (selectedElement) {
+                    selectedElement.classList.remove('edit-mode-selected');
+                    const badge = selectedElement.querySelector('.edit-mode-badge');
+                    if (badge) badge.remove();
+                    const replaceBtn = selectedElement.querySelector('.edit-mode-replace-btn');
+                    if (replaceBtn) replaceBtn.remove();
+                    selectedElement.contentEditable = 'false';
+                    selectedElement = null;
+                }
+
+                updateHistoryDisplay();
+                updateButtons();
+            }
+        }
+
+        // Finalize edit
+        function finalizeEdit() {
+            if (selectedElement) {
+                pushHistory();
+                selectedElement.classList.remove('edit-mode-selected');
+                const badge = selectedElement.querySelector('.edit-mode-badge');
+                if (badge) badge.remove();
+                const replaceBtn = selectedElement.querySelector('.edit-mode-replace-btn');
+                if (replaceBtn) replaceBtn.remove();
+                selectedElement.contentEditable = 'false';
+                selectedElement = null;
+            }
+        }
+
+        // Update status display
+        function updateStatus() {
+            statusList.innerHTML = `
+                <div class="status-item">✓ Page loaded</div>
+                <div class="status-item">${editMode ? '✓' : '○'} Edit mode: ${editMode ? 'enabled' : 'disabled'}</div>
+                <div class="status-item">○ Selected element: ${selectedElement ? selectedElement.tagName.toLowerCase() : 'none'}</div>
+                <div class="status-item">○ History: ${history.length} states (current: ${currentHistoryIndex + 1})</div>
+                <div class="status-item">○ Redo stack: ${redoStack.length} states</div>
+            `;
+        }
+
+        // Update buttons state
+        function updateButtons() {
+            undoBtn.disabled = currentHistoryIndex <= 0;
+            redoBtn.disabled = redoStack.length === 0;
+            updateStatus();
+        }
+
+        // Update history display
+        function updateHistoryDisplay() {
+            historyList.innerHTML = '';
+            history.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'history-item';
+                itemEl.textContent = `Edit ${index + 1}${index === currentHistoryIndex ? ' (current)' : ''}`;
+                historyList.appendChild(itemEl);
+            });
+        }
+
+        // Handle image replacement
+        function handleImageReplacement(file) {
+            if (!selectedElement || selectedElement.tagName.toLowerCase() !== 'img') return;
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const result = e.target?.result;
+                if (typeof result === 'string' && selectedElement) {
+                    pushHistory();
+                    selectedElement.src = result;
+                    finalizeEdit();
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Event listeners
+        iframe.addEventListener('load', () => {
+            const doc = iframe.contentDocument;
+            if (!doc) return;
+
+            if (editMode) {
+                injectEditStyles(doc);
+                doc.addEventListener('click', handleElementClick);
+            }
+
+            doc.addEventListener('focusout', (e) => {
+                if (editMode && selectedElement && !selectedElement.contains(e.relatedTarget)) {
+                    pushHistory();
+                    finalizeEdit();
+                }
+            }, true);
+        });
+
+        // Control buttons
+        editModeBtn.addEventListener('click', () => {
+            editMode = !editMode;
+            editModeBtn.classList.toggle('active', editMode);
+            editModeBtn.textContent = editMode ? '✓ Edit Mode' : 'Edit Text';
+            editModeHint.style.display = editMode ? 'block' : 'none';
+
+            console.log('Edit mode toggled:', editMode);
+
+            const doc = iframe.contentDocument;
+            if (doc) {
+                if (editMode) {
+                    injectEditStyles(doc);
+                    doc.addEventListener('click', handleElementClick);
+                } else {
+                    clearEditArtifacts(doc);
+                    doc.removeEventListener('click', handleElementClick);
+                    finalizeEdit();
+                }
+            }
+            updateStatus();
+        });
+
+        undoBtn.addEventListener('click', doUndo);
+        redoBtn.addEventListener('click', doRedo);
+
+        saveBtn.addEventListener('click', () => {
+            const doc = iframe.contentDocument;
+            if (doc) {
+                const currentHtml = doc.documentElement.outerHTML;
+                console.log('Saved HTML:', currentHtml);
+                alert('Changes saved! Check console for the updated HTML.');
+            }
+        });
+
+        historyBtn.addEventListener('click', () => {
+            historyPanel.classList.toggle('show');
+        });
+
+        // Global keydown for undo/redo
+        document.addEventListener('keydown', handleKeyDown);
+
+        // Image input
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                handleImageReplacement(file);
+                e.target.value = ''; // Reset input
+            }
+        });
+
+        // Test scenarios
+        function runTestScenarios() {
+            console.log('=== Edit Feature Test Scenarios ===');
+
+            // Test 1: Enable edit mode
+            setTimeout(() => {
+                console.log('Test 1: Enabling edit mode');
+                editModeBtn.click();
+            }, 1000);
+
+            // Test 2: Click on a heading
+            setTimeout(() => {
+                console.log('Test 2: Clicking on heading');
+                const doc = iframe.contentDocument;
+                if (doc) {
+                    const heading = doc.querySelector('h1');
+                    if (heading) {
+                        const event = new MouseEvent('click', { bubbles: true });
+                        heading.dispatchEvent(event);
+                    }
+                }
+            }, 2000);
+
+            // Test 3: Edit text content
+            setTimeout(() => {
+                console.log('Test 3: Editing text content');
+                if (selectedElement) {
+                    selectedElement.textContent = 'Updated Test Landing Page';
+                    selectedElement.dispatchEvent(new Event('focusout', { bubbles: true }));
+                }
+            }, 3000);
+
+            // Test 4: Test undo
+            setTimeout(() => {
+                console.log('Test 4: Testing undo');
+                undoBtn.click();
+            }, 4000);
+
+            // Test 5: Test redo
+            setTimeout(() => {
+                console.log('Test 5: Testing redo');
+                redoBtn.click();
+            }, 5000);
+
+            // Test 6: Exit edit mode
+            setTimeout(() => {
+                console.log('Test 6: Exiting edit mode');
+                editModeBtn.click();
+            }, 6000);
+
+            // Test 7: Save changes
+            setTimeout(() => {
+                console.log('Test 7: Saving changes');
+                saveBtn.click();
+            }, 7000);
+        }
+
+        // Add test button
+        const testBtn = document.createElement('button');
+        testBtn.className = 'btn';
+        testBtn.textContent = 'Run Auto Test';
+        testBtn.style.background = '#10b981';
+        testBtn.style.borderColor = '#10b981';
+        testBtn.onclick = runTestScenarios;
+        document.querySelector('.controls').appendChild(testBtn);
+
+        // Initialize
+        loadContent();
+        updateStatus();
+    </script>
+</body>
+</html>
