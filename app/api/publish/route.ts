@@ -58,8 +58,9 @@ export async function POST(req: Request) {
     // - If VERCEL_PUBLISH_PROJECT is set, we deploy all sites into a single dedicated Vercel project.
     //   This avoids creating a new project per site and makes "Deployment Protection" a one-time setting.
     // - Otherwise (backward compatible), we create/use a per-site project name.
+    // - If exactName is true, use nameHint as the project name for URL renaming.
     const sharedProject = (process.env.VERCEL_PUBLISH_PROJECT || '').trim();
-    const name = sharedProject || `site-${siteId}`;
+    const name = sharedProject || (exactName && nameHint ? nameHint : `site-${siteId}`);
 
     const url = await deployStaticHtml({ name, html: processedHtml });
 
