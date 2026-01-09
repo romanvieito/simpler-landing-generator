@@ -150,7 +150,7 @@ export async function deployStaticHtml({ name, html, alias }: DeployArgs): Promi
 
       console.log('Alias assignment endpoint:', aliasEndpoint);
 
-      const aliasRes = await fetch(aliasEndpoint, {
+      let aliasRes = await fetch(aliasEndpoint, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${VERCEL_TOKEN}`,
