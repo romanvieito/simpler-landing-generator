@@ -62,6 +62,12 @@ export async function POST(req: Request) {
     const sharedProject = (process.env.VERCEL_PUBLISH_PROJECT || '').trim();
     const name = sharedProject || (exactName && nameHint ? nameHint : `site-${siteId}`);
 
+    // Check if we're trying to rename URL in shared project mode
+    const isSharedProject = (process.env.VERCEL_PUBLISH_PROJECT || '').trim();
+    if (exactName && isSharedProject) {
+      console.warn('⚠️  Attempting URL rename in shared project mode - this may not work due to Vercel alias restrictions');
+    }
+
     const url = await deployStaticHtml({
       name,
       html: processedHtml,

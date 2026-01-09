@@ -131,7 +131,9 @@ export async function deployStaticHtml({ name, html, alias }: DeployArgs): Promi
   }
 
   // If we have an alias to assign (for custom URLs in shared project mode)
+  // NOTE: Alias assignment may not work in shared projects due to Vercel restrictions
   if (alias && data.id) {
+    console.log('⚠️  WARNING: Attempting to assign alias in shared project mode. This may not work due to Vercel restrictions.');
     try {
       console.log('Assigning alias to deployment:', {
         alias,
@@ -226,6 +228,20 @@ export async function deployStaticHtml({ name, html, alias }: DeployArgs): Promi
           statusText: aliasRes.statusText,
           response: aliasResponseText
         });
+
+        // If alias assignment fails in shared project mode, return deployment URL
+        // and throw an error to inform the user that URL renaming doesn't work in shared projects
+        if (isSharedPublishProject) {
+          console.error('❌ Alias assignment failed in shared project mode. URL renaming is not supported in shared projects.');
+          throw new Error(
+            `URL renaming is not supported when using a shared Vercel project (${process.env.VERCEL_PUBLISH_PROJECT}). ` +
+            `To enable URL renaming, remove the VERCEL_PUBLISH_PROJECT environment variable and deploy each site to its own project.`
+          );
+        } else {
+          // For individual projects, if alias assignment fails, still try to return it
+          console.warn('Alias assignment failed, returning alias URL anyway');
+          return `${alias}.vercel.app`;
+        }
       }
     } catch (e) {
       console.error('Error assigning alias:', e);
