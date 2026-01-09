@@ -103,6 +103,7 @@ function LandingGeneratorContent() {
   const [html, setHtml] = useState<string>('');
   const [editMode, setEditMode] = useState(false);
   const [selectedEl, setSelectedEl] = useState<HTMLElement | null>(null);
+  const selectedElRef = useRef<HTMLElement | null>(null);
   const [history, setHistory] = useState<string[]>([]);
   const [redoStack, setRedoStack] = useState<string[]>([]);
   const [publishedUrl, setPublishedUrl] = useState<string>('');
@@ -316,6 +317,10 @@ function LandingGeneratorContent() {
   ]);
 
   useEffect(() => {
+    selectedElRef.current = selectedEl;
+  }, [selectedEl]);
+
+  useEffect(() => {
     const container = previewRef.current;
     if (!container) return;
 
@@ -364,6 +369,23 @@ function LandingGeneratorContent() {
     return doc.documentElement.outerHTML;
   }
 
+  function commitPreviewToState() {
+    const updated = getPreviewHtml();
+    if (typeof updated !== 'string') return;
+    setHtml(updated);
+  }
+
+  function clearSelectionInPreview(el?: HTMLElement | null) {
+    const node = el ?? selectedElRef.current;
+    if (!node) return;
+    node.classList.remove('edit-mode-selected');
+    const badge = node.querySelector('.edit-mode-badge');
+    if (badge) badge.remove();
+    const replaceBtn = node.querySelector('.edit-mode-replace-btn');
+    if (replaceBtn) replaceBtn.remove();
+    node.contentEditable = 'false';
+  }
+
   function clearEditArtifactsInPreview() {
     const iframe = previewIframeRef.current;
     const doc = iframe?.contentDocument;
@@ -386,6 +408,16 @@ function LandingGeneratorContent() {
     
     const replaceBtns = doc.querySelectorAll('.edit-mode-replace-btn');
     replaceBtns.forEach((btn) => btn.remove());
+
+    // Re-enable any form controls that were disabled by edit mode
+    const disabledByEditMode = doc.querySelectorAll<HTMLElement>('[data-easyland-edit-disabled="1"]');
+    disabledByEditMode.forEach((el) => {
+      el.removeAttribute('data-easyland-edit-disabled');
+      // Only remove disabled if we added it
+      if ((el as any).disabled === true) {
+        (el as any).disabled = false;
+      }
+    });
 
     const allEls = doc.querySelectorAll<HTMLElement>('*');
     allEls.forEach((el) => {
@@ -547,16 +579,38 @@ function LandingGeneratorContent() {
       }
 
       // Prevent form submission in edit mode
-      const forms = doc.querySelectorAll('form');
-      forms.forEach(form => {
-        form.addEventListener('submit', (e) => {
-          if (editMode) {
-            e.preventDefault();
-            e.stopPropagation();
-            console.log('Form submission prevented in edit mode');
-          }
+      function handleSubmit(e: Event) {
+        if (!editMode) return;
+        e.preventDefault();
+        e.stopPropagation();
+      }
+
+      function setFormControlsDisabled(currentDoc: Document, disabled: boolean) {
+        const forms = currentDoc.querySelectorAll('form');
+        forms.forEach((form) => {
+          const controls = form.querySelectorAll<HTMLElement>('input, textarea, select, button');
+          controls.forEach((control) => {
+            const anyControl = control as any;
+            if (disabled) {
+              // Mark so we can restore on exit/cleanup
+              if (anyControl && typeof anyControl.disabled === 'boolean' && anyControl.disabled !== true) {
+                anyControl.disabled = true;
+                control.setAttribute('data-easyland-edit-disabled', '1');
+              }
+            } else {
+              if (control.getAttribute('data-easyland-edit-disabled') === '1') {
+                control.removeAttribute('data-easyland-edit-disabled');
+                if (anyControl && typeof anyControl.disabled === 'boolean') {
+                  anyControl.disabled = false;
+                }
+              }
+            }
+          });
         });
-      });
+      }
+
+      doc.addEventListener('submit', handleSubmit, true);
+      setFormControlsDisabled(doc, true);
 
       function handleClick(e: MouseEvent) {
         if (!editMode || !doc) return;
@@ -566,11 +620,11 @@ function LandingGeneratorContent() {
 
         const tag = target.tagName.toLowerCase();
 
-        // Prevent default behavior for links and buttons to avoid navigation/form submission
-        if (tag === 'a' || tag === 'button') {
+        // Prevent default behavior for interactive elements (including nested clicks) to avoid navigation/form submission
+        if (target.closest('a, button, input, textarea, select')) {
           e.preventDefault();
           e.stopPropagation();
-          // Don't allow selecting links and buttons as editable elements
+          // Don't allow selecting interactive controls as editable elements
           return;
         }
 
@@ -581,15 +635,12 @@ function LandingGeneratorContent() {
         }
 
         // Remove previous selection styling and badge
-        if (selectedEl && selectedEl !== target) {
-          selectedEl.classList.remove('edit-mode-selected');
-          const oldBadge = selectedEl.querySelector('.edit-mode-badge');
-          if (oldBadge) oldBadge.remove();
-          const oldReplaceBtn = selectedEl.querySelector('.edit-mode-replace-btn');
-          if (oldReplaceBtn) oldReplaceBtn.remove();
-          selectedEl.contentEditable = 'false';
+        const prevSelected = selectedElRef.current;
+        if (prevSelected && prevSelected !== target) {
+          clearSelectionInPreview(prevSelected);
         }
         
+        selectedElRef.current = target;
         setSelectedEl(target);
         
         // Add selection styling
@@ -608,13 +659,9 @@ function LandingGeneratorContent() {
         const nonEditableTags = new Set(['img', 'svg', 'a', 'button', 'input', 'form', 'select', 'textarea']);
 
         // If clicking on a non-editable element that's already selected, deselect it
-        if (nonEditableTags.has(tag) && selectedEl === target) {
-          selectedEl.classList.remove('edit-mode-selected');
-          const badge = selectedEl.querySelector('.edit-mode-badge');
-          if (badge) badge.remove();
-          const replaceBtn = selectedEl.querySelector('.edit-mode-replace-btn');
-          if (replaceBtn) replaceBtn.remove();
-          selectedEl.contentEditable = 'false';
+        if (nonEditableTags.has(tag) && prevSelected === target) {
+          clearSelectionInPreview(target);
+          selectedElRef.current = null;
           setSelectedEl(null);
           return;
         }
@@ -687,21 +734,29 @@ function LandingGeneratorContent() {
         
         if (e.key === 'Escape') {
           e.preventDefault();
-          finalizeEdit();
+          // Do not commit HTML to state while editing (would reload iframe).
+          pushHistory();
+          if (selectedElRef.current) {
+            selectedElRef.current.contentEditable = 'false';
+          }
           return;
         }
-        if (e.key === 'Delete' && selectedEl && bodyEl?.contains(selectedEl)) {
+        if (e.key === 'Delete' && selectedElRef.current && bodyEl?.contains(selectedElRef.current)) {
           e.preventDefault();
           pushHistory();
-          selectedEl.remove();
-          finalizeEdit();
+          selectedElRef.current.remove();
+          selectedElRef.current = null;
+          setSelectedEl(null);
         }
       }
 
-      function handleFocusOut() {
+      function handleFocusOut(e: FocusEvent) {
         if (!editMode) return;
-        pushHistory();
-        finalizeEdit();
+        const t = e.target as HTMLElement | null;
+        // Only capture edits from actual editable elements; avoid committing HTML while editing (reloads iframe).
+        if (t && t.isContentEditable) {
+          pushHistory();
+        }
       }
 
       doc.addEventListener('click', handleClick);
@@ -713,6 +768,8 @@ function LandingGeneratorContent() {
         doc.removeEventListener('click', handleClick);
         doc.removeEventListener('focusout', handleFocusOut, true);
         window.removeEventListener('keydown', handleKeyDown, true);
+        doc.removeEventListener('submit', handleSubmit, true);
+        setFormControlsDisabled(doc, false);
       };
     };
 
@@ -732,7 +789,7 @@ function LandingGeneratorContent() {
       detach?.();
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [editMode, selectedEl]);
+  }, [editMode]);
 
   function pushHistory() {
     const current = getPreviewHtml() ?? html;
@@ -755,13 +812,9 @@ function LandingGeneratorContent() {
     setHistory((h) => h.slice(0, -1));
     setHtml(latest);
     if (selectedEl) {
-      selectedEl.classList.remove('edit-mode-selected');
-      const badge = selectedEl.querySelector('.edit-mode-badge');
-      if (badge) badge.remove();
-      const replaceBtn = selectedEl.querySelector('.edit-mode-replace-btn');
-      if (replaceBtn) replaceBtn.remove();
-      selectedEl.contentEditable = 'false';
+      clearSelectionInPreview(selectedEl);
       setSelectedEl(null);
+      selectedElRef.current = null;
     }
   }
 
@@ -778,20 +831,16 @@ function LandingGeneratorContent() {
     setRedoStack((r) => r.slice(0, -1));
     setHtml(redoState);
     if (selectedEl) {
-      selectedEl.classList.remove('edit-mode-selected');
-      const badge = selectedEl.querySelector('.edit-mode-badge');
-      if (badge) badge.remove();
-      const replaceBtn = selectedEl.querySelector('.edit-mode-replace-btn');
-      if (replaceBtn) replaceBtn.remove();
-      selectedEl.contentEditable = 'false';
+      clearSelectionInPreview(selectedEl);
       setSelectedEl(null);
+      selectedElRef.current = null;
     }
   }
 
+  // Commit the current iframe HTML back to state.
+  // IMPORTANT: this reloads the iframe (because preview is driven by `html`), so do not call this while actively editing.
   function finalizeEdit() {
-    const updated = getPreviewHtml();
-    if (typeof updated !== 'string') return;
-    setHtml(updated);
+    commitPreviewToState();
   }
 
   function handleImageReplacement(file: File) {
@@ -818,6 +867,12 @@ function LandingGeneratorContent() {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = html;
 
+    // Remove edit-mode injected artifacts
+    const editModeStyle = tempDiv.querySelector('#edit-mode-styles');
+    if (editModeStyle) editModeStyle.remove();
+    tempDiv.querySelectorAll('.edit-mode-badge, .edit-mode-replace-btn').forEach((el) => el.remove());
+    tempDiv.querySelectorAll('.edit-mode-selected').forEach((el) => el.classList.remove('edit-mode-selected'));
+
     // Remove editing artifacts
     const allElements = tempDiv.querySelectorAll('*');
     allElements.forEach((el) => {
@@ -831,6 +886,15 @@ function LandingGeneratorContent() {
       // Remove contentEditable attribute
       if (el.hasAttribute('contenteditable')) {
         el.removeAttribute('contenteditable');
+      }
+
+      // Restore form controls that were disabled only for editing
+      if (el.getAttribute('data-easyland-edit-disabled') === '1') {
+        el.removeAttribute('data-easyland-edit-disabled');
+        if ((htmlEl as any).disabled === true) {
+          (htmlEl as any).disabled = false;
+        }
+        el.removeAttribute('disabled');
       }
 
       // Remove any empty style attributes
@@ -921,7 +985,8 @@ function LandingGeneratorContent() {
     try {
       if (!html) return alert('Generate the page first.');
       setLoading('saving');
-      const cleanedHtml = cleanHtmlForPublishing(html);
+      const currentHtml = (editMode ? getPreviewHtml() : null) ?? html;
+      const cleanedHtml = cleanHtmlForPublishing(currentHtml);
       const res = await fetch('/api/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -955,7 +1020,8 @@ function LandingGeneratorContent() {
       setLoading('publishing');
 
       // Always save/update before publishing to ensure we have the latest HTML with correct form action
-      const cleanedHtml = cleanHtmlForPublishing(html);
+      const currentHtml = (editMode ? getPreviewHtml() : null) ?? html;
+      const cleanedHtml = cleanHtmlForPublishing(currentHtml);
       const saveRes = await fetch('/api/save', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1533,16 +1599,14 @@ function LandingGeneratorContent() {
                     <button
                       onClick={() => {
                         setView('input');
-                        setEditMode(false);
-                        if (selectedEl) {
-                          selectedEl.classList.remove('edit-mode-selected');
-                          const badge = selectedEl.querySelector('.edit-mode-badge');
-                          if (badge) badge.remove();
-                          const replaceBtn = selectedEl.querySelector('.edit-mode-replace-btn');
-                          if (replaceBtn) replaceBtn.remove();
-                          selectedEl.contentEditable = 'false';
-                          setSelectedEl(null);
+                        if (editMode) {
+                          clearEditArtifactsInPreview();
+                          commitPreviewToState();
                         }
+                        clearSelectionInPreview();
+                        setSelectedEl(null);
+                        selectedElRef.current = null;
+                        setEditMode(false);
                       }}
                       className="btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base"
                     >
@@ -1562,15 +1626,9 @@ function LandingGeneratorContent() {
                       setEditMode((v) => {
                         const next = !v;
                         if (!next) {
-                          if (selectedEl) {
-                            selectedEl.classList.remove('edit-mode-selected');
-                            const badge = selectedEl.querySelector('.edit-mode-badge');
-                            if (badge) badge.remove();
-                            const replaceBtn = selectedEl.querySelector('.edit-mode-replace-btn');
-                            if (replaceBtn) replaceBtn.remove();
-                            selectedEl.contentEditable = 'false';
-                            setSelectedEl(null);
-                          }
+                          clearSelectionInPreview();
+                          setSelectedEl(null);
+                          selectedElRef.current = null;
                           clearEditArtifactsInPreview();
                           finalizeEdit();
                         }

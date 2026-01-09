@@ -139,7 +139,7 @@ Return ONLY the HTML (no markdown, no fences).`;
       await deductCredits({
         userId,
         amount: response.cost,
-        description: `Landing page HTML generation (API cost: $${(response.cost / 100).toFixed(4)})`
+        description: `Landing page HTML generation (API cost: $${Math.max(0.01, response.cost / 100).toFixed(2)})`
       });
     } catch (error: any) {
       if (error.message === 'Insufficient credits') {

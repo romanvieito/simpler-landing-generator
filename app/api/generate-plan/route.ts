@@ -78,7 +78,7 @@ Return ONLY the JSON.`;
       await deductCredits({
         userId,
         amount: planCost,
-        description: `Landing page plan generation (API cost: $${(planCost / 100).toFixed(4)})`
+        description: `Landing page plan generation (API cost: $${Math.max(0.01, planCost / 100).toFixed(2)})`
       });
     } catch (error: any) {
       if (error.message === 'Insufficient credits') {
