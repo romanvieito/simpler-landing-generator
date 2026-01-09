@@ -1235,37 +1235,39 @@ function LandingGeneratorContent() {
                 </div>
 
                 {/* Clickable Prompt Examples */}
-                <div className="space-y-3">
-                  <div className="grid grid-cols-2 gap-3">
-                    <button
-                      onClick={() => setDescription("Maman is a café, bakery, restaurant and event space. Maman's menu highlights childhood favorites from the south of france and north america.")}
-                      className="text-left p-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 rounded-md transition-colors duration-150"
-                    >
-                      French café with childhood favorite dishes...
-                    </button>
+                {loading === 'idle' && (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <button
+                        onClick={() => setDescription("Maman is a café, bakery, restaurant and event space. Maman's menu highlights childhood favorites from the south of france and north america.")}
+                        className="text-left p-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 rounded-md transition-colors duration-150"
+                      >
+                        French café with childhood favorite dishes...
+                      </button>
 
-                    <button
-                      onClick={() => setDescription("FitZone is a boutique fitness studio offering personalized training sessions and group classes. We help busy professionals get in shape with flexible scheduling and expert coaches.")}
-                      className="text-left p-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 rounded-md transition-colors duration-150"
-                    >
-                      Boutique fitness studio for busy professionals...
-                    </button>
+                      <button
+                        onClick={() => setDescription("FitZone is a boutique fitness studio offering personalized training sessions and group classes. We help busy professionals get in shape with flexible scheduling and expert coaches.")}
+                        className="text-left p-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 rounded-md transition-colors duration-150"
+                      >
+                        Boutique fitness studio for busy professionals...
+                      </button>
 
-                    <button
-                      onClick={() => setDescription("TaskFlow is project management software for remote teams. It helps teams collaborate seamlessly with real-time updates, automated workflows, and intuitive task tracking.")}
-                      className="text-left p-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 rounded-md transition-colors duration-150"
-                    >
-                      Project management software for remote teams...
-                    </button>
+                      <button
+                        onClick={() => setDescription("TaskFlow is project management software for remote teams. It helps teams collaborate seamlessly with real-time updates, automated workflows, and intuitive task tracking.")}
+                        className="text-left p-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 rounded-md transition-colors duration-150"
+                      >
+                        Project management software for remote teams...
+                      </button>
 
-                    <button
-                      onClick={() => setDescription("Growth Advisors provides strategic consulting for startups. We help early-stage companies scale their operations, optimize their marketing, and secure funding.")}
-                      className="text-left p-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 rounded-md transition-colors duration-150"
-                    >
-                      Startup consulting and growth services...
-                    </button>
+                      <button
+                        onClick={() => setDescription("Growth Advisors provides strategic consulting for startups. We help early-stage companies scale their operations, optimize their marketing, and secure funding.")}
+                        className="text-left p-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 rounded-md transition-colors duration-150"
+                      >
+                        Startup consulting and growth services...
+                      </button>
+                    </div>
                   </div>
-                </div>
+                )}
 
                 {status && (
                   <div className="text-center mt-4">
