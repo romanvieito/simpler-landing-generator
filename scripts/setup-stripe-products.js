@@ -8,7 +8,7 @@
  */
 
 const Stripe = require('stripe');
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 
 const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
 if (!stripeSecretKey) {

@@ -5,6 +5,14 @@ import { getStripe, CREDIT_PACKAGES, type CreditPackage, validateStripeConfig } 
 import { ensureCreditsTable, ensureCreditTransactionsTable } from '@/lib/db';
 import { logStripeEvent, ensureStripeLogsTable } from '@/lib/stripe-logger';
 
+// Helper function to safely get error message
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+};
+
 export async function POST(req: Request) {
   let userId: string | null = null;
   let packageType: CreditPackage | null = null;
@@ -56,7 +64,7 @@ export async function POST(req: Request) {
         throw error;
       }
       // In development, log the warning but continue
-      console.warn('Stripe configuration warning:', error.message);
+      console.warn('Stripe configuration warning:', getErrorMessage(error));
     }
 
     const packageInfo = CREDIT_PACKAGES[packageType];
@@ -99,13 +107,14 @@ export async function POST(req: Request) {
         });
       }
     } catch (error) {
+      const errorMessage = getErrorMessage(error);
       await logStripeEvent({
         eventType: 'customer.error',
         eventId: 'customer_management_failed',
         userId,
         status: 'warning',
-        message: `Error managing Stripe customer: ${error.message}`,
-        metadata: { error: error.message }
+        message: `Error managing Stripe customer: ${errorMessage}`,
+        metadata: { error: errorMessage }
       });
       // Continue without customer for now
     }
@@ -170,16 +179,19 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
+    const errorMessage = getErrorMessage(error);
+    const stackTrace = error instanceof Error ? error.stack : undefined;
+
     await logStripeEvent({
       eventType: 'checkout_session.create',
       eventId: 'creation_failed',
       userId: userId || 'unknown',
       status: 'error',
-      message: `Failed to create checkout session: ${error.message}`,
+      message: `Failed to create checkout session: ${errorMessage}`,
       metadata: {
         packageType,
-        error: error.message,
-        stack: error.stack
+        error: errorMessage,
+        stack: stackTrace
       }
     });
 

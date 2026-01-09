@@ -8,7 +8,7 @@
  */
 
 const { execSync } = require('child_process');
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 
 const WEBHOOK_URL = process.env.NEXT_PUBLIC_APP_URL
   ? `${process.env.NEXT_PUBLIC_APP_URL}/api/credits/webhook`

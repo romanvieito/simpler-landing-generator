@@ -13,26 +13,25 @@ export const getStripe = (): Stripe => {
 };
 
 // Credit packages configuration
-// IMPORTANT: Replace these price IDs with actual Stripe price IDs after running setup-stripe-products.js
 export const CREDIT_PACKAGES = {
   small: {
     credits: 5,
     price: 500, // $5.00 in cents
-    priceId: process.env.STRIPE_PRICE_SMALL || 'price_small_placeholder', // Replace with actual price ID
+    priceId: 'price_1SnmK2HDPeQP87xvX5QffqT9', // 5 Credits package
     name: '5 Credits',
     description: 'Perfect for testing and small projects'
   },
   medium: {
     credits: 15,
     price: 1200, // $12.00 in cents
-    priceId: process.env.STRIPE_PRICE_MEDIUM || 'price_medium_placeholder', // Replace with actual price ID
+    priceId: 'price_1SnmK3HDPeQP87xvGdRDr2Wx', // 15 Credits package
     name: '15 Credits',
     description: 'Great for multiple landing pages'
   },
   large: {
     credits: 50,
     price: 3000, // $30.00 in cents
-    priceId: process.env.STRIPE_PRICE_LARGE || 'price_large_placeholder', // Replace with actual price ID
+    priceId: 'price_1SnmK4HDPeQP87xvQI2Ruk6a', // 50 Credits package
     name: '50 Credits',
     description: 'Ideal for agencies and heavy users'
   }
@@ -40,21 +39,15 @@ export const CREDIT_PACKAGES = {
 
 export type CreditPackage = keyof typeof CREDIT_PACKAGES;
 
-// Validate that price IDs are configured
+// Validate that Stripe is properly configured
 export const validateStripeConfig = () => {
-  // In development, allow placeholder values for testing UI
-  if (process.env.NODE_ENV === 'development') {
-    return;
+  const secretKey = process.env.STRIPE_SECRET_KEY;
+  if (!secretKey) {
+    throw new Error('STRIPE_SECRET_KEY environment variable is required');
   }
 
-  const missingPrices = Object.entries(CREDIT_PACKAGES)
-    .filter(([_, pkg]) => pkg.priceId.includes('placeholder'))
-    .map(([key]) => key);
-
-  if (missingPrices.length > 0) {
-    throw new Error(
-      `Missing Stripe price IDs for packages: ${missingPrices.join(', ')}. ` +
-      'Please run the setup script and update environment variables.'
-    );
+  // In production, ensure we have a webhook secret
+  if (process.env.NODE_ENV === 'production' && !process.env.STRIPE_WEBHOOK_SECRET) {
+    throw new Error('STRIPE_WEBHOOK_SECRET environment variable is required in production');
   }
 };

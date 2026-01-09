@@ -9,7 +9,7 @@
 
 const { execSync } = require('child_process');
 const fs = require('fs');
-require('dotenv').config();
+require('dotenv').config({ path: '.env.local' });
 
 console.log('🚀 Starting Comprehensive Stripe Integration Test\n');
 

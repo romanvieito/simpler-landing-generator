@@ -5,6 +5,14 @@ import { getStripe } from '@/lib/stripe';
 import { addCredits, ensureCreditsTable, ensureCreditTransactionsTable } from '@/lib/db';
 import { logStripeEvent, ensureStripeLogsTable } from '@/lib/stripe-logger';
 
+// Helper function to safely get error message
+const getErrorMessage = (error: unknown): string => {
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return String(error);
+};
+
 // Store processed event IDs to handle idempotency
 const processedEvents = new Set<string>();
 
@@ -86,9 +94,9 @@ export async function POST(req: Request) {
     await logStripeEvent({
       eventType: event.type,
       eventId: event.id,
-      userId: result.userId,
-      sessionId: result.sessionId,
-      amount: result.credits,
+      userId: (result as any).userId || undefined,
+      sessionId: (result as any).sessionId || undefined,
+      amount: (result as any).credits ? parseInt((result as any).credits) : undefined,
       status: 'success',
       message: `Successfully processed webhook event: ${event.type}`,
       metadata: result
@@ -110,10 +118,10 @@ export async function POST(req: Request) {
         eventType: event.type || 'unknown',
         eventId: event.id || 'unknown',
         status: 'error',
-        message: `Webhook processing failed: ${error.message}`,
+        message: `Webhook processing failed: ${getErrorMessage(error)}`,
         metadata: {
-          error: error.message,
-          stack: error.stack,
+          error: getErrorMessage(error),
+          stack: error instanceof Error ? error.stack : undefined,
           eventData: event
         }
       });
@@ -122,7 +130,7 @@ export async function POST(req: Request) {
         eventType: 'webhook_error',
         eventId: 'unknown',
         status: 'error',
-        message: `Webhook processing failed before event parsing: ${error.message}`
+        message: `Webhook processing failed before event parsing: ${getErrorMessage(error)}`
       });
     }
 
@@ -240,8 +248,8 @@ async function handleCheckoutSessionCompleted(session: any, stripe: any) {
           eventId: session.id,
           userId,
           status: 'warning',
-          message: `Failed to update customer metadata: ${error.message}`,
-          metadata: { customerId: session.customer, error: error.message }
+          message: `Failed to update customer metadata: ${getErrorMessage(error)}`,
+          metadata: { customerId: session.customer, error: getErrorMessage(error) }
         });
       }
     }
@@ -260,8 +268,8 @@ async function handleCheckoutSessionCompleted(session: any, stripe: any) {
       eventId: session.id || 'unknown',
       userId: session.metadata?.userId,
       status: 'error',
-      message: `Error processing checkout session: ${error.message}`,
-      metadata: { error: error.message, stack: error.stack, sessionData: session }
+      message: `Error processing checkout session: ${getErrorMessage(error)}`,
+      metadata: { error: getErrorMessage(error), stack: error instanceof Error ? error.stack : undefined, sessionData: session }
     });
     throw error;
   }
