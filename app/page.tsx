@@ -517,14 +517,14 @@ function LandingGeneratorContent() {
             cursor: pointer !important;
             background-color: rgba(59, 130, 246, 0.05) !important;
           }
-          
+
           /* Selected element indicator */
           .edit-mode-selected {
             outline: 3px solid #7c3aed !important;
             box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.2), 0 4px 12px rgba(124, 58, 237, 0.3) !important;
             position: relative !important;
           }
-          
+
           /* Element type badge */
           .edit-mode-badge {
             position: absolute !important;
@@ -546,19 +546,39 @@ function LandingGeneratorContent() {
         doc.head.appendChild(editModeStyle);
       }
 
+      // Prevent form submission in edit mode
+      const forms = doc.querySelectorAll('form');
+      forms.forEach(form => {
+        form.addEventListener('submit', (e) => {
+          if (editMode) {
+            e.preventDefault();
+            e.stopPropagation();
+            console.log('Form submission prevented in edit mode');
+          }
+        });
+      });
+
       function handleClick(e: MouseEvent) {
         if (!editMode || !doc) return;
         
-        // Prevent default behavior for links and buttons to avoid navigation/form submission
-        const clickedElement = e.target as HTMLElement;
-        const clickedTag = clickedElement?.tagName.toLowerCase();
-        if (clickedTag === 'a' || clickedTag === 'button') {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-        
         const target = e.target as HTMLElement;
         if (!target || target === docEl || target === bodyEl) return;
+
+        const tag = target.tagName.toLowerCase();
+
+        // Prevent default behavior for links and buttons to avoid navigation/form submission
+        if (tag === 'a' || tag === 'button') {
+          e.preventDefault();
+          e.stopPropagation();
+          // Don't allow selecting links and buttons as editable elements
+          return;
+        }
+
+        // Don't select edit mode UI elements
+        if (target.classList.contains('edit-mode-badge') ||
+            target.classList.contains('edit-mode-replace-btn')) {
+          return;
+        }
 
         // Remove previous selection styling and badge
         if (selectedEl && selectedEl !== target) {
@@ -574,9 +594,8 @@ function LandingGeneratorContent() {
         
         // Add selection styling
         target.classList.add('edit-mode-selected');
-        
+
         // Add element type badge
-        const tag = target.tagName.toLowerCase();
         const existingBadge = target.querySelector('.edit-mode-badge');
         if (!existingBadge) {
           const badge = doc.createElement('div');
@@ -586,7 +605,19 @@ function LandingGeneratorContent() {
           target.insertBefore(badge, target.firstChild);
         }
 
-        const nonEditableTags = new Set(['img', 'svg', 'a', 'button', 'input']);
+        const nonEditableTags = new Set(['img', 'svg', 'a', 'button', 'input', 'form', 'select', 'textarea']);
+
+        // If clicking on a non-editable element that's already selected, deselect it
+        if (nonEditableTags.has(tag) && selectedEl === target) {
+          selectedEl.classList.remove('edit-mode-selected');
+          const badge = selectedEl.querySelector('.edit-mode-badge');
+          if (badge) badge.remove();
+          const replaceBtn = selectedEl.querySelector('.edit-mode-replace-btn');
+          if (replaceBtn) replaceBtn.remove();
+          selectedEl.contentEditable = 'false';
+          setSelectedEl(null);
+          return;
+        }
         if (!nonEditableTags.has(tag)) {
           target.contentEditable = 'true';
           target.focus();
