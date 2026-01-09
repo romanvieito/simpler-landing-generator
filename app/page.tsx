@@ -1473,17 +1473,17 @@ function LandingGeneratorContent() {
                       </button>
 
                       <button
-                        onClick={() => setDescription("TaskFlow is project management software for remote teams. It helps teams collaborate seamlessly with real-time updates, automated workflows, and intuitive task tracking.")}
+                        onClick={() => setDescription("NatureWell provides natural wellness products including vitamins, supplements, and organic skincare. All products are sourced from trusted suppliers and backed by science.")}
                         className="text-left p-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 rounded-md transition-colors duration-150"
                       >
-                        Project management software for remote teams...
+                        Natural wellness products and supplements...
                       </button>
 
                       <button
-                        onClick={() => setDescription("Growth Advisors provides strategic consulting for startups. We help early-stage companies scale their operations, optimize their marketing, and secure funding.")}
+                        onClick={() => setDescription("Mindful Therapy offers counseling services for individuals and couples. We specialize in anxiety, depression, and relationship counseling with compassionate care.")}
                         className="text-left p-3 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-50 border border-gray-200 rounded-md transition-colors duration-150"
                       >
-                        Startup consulting and growth services...
+                        Counseling services for mental wellness...
                       </button>
                     </div>
                   </div>
