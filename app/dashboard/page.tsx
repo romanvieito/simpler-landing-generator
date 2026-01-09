@@ -5,6 +5,7 @@ import { useState, useEffect } from 'react';
 import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import UrlEditor from '@/components/url-editor';
 
 type Site = {
   id: string;
@@ -81,6 +82,17 @@ export default function DashboardPage() {
 
   function handleLoadInEditor(site: Site) {
     router.push(`/?loadSite=${site.id}`);
+  }
+
+  async function handleUrlUpdate(siteId: string, newUrl: string) {
+    // Update the site in the local state
+    setSites(prevSites =>
+      prevSites.map(site =>
+        site.id === siteId
+          ? { ...site, vercel_url: newUrl }
+          : site
+      )
+    );
   }
 
   return (
@@ -223,14 +235,11 @@ export default function DashboardPage() {
                             <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
                             </svg>
-                            <a
-                              href={site.custom_domain ? `https://${site.custom_domain}` : `https://${site.vercel_url}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="hover:text-blue-600 hover:underline truncate"
-                            >
-                              {site.custom_domain || `${site.vercel_url}`}
-                            </a>
+                            <UrlEditor
+                              siteId={site.id}
+                              currentUrl={site.custom_domain || site.vercel_url}
+                              onUrlUpdate={(newUrl) => handleUrlUpdate(site.id, newUrl)}
+                            />
                           </div>
                         )}
 
