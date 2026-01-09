@@ -315,7 +315,7 @@ export async function getUserCredits({ userId }: { userId: string }) {
     LIMIT 1
   `;
 
-  return rows[0]?.balance ?? 0;
+  return parseFloat(rows[0]?.balance ?? '0');
 }
 
 export async function ensureUserCredits({ userId }: { userId: string }) {
@@ -380,5 +380,8 @@ export async function getCreditTransactions({ userId }: { userId: string }) {
     LIMIT 50
   `;
 
-  return rows;
+  return rows.map(row => ({
+    ...row,
+    amount: parseFloat(row.amount)
+  }));
 }
