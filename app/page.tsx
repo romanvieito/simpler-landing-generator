@@ -841,7 +841,7 @@ function LandingGeneratorContent() {
                   <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight max-w-6xl mx-auto">
                     World's Easiest 
                     <span className="block bg-gradient-to-r from-yellow-300 via-orange-300 to-red-300 bg-clip-text text-transparent leading-relaxed py-1">
-                      Landing Page Builder
+                      Landing Page Generator
                     </span>
                     For Busy Creators.
                   </h1>
@@ -926,23 +926,6 @@ function LandingGeneratorContent() {
                     </h3>
                     <p className="text-gray-600 leading-relaxed">
                       Deliver client landing pages faster and focus on strategy instead of coding
-                    </p>
-                  </div>
-                </div>
-
-                {/* Marketing Teams */}
-                <div className="group card hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm">
-                  <div className="p-8 text-center">
-                    <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-blue-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-200">
-                      Marketing Teams
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      Create campaign-specific landing pages without waiting for developers
                     </p>
                   </div>
                 </div>
