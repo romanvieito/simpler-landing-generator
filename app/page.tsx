@@ -246,17 +246,11 @@ function LandingGeneratorContent() {
     const bestDraft = getBestDraft();
 
     if (bestDraft) {
+      // Always auto-restore drafts without prompting - simpler UX
+      applySnapshot(bestDraft.draft.snapshot);
       if (bestDraft.shouldConfirm) {
-        const useDraft = window.confirm(
-          'We found unsaved changes for this site from a previous session.\n\nRestore them?',
-        );
-        if (useDraft) {
-          applySnapshot(bestDraft.draft.snapshot);
-          // Clear the URL param so we don't keep prompting.
-          clearSearchParam('loadSite');
-        }
-      } else {
-        applySnapshot(bestDraft.draft.snapshot);
+        // Clear the URL param since we're auto-restoring
+        clearSearchParam('loadSite');
       }
     }
 
