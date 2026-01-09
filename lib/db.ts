@@ -41,17 +41,33 @@ export async function ensureCreditsTable() {
   await sql`
     CREATE TABLE IF NOT EXISTS user_credits (
       user_id TEXT PRIMARY KEY,
-      balance INTEGER NOT NULL DEFAULT 0,
+      balance DECIMAL(10,4) NOT NULL DEFAULT 0,
       last_free_credits_at TIMESTAMPTZ,
       created_at TIMESTAMPTZ DEFAULT NOW(),
       updated_at TIMESTAMPTZ DEFAULT NOW()
     );
   `;
-  
+
   // Migration: Add last_free_credits_at column if it doesn't exist
   await sql`
-    ALTER TABLE user_credits 
+    ALTER TABLE user_credits
     ADD COLUMN IF NOT EXISTS last_free_credits_at TIMESTAMPTZ;
+  `;
+
+  // Migration: change balance from INTEGER to DECIMAL if it exists as INTEGER
+  await sql`
+    DO $$
+    BEGIN
+      -- Check if balance column is INTEGER and alter it to DECIMAL
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'user_credits'
+        AND column_name = 'balance'
+        AND data_type = 'integer'
+      ) THEN
+        ALTER TABLE user_credits ALTER COLUMN balance TYPE DECIMAL(10,4);
+      END IF;
+    END $$;
   `;
 }
 
@@ -60,7 +76,7 @@ export async function ensureCreditTransactionsTable() {
     CREATE TABLE IF NOT EXISTS credit_transactions (
       id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
       user_id TEXT NOT NULL,
-      amount INTEGER NOT NULL,
+      amount DECIMAL(10,4) NOT NULL,
       type TEXT NOT NULL CHECK (type IN ('purchase', 'usage', 'refund', 'free_grant')),
       description TEXT,
       stripe_payment_id TEXT,
@@ -72,17 +88,33 @@ export async function ensureCreditTransactionsTable() {
   // Migration: Drop old constraint and add new one with 'free_grant'
   // This is safe because it will fail silently if constraint doesn't exist or already has free_grant
   await sql`
-    DO $$ 
+    DO $$
     BEGIN
       -- Drop the old constraint if it exists
       ALTER TABLE credit_transactions DROP CONSTRAINT IF EXISTS credit_transactions_type_check;
-      
+
       -- Add the new constraint with all types including 'free_grant'
-      ALTER TABLE credit_transactions 
-      ADD CONSTRAINT credit_transactions_type_check 
+      ALTER TABLE credit_transactions
+      ADD CONSTRAINT credit_transactions_type_check
       CHECK (type IN ('purchase', 'usage', 'refund', 'free_grant'));
     EXCEPTION
       WHEN duplicate_object THEN NULL;
+    END $$;
+  `;
+
+  // Migration: change amount from INTEGER to DECIMAL if it exists as INTEGER
+  await sql`
+    DO $$
+    BEGIN
+      -- Check if amount column is INTEGER and alter it to DECIMAL
+      IF EXISTS (
+        SELECT 1 FROM information_schema.columns
+        WHERE table_name = 'credit_transactions'
+        AND column_name = 'amount'
+        AND data_type = 'integer'
+      ) THEN
+        ALTER TABLE credit_transactions ALTER COLUMN amount TYPE DECIMAL(10,4);
+      END IF;
     END $$;
   `;
 }
