@@ -225,61 +225,63 @@ export default function DashboardPage() {
                           <span>{new Date(site.created_at).toLocaleDateString()}</span>
                         </div>
 
-                        {/* Actions - pushed to bottom */}
-                        <div className="mt-auto space-y-2.5">
-                          {/* Primary Actions */}
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => handleLoadInEditor(site)}
-                              className="btn btn-secondary text-sm px-4 py-2.5 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 flex-1 flex items-center justify-center"
-                            >
-                              <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                              </svg>
-                              <span className="truncate">Edit</span>
-                            </button>
-                            {site.vercel_url ? (
-                              <a
-                                href={`https://${site.vercel_url}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="btn btn-primary text-sm px-4 py-2.5 transition-all duration-200 flex-1 flex items-center justify-center"
+                        {/* Actions */}
+                        <div className="mt-auto pt-4 border-t border-gray-100">
+                          <div className="flex items-center justify-between">
+                            {/* Left: Primary actions */}
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => handleLoadInEditor(site)}
+                                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                                title="Edit"
                               >
-                                <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                                </svg>
-                                <span className="truncate">View</span>
-                              </a>
-                            ) : (
-                              <div className="flex-1"></div>
-                            )}
-                          </div>
-
-                          {/* Secondary Actions */}
-                          <div className="flex gap-2">
-                            <Link
-                              href={`/sites/${site.id}`}
-                              className="btn btn-ghost text-sm px-4 py-2 hover:bg-gray-50 transition-all duration-200 flex-1 text-center flex items-center justify-center"
-                            >
-                              <svg className="w-4 h-4 mr-1.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                              </svg>
-                              <span className="truncate">Details</span>
-                            </Link>
-                            <button
-                              onClick={() => handleDelete(site.id)}
-                              disabled={deletingId === site.id}
-                              className="btn btn-ghost text-red-600 hover:bg-red-50 text-sm px-4 py-2 transition-all duration-200 disabled:opacity-50"
-                              title="Delete site"
-                            >
-                              {deletingId === site.id ? (
-                                <div className="spinner w-4 h-4"></div>
-                              ) : (
                                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
+                              </button>
+                              {site.vercel_url && (
+                                <a
+                                  href={`https://${site.vercel_url}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                                  title="View live site"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                  </svg>
+                                </a>
                               )}
-                            </button>
+                            </div>
+
+                            {/* Right: Secondary actions */}
+                            <div className="flex gap-1">
+                              <a
+                                href={`/sites/${site.id}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                                title="Site details"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                </svg>
+                              </a>
+                              <button
+                                onClick={() => handleDelete(site.id)}
+                                disabled={deletingId === site.id}
+                                className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                                title="Delete site"
+                              >
+                                {deletingId === site.id ? (
+                                  <div className="w-4 h-4 animate-spin rounded-full border-2 border-gray-300 border-t-red-600"></div>
+                                ) : (
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                  </svg>
+                                )}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -359,24 +361,32 @@ export default function DashboardPage() {
                         </div>
 
                         {/* Action buttons */}
-                        <div className="mt-4 pt-4 border-t border-gray-100 flex gap-2">
-                          <a
-                            href={`mailto:${lead.email}`}
-                            className="btn btn-secondary text-sm px-4 py-2 hover:bg-blue-50 hover:text-blue-600 transition-all duration-200 flex-1 flex items-center justify-center"
-                          >
-                            <svg className="w-4 h-4 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                            </svg>
-                            <span className="truncate">Reply</span>
-                          </a>
-                          <Link
-                            href={`/sites/${lead.site_id}`}
-                            className="btn btn-ghost text-sm px-4 py-2 hover:bg-gray-50 transition-all duration-200 flex items-center justify-center"
-                          >
-                            <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-                            </svg>
-                          </Link>
+                        <div className="mt-4 pt-4 border-t border-gray-100">
+                          <div className="flex items-center justify-between">
+                            {/* Left: Primary action */}
+                            <a
+                              href={`mailto:${lead.email}`}
+                              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                              title="Reply to lead"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                              </svg>
+                            </a>
+
+                            {/* Right: Secondary action */}
+                            <a
+                              href={`/sites/${lead.site_id}`}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                              title="View source site"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                              </svg>
+                            </a>
+                          </div>
                         </div>
                       </div>
                     </div>
