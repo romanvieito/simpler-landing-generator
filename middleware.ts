@@ -11,6 +11,7 @@ const isProtectedApiRoute = createRouteMatcher(["/api/(.*)"]);
 const isPublicApiRoute = createRouteMatcher([
   "/api/contact(.*)",
   "/api/credits/webhook(.*)",
+  "/api/test-env(.*)",
 ]);
 
 export default clerkMiddleware(async (auth, request) => {
