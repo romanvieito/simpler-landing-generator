@@ -1453,12 +1453,7 @@ function LandingGeneratorContent() {
                   </div>
                   <div className="flex items-center gap-2 sm:gap-4 min-w-0">
                     <div className="hidden sm:block flex-shrink-0">
-                      <button
-                        onClick={() => setShowPurchaseModal(true)}
-                        className="btn btn-outline text-xs px-3 py-1"
-                      >
-                        Add Credits
-                      </button>
+                      <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
                     </div>
 
                     <Link href="/dashboard" className="btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base hidden sm:inline-flex">
@@ -1472,14 +1467,9 @@ function LandingGeneratorContent() {
                     </div>
                   </div>
                 </div>
-                {/* Mobile add credits button */}
+                {/* Mobile credit display */}
                 <div className="sm:hidden mt-3">
-                  <button
-                    onClick={() => setShowPurchaseModal(true)}
-                    className="btn btn-outline text-xs px-3 py-1 w-full"
-                  >
-                    Add Credits
-                  </button>
+                  <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
                 </div>
               </div>
             </header>
@@ -1525,7 +1515,6 @@ function LandingGeneratorContent() {
                         <option value="Minimalist">Minimalist</option>
                       </select>
                       <div className="flex items-center gap-2">
-                        <CreditDisplay showButton={false} />
                         <button
                           onClick={handleGenerate}
                           disabled={!description || isGenerating}
@@ -1717,15 +1706,6 @@ function LandingGeneratorContent() {
                       <UserButton />
                     </div>
                   </div>
-                </div>
-                {/* Mobile add credits button */}
-                <div className="sm:hidden mt-3">
-                  <button
-                    onClick={() => setShowPurchaseModal(true)}
-                    className="btn btn-outline text-xs px-3 py-1 w-full"
-                  >
-                    Add Credits
-                  </button>
                 </div>
               </div>
 
