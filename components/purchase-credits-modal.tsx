@@ -50,7 +50,7 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
         </div>
 
         <p className="text-sm text-gray-600 mb-6">
-          Each landing page costs 1 credit. You'll be redirected to Stripe to complete payment.
+          Pay-as-you-go pricing. Redirects to Stripe.
         </p>
 
         <div className="space-y-3">
@@ -62,10 +62,7 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
               className="w-full p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-colors text-left disabled:opacity-50"
             >
               <div className="flex justify-between items-center">
-                <div>
-                  <div className="font-medium">{pkg.name}</div>
-                  <div className="text-sm text-gray-500">${(pkg.price / 100 / pkg.credits).toFixed(2)} each</div>
-                </div>
+                <div className="font-medium">{pkg.name}</div>
                 <div className="text-lg font-semibold">
                   {loading === key ? '...' : `$${(pkg.price / 100).toFixed(0)}`}
                 </div>

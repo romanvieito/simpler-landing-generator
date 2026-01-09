@@ -9,7 +9,29 @@ if (!DEEPSEEK_API_KEY) {
 
 type Message = { role: 'system' | 'user' | 'assistant'; content: string };
 
-async function callDeepseek(messages: Message[], jsonMode = false): Promise<string> {
+type ApiResponse = {
+  content: string;
+  usage: {
+    prompt_tokens: number;
+    completion_tokens: number;
+    total_tokens: number;
+  };
+  cost: number; // Cost in USD cents
+};
+
+// Deepseek pricing (as of 2024): $0.14 per million input tokens, $0.28 per million output tokens
+const DEEPSEEK_INPUT_PRICE_PER_MILLION = 0.14; // $0.000014 per token
+const DEEPSEEK_OUTPUT_PRICE_PER_MILLION = 0.28; // $0.000028 per token
+
+function calculateApiCost(promptTokens: number, completionTokens: number): number {
+  const inputCost = (promptTokens / 1000000) * DEEPSEEK_INPUT_PRICE_PER_MILLION;
+  const outputCost = (completionTokens / 1000000) * DEEPSEEK_OUTPUT_PRICE_PER_MILLION;
+  const totalCost = inputCost + outputCost;
+  // Convert to cents and add 10% markup, round up to nearest cent
+  return Math.ceil(totalCost * 100 * 1.1);
+}
+
+async function callDeepseek(messages: Message[], jsonMode = false): Promise<ApiResponse> {
   const url = `${DEEPSEEK_API}/chat/completions`;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -40,10 +62,20 @@ async function callDeepseek(messages: Message[], jsonMode = false): Promise<stri
   const data = await res.json();
   const content = data?.choices?.[0]?.message?.content;
   if (!content) throw new Error('No content from Deepseek');
-  return content;
+
+  const usage = data?.usage;
+  if (!usage) throw new Error('No usage data from Deepseek');
+
+  const cost = calculateApiCost(usage.prompt_tokens, usage.completion_tokens);
+
+  return {
+    content,
+    usage,
+    cost
+  };
 }
 
-export async function chatJSON(system: string, user: string) {
+export async function chatJSON(system: string, user: string): Promise<ApiResponse> {
   return callDeepseek(
     [
       { role: 'system', content: system },
@@ -53,7 +85,7 @@ export async function chatJSON(system: string, user: string) {
   );
 }
 
-export async function chatText(system: string, user: string) {
+export async function chatText(system: string, user: string): Promise<ApiResponse> {
   return callDeepseek([
     { role: 'system', content: system },
     { role: 'user', content: user },

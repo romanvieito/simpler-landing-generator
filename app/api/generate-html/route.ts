@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { chatText } from '@/lib/deepseek';
+import { deductCredits, ensureCreditsTable, ensureCreditTransactionsTable } from '@/lib/db';
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -11,6 +12,10 @@ export async function POST(req: Request) {
   }
 
   try {
+    // Ensure credit tables exist
+    await ensureCreditsTable();
+    await ensureCreditTransactionsTable();
+
     const { plan } = await req.json();
 
     const system = `You generate complete, mobile-responsive HTML documents with inline CSS only. CRITICAL REQUIREMENTS:
@@ -126,7 +131,25 @@ The action URL will be replaced with the actual site ID when saved.
 
 Return ONLY the HTML (no markdown, no fences).`;
 
-    const html = await chatText(system, user);
+    const response = await chatText(system, user);
+    const html = response.content;
+
+    // Deduct credits based on API cost for HTML generation
+    try {
+      await deductCredits({
+        userId,
+        amount: response.cost,
+        description: `Landing page HTML generation (API cost: $${(response.cost / 100).toFixed(4)})`
+      });
+    } catch (error: any) {
+      if (error.message === 'Insufficient credits') {
+        return NextResponse.json(
+          { error: 'Insufficient credits. Please purchase more credits to continue.' },
+          { status: 402 }
+        );
+      }
+      throw error;
+    }
 
     const fullHtml = /<html[\s\S]*<\/html>/i.test(html)
       ? html

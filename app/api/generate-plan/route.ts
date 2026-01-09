@@ -18,23 +18,6 @@ export async function POST(req: Request) {
     await ensureCreditsTable();
     await ensureCreditTransactionsTable();
 
-    // Deduct credits for plan generation (1 credit)
-    try {
-      await deductCredits({
-        userId,
-        amount: 1,
-        description: 'Landing page plan generation'
-      });
-    } catch (error: any) {
-      if (error.message === 'Insufficient credits') {
-        return NextResponse.json(
-          { error: 'Insufficient credits. Please purchase more credits to continue.' },
-          { status: 402 }
-        );
-      }
-      throw error;
-    }
-
     const { description, style = 'Professional' } = await req.json();
 
     const styleGuidelines: Record<string, string> = {
@@ -87,8 +70,27 @@ ${description}
 """
 Return ONLY the JSON.`;
 
-    const raw = await chatJSON(system, user);
-    const jsonText = extractJSON(raw);
+    // Deduct credits based on API cost for plan generation
+    const planResponse = await chatJSON(system, user);
+    const planCost = planResponse.cost;
+
+    try {
+      await deductCredits({
+        userId,
+        amount: planCost,
+        description: `Landing page plan generation (API cost: $${(planCost / 100).toFixed(4)})`
+      });
+    } catch (error: any) {
+      if (error.message === 'Insufficient credits') {
+        return NextResponse.json(
+          { error: 'Insufficient credits. Please purchase more credits to continue.' },
+          { status: 402 }
+        );
+      }
+      throw error;
+    }
+
+    const jsonText = extractJSON(planResponse.content);
     const plan = JSON.parse(jsonText);
 
     const imageSet: Array<{ query: string; url: string }> = [];
