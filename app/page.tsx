@@ -41,6 +41,7 @@ type DraftSnapshot = {
   planDetails: { title?: string; sectionCount?: number; sections?: string[]; style?: string; palette?: any; fonts?: any; imageQueries?: string[] } | null;
   html: string;
   history: string[];
+  redoStack?: string[];
   publishedUrl: string;
   savedSiteId: string;
   view: 'input' | 'preview';
@@ -103,6 +104,7 @@ function LandingGeneratorContent() {
   const [editMode, setEditMode] = useState(false);
   const [selectedEl, setSelectedEl] = useState<HTMLElement | null>(null);
   const [history, setHistory] = useState<string[]>([]);
+  const [redoStack, setRedoStack] = useState<string[]>([]);
   const [publishedUrl, setPublishedUrl] = useState<string>('');
   const [savedSiteId, setSavedSiteId] = useState<string>('');
   const [view, setView] = useState<'input' | 'preview'>('input');
@@ -110,6 +112,7 @@ function LandingGeneratorContent() {
   const [customUrlSlug, setCustomUrlSlug] = useState<string>('');
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [draftHydrated, setDraftHydrated] = useState(false);
+  const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
   const loadSiteIdFromUrl = searchParams.get('loadSite');
   const activeDraftKey = loadSiteIdFromUrl
@@ -179,6 +182,7 @@ function LandingGeneratorContent() {
 
   const previewRef = useRef<HTMLDivElement>(null);
   const previewIframeRef = useRef<HTMLIFrameElement | null>(null);
+  const imageInputRef = useRef<HTMLInputElement | null>(null);
 
   // Restore draft state on mount (and when loading a specific site via URL).
   useEffect(() => {
@@ -198,6 +202,8 @@ function LandingGeneratorContent() {
       // Cap history to avoid huge localStorage writes and memory usage.
       const cappedHistory = Array.isArray(snapshot.history) ? snapshot.history.slice(-20) : [];
       setHistory(cappedHistory);
+      const cappedRedoStack = Array.isArray(snapshot.redoStack) ? snapshot.redoStack.slice(-20) : [];
+      setRedoStack(cappedRedoStack);
       setPublishedUrl(snapshot.publishedUrl ?? '');
       setSavedSiteId(snapshot.savedSiteId ?? '');
       setView(snapshot.view ?? 'input');
@@ -270,6 +276,7 @@ function LandingGeneratorContent() {
       planDetails,
       html,
       history: history.slice(-20),
+      redoStack: redoStack.slice(-20),
       publishedUrl,
       savedSiteId,
       view,
@@ -284,9 +291,14 @@ function LandingGeneratorContent() {
       snapshot,
     };
 
+    setAutoSaveStatus('saving');
     const timer = window.setTimeout(() => {
       safeWriteDraft(activeDraftKey, payload);
       safeWriteDraft('easyland:draft:v1:last', payload);
+      setAutoSaveStatus('saved');
+      
+      // Reset to idle after showing saved status
+      setTimeout(() => setAutoSaveStatus('idle'), 2000);
     }, 500);
 
     return () => window.clearTimeout(timer);
@@ -300,6 +312,7 @@ function LandingGeneratorContent() {
     planDetails,
     html,
     history,
+    redoStack,
     publishedUrl,
     savedSiteId,
     view,
@@ -334,11 +347,11 @@ function LandingGeneratorContent() {
     // Disable scripts for safety; keep same-origin so we can support edit-mode interactions.
     iframe.setAttribute('sandbox', 'allow-same-origin allow-forms');
 
-    // Create a complete HTML document for the iframe
-    const fullHtml =
-      html.startsWith('<!doctype') || html.startsWith('<html')
-        ? html
-        : `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview</title></head><body>${html}</body></html>`;
+    // Ensure we always have a complete HTML document
+    let fullHtml = html;
+    if (!html.trim().startsWith('<!doctype') && !html.trim().startsWith('<!DOCTYPE') && !html.trim().startsWith('<html')) {
+      fullHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preview</title></head><body>${html}</body></html>`;
+    }
 
     iframe.srcdoc = fullHtml;
 
@@ -352,8 +365,9 @@ function LandingGeneratorContent() {
   function getPreviewHtml(): string | null {
     const iframe = previewIframeRef.current;
     const doc = iframe?.contentDocument;
-    if (!doc?.body) return null;
-    return doc.body.innerHTML;
+    if (!doc) return null;
+    // Return full HTML document including head and styles to prevent CSS loss
+    return doc.documentElement.outerHTML;
   }
 
   function clearEditArtifactsInPreview() {
@@ -361,9 +375,23 @@ function LandingGeneratorContent() {
     const doc = iframe?.contentDocument;
     if (!doc) return;
 
-    // Remove any lingering edit-mode artifacts (outline + contenteditable) inside the iframe.
+    // Remove edit-mode CSS
+    const editModeStyle = doc.getElementById('edit-mode-styles');
+    if (editModeStyle) editModeStyle.remove();
+
+    // Remove any lingering edit-mode artifacts
     const editableEls = doc.querySelectorAll<HTMLElement>('[contenteditable]');
     editableEls.forEach((el) => el.removeAttribute('contenteditable'));
+
+    // Remove selection classes and badges
+    const selectedEls = doc.querySelectorAll('.edit-mode-selected');
+    selectedEls.forEach((el) => el.classList.remove('edit-mode-selected'));
+    
+    const badges = doc.querySelectorAll('.edit-mode-badge');
+    badges.forEach((badge) => badge.remove());
+    
+    const replaceBtns = doc.querySelectorAll('.edit-mode-replace-btn');
+    replaceBtns.forEach((btn) => btn.remove());
 
     const allEls = doc.querySelectorAll<HTMLElement>('*');
     allEls.forEach((el) => {
@@ -483,34 +511,155 @@ function LandingGeneratorContent() {
       const docEl = doc.documentElement;
       const bodyEl = doc.body;
 
+      // Inject edit-mode CSS for hover states and selection indicators
+      let editModeStyle = doc.getElementById('edit-mode-styles');
+      if (!editModeStyle) {
+        editModeStyle = doc.createElement('style');
+        editModeStyle.id = 'edit-mode-styles';
+        editModeStyle.textContent = `
+          /* Edit mode hover states */
+          body *:not(html):not(body):not(script):not(style):hover {
+            outline: 2px solid rgba(59, 130, 246, 0.3) !important;
+            cursor: pointer !important;
+            background-color: rgba(59, 130, 246, 0.05) !important;
+          }
+          
+          /* Selected element indicator */
+          .edit-mode-selected {
+            outline: 3px solid #7c3aed !important;
+            box-shadow: 0 0 0 1px rgba(124, 58, 237, 0.2), 0 4px 12px rgba(124, 58, 237, 0.3) !important;
+            position: relative !important;
+          }
+          
+          /* Element type badge */
+          .edit-mode-badge {
+            position: absolute !important;
+            top: -24px !important;
+            left: 0 !important;
+            background: #7c3aed !important;
+            color: white !important;
+            padding: 2px 8px !important;
+            border-radius: 4px !important;
+            font-size: 11px !important;
+            font-weight: 600 !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
+            z-index: 10000 !important;
+            pointer-events: none !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+          }
+        `;
+        doc.head.appendChild(editModeStyle);
+      }
+
       function handleClick(e: MouseEvent) {
-        if (!editMode) return;
+        if (!editMode || !doc) return;
+        
+        // Prevent default behavior for links and buttons to avoid navigation/form submission
+        const clickedElement = e.target as HTMLElement;
+        const clickedTag = clickedElement?.tagName.toLowerCase();
+        if (clickedTag === 'a' || clickedTag === 'button') {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+        
         const target = e.target as HTMLElement;
         if (!target || target === docEl || target === bodyEl) return;
 
+        // Remove previous selection styling and badge
         if (selectedEl && selectedEl !== target) {
-          selectedEl.style.outline = '';
+          selectedEl.classList.remove('edit-mode-selected');
+          const oldBadge = selectedEl.querySelector('.edit-mode-badge');
+          if (oldBadge) oldBadge.remove();
+          const oldReplaceBtn = selectedEl.querySelector('.edit-mode-replace-btn');
+          if (oldReplaceBtn) oldReplaceBtn.remove();
           selectedEl.contentEditable = 'false';
         }
+        
         setSelectedEl(target);
-        target.style.outline = '2px dashed #7c3aed';
-
+        
+        // Add selection styling
+        target.classList.add('edit-mode-selected');
+        
+        // Add element type badge
         const tag = target.tagName.toLowerCase();
+        const existingBadge = target.querySelector('.edit-mode-badge');
+        if (!existingBadge) {
+          const badge = doc.createElement('div');
+          badge.className = 'edit-mode-badge';
+          badge.textContent = getElementTypeName(tag);
+          target.style.position = target.style.position || 'relative';
+          target.insertBefore(badge, target.firstChild);
+        }
+
         const nonEditableTags = new Set(['img', 'svg', 'a', 'button', 'input']);
         if (!nonEditableTags.has(tag)) {
           target.contentEditable = 'true';
           target.focus();
+        } else if (tag === 'img') {
+          // For images, add a replace button
+          const existingReplaceBtn = target.querySelector('.edit-mode-replace-btn');
+          if (!existingReplaceBtn) {
+            const replaceBtn = doc.createElement('button');
+            replaceBtn.className = 'edit-mode-replace-btn';
+            replaceBtn.textContent = '📷 Replace Image';
+            replaceBtn.style.cssText = `
+              position: absolute !important;
+              top: 50% !important;
+              left: 50% !important;
+              transform: translate(-50%, -50%) !important;
+              background: #7c3aed !important;
+              color: white !important;
+              border: none !important;
+              padding: 8px 16px !important;
+              border-radius: 6px !important;
+              font-size: 14px !important;
+              font-weight: 600 !important;
+              cursor: pointer !important;
+              z-index: 10001 !important;
+              box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+            `;
+            replaceBtn.onclick = (e) => {
+              e.stopPropagation();
+              triggerImageUpload();
+            };
+            target.style.position = 'relative';
+            target.appendChild(replaceBtn);
+          }
         }
+      }
+      
+      function getElementTypeName(tag: string): string {
+        const typeMap: Record<string, string> = {
+          h1: 'Heading 1', h2: 'Heading 2', h3: 'Heading 3',
+          h4: 'Heading 4', h5: 'Heading 5', h6: 'Heading 6',
+          p: 'Paragraph', span: 'Text', div: 'Container',
+          img: 'Image', a: 'Link', button: 'Button',
+          ul: 'List', ol: 'List', li: 'List Item',
+          section: 'Section', header: 'Header', footer: 'Footer',
+          nav: 'Navigation', article: 'Article', aside: 'Sidebar'
+        };
+        return typeMap[tag] || tag.toUpperCase();
       }
 
       function handleKeyDown(e: KeyboardEvent) {
         if (!editMode) return;
         const metaOrCtrl = e.metaKey || e.ctrlKey;
-        if (metaOrCtrl && e.key.toLowerCase() === 'z') {
+        
+        // Undo: Ctrl+Z / Cmd+Z
+        if (metaOrCtrl && e.key.toLowerCase() === 'z' && !e.shiftKey) {
           e.preventDefault();
           doUndo();
           return;
         }
+        
+        // Redo: Ctrl+Y / Cmd+Shift+Z
+        if ((metaOrCtrl && e.key.toLowerCase() === 'y') || (metaOrCtrl && e.shiftKey && e.key.toLowerCase() === 'z')) {
+          e.preventDefault();
+          doRedo();
+          return;
+        }
+        
         if (e.key === 'Escape') {
           e.preventDefault();
           finalizeEdit();
@@ -564,15 +713,51 @@ function LandingGeneratorContent() {
     const current = getPreviewHtml() ?? html;
     if (typeof current !== 'string') return;
     setHistory((h) => [...h, current]);
+    // Clear redo stack when new edits are made
+    setRedoStack([]);
   }
 
   function doUndo() {
     if (history.length < 1) return;
     const latest = history[history.length - 1];
+    const current = getPreviewHtml() ?? html;
+    
+    // Push current state to redo stack before undoing
+    if (typeof current === 'string') {
+      setRedoStack((r) => [...r, current]);
+    }
+    
     setHistory((h) => h.slice(0, -1));
     setHtml(latest);
     if (selectedEl) {
-      selectedEl.style.outline = '';
+      selectedEl.classList.remove('edit-mode-selected');
+      const badge = selectedEl.querySelector('.edit-mode-badge');
+      if (badge) badge.remove();
+      const replaceBtn = selectedEl.querySelector('.edit-mode-replace-btn');
+      if (replaceBtn) replaceBtn.remove();
+      selectedEl.contentEditable = 'false';
+      setSelectedEl(null);
+    }
+  }
+
+  function doRedo() {
+    if (redoStack.length < 1) return;
+    const redoState = redoStack[redoStack.length - 1];
+    const current = getPreviewHtml() ?? html;
+    
+    // Push current state to history before redoing
+    if (typeof current === 'string') {
+      setHistory((h) => [...h, current]);
+    }
+    
+    setRedoStack((r) => r.slice(0, -1));
+    setHtml(redoState);
+    if (selectedEl) {
+      selectedEl.classList.remove('edit-mode-selected');
+      const badge = selectedEl.querySelector('.edit-mode-badge');
+      if (badge) badge.remove();
+      const replaceBtn = selectedEl.querySelector('.edit-mode-replace-btn');
+      if (replaceBtn) replaceBtn.remove();
       selectedEl.contentEditable = 'false';
       setSelectedEl(null);
     }
@@ -582,6 +767,25 @@ function LandingGeneratorContent() {
     const updated = getPreviewHtml();
     if (typeof updated !== 'string') return;
     setHtml(updated);
+  }
+
+  function handleImageReplacement(file: File) {
+    if (!selectedEl || selectedEl.tagName.toLowerCase() !== 'img') return;
+    
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result;
+      if (typeof result === 'string' && selectedEl) {
+        pushHistory();
+        (selectedEl as HTMLImageElement).src = result;
+        finalizeEdit();
+      }
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function triggerImageUpload() {
+    imageInputRef.current?.click();
   }
 
   function cleanHtmlForPublishing(html: string): string {
@@ -678,6 +882,7 @@ function LandingGeneratorContent() {
       const { html: htmlOut } = await htmlRes.json();
       setHtml(htmlOut);
       setHistory([htmlOut]);
+      setRedoStack([]);
       setLoading('idle');
       setView('preview');
     } catch (err) {
@@ -817,6 +1022,21 @@ function LandingGeneratorContent() {
 
   return (
     <>
+      {/* Hidden file input for image replacement */}
+      <input
+        ref={imageInputRef}
+        type="file"
+        accept="image/*"
+        style={{ display: 'none' }}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            handleImageReplacement(file);
+            e.target.value = ''; // Reset input
+          }
+        }}
+      />
+      
       <PurchaseCreditsModal
         isOpen={showPurchaseModal}
         onClose={() => setShowPurchaseModal(false)}
@@ -1290,7 +1510,11 @@ function LandingGeneratorContent() {
                         setView('input');
                         setEditMode(false);
                         if (selectedEl) {
-                          selectedEl.style.outline = '';
+                          selectedEl.classList.remove('edit-mode-selected');
+                          const badge = selectedEl.querySelector('.edit-mode-badge');
+                          if (badge) badge.remove();
+                          const replaceBtn = selectedEl.querySelector('.edit-mode-replace-btn');
+                          if (replaceBtn) replaceBtn.remove();
                           selectedEl.contentEditable = 'false';
                           setSelectedEl(null);
                         }
@@ -1314,7 +1538,11 @@ function LandingGeneratorContent() {
                         const next = !v;
                         if (!next) {
                           if (selectedEl) {
-                            selectedEl.style.outline = '';
+                            selectedEl.classList.remove('edit-mode-selected');
+                            const badge = selectedEl.querySelector('.edit-mode-badge');
+                            if (badge) badge.remove();
+                            const replaceBtn = selectedEl.querySelector('.edit-mode-replace-btn');
+                            if (replaceBtn) replaceBtn.remove();
                             selectedEl.contentEditable = 'false';
                             setSelectedEl(null);
                           }
@@ -1339,6 +1567,15 @@ function LandingGeneratorContent() {
                     ↶
                   </button>
 
+                  <button
+                    onClick={doRedo}
+                    disabled={redoStack.length < 1}
+                    className="btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base"
+                    title="Redo (Cmd/Ctrl+Y or Cmd+Shift+Z)"
+                  >
+                    ↷
+                  </button>
+
                     <div style={{
                       height: '1rem',
                       width: '1px',
@@ -1352,6 +1589,24 @@ function LandingGeneratorContent() {
                   >
                     {loading === 'saving' ? 'Saving...' : savedSiteId ? 'Saved ✓' : 'Save Draft'}
                   </button>
+
+                  {/* Auto-save indicator */}
+                  {autoSaveStatus !== 'idle' && (
+                    <div className="flex items-center gap-2 text-xs text-gray-500 px-2">
+                      {autoSaveStatus === 'saving' && (
+                        <>
+                          <div className="spinner" style={{ width: '12px', height: '12px', borderWidth: '2px' }} />
+                          <span>Auto-saving...</span>
+                        </>
+                      )}
+                      {autoSaveStatus === 'saved' && (
+                        <>
+                          <span className="text-green-600">✓</span>
+                          <span className="text-green-600">Auto-saved</span>
+                        </>
+                      )}
+                    </div>
+                  )}
 
                   <button
                     onClick={() => handlePublish()}
