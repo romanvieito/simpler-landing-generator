@@ -45,7 +45,7 @@ export function CreditDisplay({ onPurchaseClick, showCredits = true, showButton 
         <div className="flex items-center gap-1 text-sm">
           <span className="text-gray-600">Credits:</span>
           <span className={`font-semibold ${credits === 0 ? 'text-red-600' : 'text-green-600'}`}>
-            {credits}
+            ${Math.max(0.01, (credits || 0) / 100).toFixed(2)}
           </span>
         </div>
       )}

@@ -414,8 +414,13 @@ function LandingGeneratorContent() {
     disabledByEditMode.forEach((el) => {
       el.removeAttribute('data-easyland-edit-disabled');
       // Only remove disabled if we added it
-      if ((el as any).disabled === true) {
-        (el as any).disabled = false;
+      if (
+        el instanceof HTMLInputElement ||
+        el instanceof HTMLTextAreaElement ||
+        el instanceof HTMLSelectElement ||
+        el instanceof HTMLButtonElement
+      ) {
+        el.disabled = false;
       }
     });
 
@@ -590,19 +595,17 @@ function LandingGeneratorContent() {
         forms.forEach((form) => {
           const controls = form.querySelectorAll<HTMLElement>('input, textarea, select, button');
           controls.forEach((control) => {
-            const anyControl = control as any;
+            const controlEl = control as HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement | HTMLButtonElement;
             if (disabled) {
               // Mark so we can restore on exit/cleanup
-              if (anyControl && typeof anyControl.disabled === 'boolean' && anyControl.disabled !== true) {
-                anyControl.disabled = true;
+              if (controlEl.disabled !== true) {
+                controlEl.disabled = true;
                 control.setAttribute('data-easyland-edit-disabled', '1');
               }
             } else {
               if (control.getAttribute('data-easyland-edit-disabled') === '1') {
                 control.removeAttribute('data-easyland-edit-disabled');
-                if (anyControl && typeof anyControl.disabled === 'boolean') {
-                  anyControl.disabled = false;
-                }
+                controlEl.disabled = false;
               }
             }
           });
@@ -891,8 +894,13 @@ function LandingGeneratorContent() {
       // Restore form controls that were disabled only for editing
       if (el.getAttribute('data-easyland-edit-disabled') === '1') {
         el.removeAttribute('data-easyland-edit-disabled');
-        if ((htmlEl as any).disabled === true) {
-          (htmlEl as any).disabled = false;
+        if (
+          htmlEl instanceof HTMLInputElement ||
+          htmlEl instanceof HTMLTextAreaElement ||
+          htmlEl instanceof HTMLSelectElement ||
+          htmlEl instanceof HTMLButtonElement
+        ) {
+          htmlEl.disabled = false;
         }
         el.removeAttribute('disabled');
       }
