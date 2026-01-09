@@ -245,6 +245,12 @@ export async function deployStaticHtml({ name, html, alias }: DeployArgs): Promi
       }
     } catch (e) {
       console.error('Error assigning alias:', e);
+      // For shared projects, if alias assignment fails, we should fail the entire deployment
+      // because URL renaming is not supported
+      if (isSharedPublishProject && alias) {
+        console.error('❌ Failing deployment due to alias assignment failure in shared project mode');
+        throw new Error(`URL renaming is not supported when using a shared Vercel project (${process.env.VERCEL_PUBLISH_PROJECT}). To enable URL renaming, remove the VERCEL_PUBLISH_PROJECT environment variable and deploy each site to its own project.`);
+      }
     }
   }
 
