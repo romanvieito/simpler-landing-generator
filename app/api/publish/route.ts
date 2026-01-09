@@ -62,7 +62,11 @@ export async function POST(req: Request) {
     const sharedProject = (process.env.VERCEL_PUBLISH_PROJECT || '').trim();
     const name = sharedProject || (exactName && nameHint ? nameHint : `site-${siteId}`);
 
-    const url = await deployStaticHtml({ name, html: processedHtml });
+    const url = await deployStaticHtml({
+      name,
+      html: processedHtml,
+      alias: exactName ? nameHint : undefined
+    });
 
     try {
       await updateSiteUrl({ id: siteId, userId, vercelUrl: url } as any);

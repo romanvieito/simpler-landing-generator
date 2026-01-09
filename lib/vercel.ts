@@ -11,6 +11,7 @@ if (!VERCEL_TOKEN) {
 type DeployArgs = {
   name: string;
   html: string;
+  alias?: string; // Optional alias for shared project deployments
 };
 
 function getDeploymentUrl(hostname: string): string {
@@ -31,7 +32,7 @@ async function probePublic(url: string): Promise<{ ok: boolean; status?: number 
   }
 }
 
-export async function deployStaticHtml({ name, html }: DeployArgs): Promise<string> {
+export async function deployStaticHtml({ name, html, alias }: DeployArgs): Promise<string> {
   if (!VERCEL_TOKEN) {
     throw new Error('Server missing VERCEL_TOKEN');
   }
@@ -129,11 +130,42 @@ export async function deployStaticHtml({ name, html }: DeployArgs): Promise<stri
     }
   }
 
+  // If we have an alias to assign (for custom URLs in shared project mode)
+  if (alias && data.id) {
+    try {
+      console.log('Assigning alias to deployment:', alias);
+      const aliasRes = await fetch(`https://api.vercel.com/v2/deployments/${data.id}/aliases`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${VERCEL_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          alias: alias
+        }),
+      });
+
+      if (aliasRes.ok) {
+        console.log('Successfully assigned alias:', alias);
+        // If alias assignment succeeds, try to return the alias URL
+        const aliasUrl = `${alias}.vercel.app`;
+        const { ok: aliasOk } = await probePublic(`https://${aliasUrl}`);
+        if (aliasOk) {
+          return aliasUrl;
+        }
+      } else {
+        console.warn('Failed to assign alias:', await aliasRes.text());
+      }
+    } catch (e) {
+      console.warn('Error assigning alias:', e);
+    }
+  }
+
   // Prefer returning the stable production domain if it's publicly reachable.
   // BUT: when publishing into a shared project, the stable domain would always point to the *latest*
   // deployment (not per-site). In that mode, we return the unique deployment URL instead.
   const candidates = [
-    ...(isSharedPublishProject ? [] : [`${name}.vercel.app`]),
+    ...(isSharedPublishProject ? (alias ? [`${alias}.vercel.app`] : []) : [`${name}.vercel.app`]),
     String(data.url),
   ].filter(Boolean);
 
