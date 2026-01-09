@@ -12,9 +12,17 @@ const isPublicApiRoute = createRouteMatcher([
   "/api/contact(.*)",
   "/api/credits/webhook(.*)",
   "/api/test-env(.*)",
+  "/api/credits/create-checkout-session(.*)", // Allow checkout creation for testing
+  "/api/credits/balance(.*)", // Allow balance checking for testing
 ]);
 
+// Disable Clerk protection in development for easier testing
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 export default clerkMiddleware(async (auth, request) => {
+  // Skip authentication in development for easier testing
+  if (isDevelopment) return;
+
   if (!isProtectedApiRoute(request)) return;
   if (isPublicApiRoute(request)) return;
   await auth.protect();
