@@ -133,8 +133,22 @@ export async function deployStaticHtml({ name, html, alias }: DeployArgs): Promi
   // If we have an alias to assign (for custom URLs in shared project mode)
   if (alias && data.id) {
     try {
-      console.log('Assigning alias to deployment:', alias);
-      const aliasRes = await fetch(`https://api.vercel.com/v2/deployments/${data.id}/aliases`, {
+      console.log('Assigning alias to deployment:', {
+        alias,
+        deploymentId: data.id,
+        projectId: data.projectId,
+        isSharedProject: isSharedPublishProject
+      });
+
+      // Try the correct Vercel API endpoint for assigning aliases
+      // Include teamId if available
+      const aliasQuery = new URLSearchParams();
+      if (VERCEL_TEAM_ID) aliasQuery.set('teamId', VERCEL_TEAM_ID);
+      const aliasEndpoint = `https://api.vercel.com/v2/deployments/${data.id}/aliases${aliasQuery.toString() ? `?${aliasQuery.toString()}` : ''}`;
+
+      console.log('Alias assignment endpoint:', aliasEndpoint);
+
+      const aliasRes = await fetch(aliasEndpoint, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${VERCEL_TOKEN}`,
@@ -145,29 +159,90 @@ export async function deployStaticHtml({ name, html, alias }: DeployArgs): Promi
         }),
       });
 
+      // Alternative: Try the v1 aliases endpoint if v2 fails
+      if (!aliasRes.ok) {
+        console.log('v2 endpoint failed, trying v1 aliases endpoint');
+        const v1Query = new URLSearchParams();
+        if (VERCEL_TEAM_ID) v1Query.set('teamId', VERCEL_TEAM_ID);
+        const v1Endpoint = `https://api.vercel.com/v1/aliases${v1Query.toString() ? `?${v1Query.toString()}` : ''}`;
+
+        const aliasResV1 = await fetch(v1Endpoint, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${VERCEL_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            alias: alias,
+            deployment: data.id  // Note: 'deployment' not 'deploymentId'
+          }),
+        });
+
+        const v1ResponseText = await aliasResV1.text();
+        console.log('v1 alias assignment response:', {
+          status: aliasResV1.status,
+          statusText: aliasResV1.statusText,
+          response: v1ResponseText
+        });
+
+        if (aliasResV1.ok) {
+          console.log('Successfully assigned alias using v1 endpoint:', alias);
+          // Use v1 response for further processing
+          aliasRes = aliasResV1;
+        } else {
+          console.warn('v1 alias assignment also failed');
+        }
+      }
+
+      const aliasResponseText = await aliasRes.text();
+      console.log('Alias assignment response:', {
+        status: aliasRes.status,
+        statusText: aliasRes.statusText,
+        response: aliasResponseText
+      });
+
       if (aliasRes.ok) {
         console.log('Successfully assigned alias:', alias);
+
         // If alias assignment succeeds, try to return the alias URL
         const aliasUrl = `${alias}.vercel.app`;
-        const { ok: aliasOk } = await probePublic(`https://${aliasUrl}`);
+        console.log('Testing alias URL availability:', aliasUrl);
+
+        // Give it a moment for the alias to propagate
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        const { ok: aliasOk, status } = await probePublic(`https://${aliasUrl}`);
+        console.log('Alias URL probe result:', { ok: aliasOk, status, url: aliasUrl });
+
         if (aliasOk) {
+          console.log('Returning alias URL:', aliasUrl);
           return aliasUrl;
+        } else {
+          console.warn('Alias URL not accessible yet, falling back to deployment URL');
         }
       } else {
-        console.warn('Failed to assign alias:', await aliasRes.text());
+        console.error('Failed to assign alias:', {
+          status: aliasRes.status,
+          statusText: aliasRes.statusText,
+          response: aliasResponseText
+        });
       }
     } catch (e) {
-      console.warn('Error assigning alias:', e);
+      console.error('Error assigning alias:', e);
     }
   }
 
   // Prefer returning the stable production domain if it's publicly reachable.
   // BUT: when publishing into a shared project, the stable domain would always point to the *latest*
   // deployment (not per-site). In that mode, we return the unique deployment URL instead.
+  // If we have an alias, prioritize it for shared projects.
   const candidates = [
-    ...(isSharedPublishProject ? (alias ? [`${alias}.vercel.app`] : []) : [`${name}.vercel.app`]),
+    ...(isSharedPublishProject && alias ? [`${alias}.vercel.app`] : []),
+    ...(isSharedPublishProject ? [] : [`${name}.vercel.app`]),
     String(data.url),
   ].filter(Boolean);
+
+  console.log('URL candidates for selection:', candidates);
 
   for (const host of candidates) {
     const url = getDeploymentUrl(host);
