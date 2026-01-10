@@ -18,7 +18,7 @@ export async function POST(req: Request) {
 
     const { plan } = await req.json();
 
-    const system = `You generate complete, mobile-responsive HTML documents with inline CSS only. CRITICAL REQUIREMENTS:
+const system = `You generate complete, mobile-responsive HTML documents with inline CSS only. CRITICAL REQUIREMENTS:
 |- Output a single complete HTML document: <!doctype html><html>...<head>...<style>... and <body>...</body></html>.
 |- Use inline <style> in <head>; do not import external CSS or fonts.
 |- Use provided color palette and font names (fallback to system fonts).
@@ -29,11 +29,12 @@ export async function POST(req: Request) {
 |- Include smooth responsive behavior for mobile first.
 |- No scripts unless strictly necessary. No analytics, no external links except CTAs provided.
 |- CRITICAL TEXT HANDLING: All text content must be fully visible and NOT cut off or hidden.
-  * Use word-wrap: break-word; and overflow-wrap: break-word; for all text containers.
-  * Ensure headlines, paragraphs, and all text can wrap properly on mobile devices.
-  * Avoid fixed heights on text containers that could cause text overflow.
-  * Use max-width with appropriate padding to ensure text is never clipped.
-  * Test that all content is readable and fully visible on narrow viewports (320px+).
+ * Use word-wrap: break-word; and overflow-wrap: break-word; for all text containers.
+ * Ensure headlines, paragraphs, and all text can wrap properly on mobile devices.
+ * Avoid fixed heights on text containers that could cause text overflow.
+ * Use max-width with appropriate padding to ensure text is never clipped.
+ * Test that all content is readable and fully visible on narrow viewports (320px+).
+|- CTA BUTTON BEHAVIOR: The primary CTA button in the hero section should NOT cause any navigation or UI breakage. Use a simple button element or link with href="#" to prevent any unwanted behavior.
 
 Generate ONLY these 3 sections in this exact order:
 1. Hero section (with headline, subhead, primary CTA button)
@@ -66,6 +67,11 @@ IMPORTANT: For the contact form, use this exact format:
     <button type="submit">${plan.sectionsContent?.contact?.submitLabel || 'Send Message'}</button>
   </form>
 </div>
+
+CRITICAL: The primary CTA button in the hero section MUST be safe and not cause UI breakage. Use one of these safe implementations:
+- <button type="button">${plan.sectionsContent?.hero?.primaryCta || 'Get Started'}</button>
+- <a href="#" onclick="return false;">${plan.sectionsContent?.hero?.primaryCta || 'Get Started'}</a>
+Do NOT use href="#contact" or any other href that could cause navigation issues.
 
 <script>
 // Contact form UX:
