@@ -50,6 +50,7 @@ export default function DashboardPage() {
   const [domainModalSiteId, setDomainModalSiteId] = useState<string | null>(null);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [renewingDomain, setRenewingDomain] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'sites' | 'domains' | 'leads'>('sites');
 
   useEffect(() => {
     fetchSites();
@@ -212,8 +213,63 @@ export default function DashboardPage() {
           </header>
 
           <main className="container py-8 md:py-12 space-y-12 md:space-y-16">
+            {/* Tab Navigation */}
+            <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-2 border border-gray-200/50 shadow-sm">
+              <div className="flex space-x-1">
+                <button
+                  onClick={() => setActiveTab('sites')}
+                  className={`flex-1 px-4 py-3 text-sm md:text-base font-medium rounded-xl transition-all duration-200 ${
+                    activeTab === 'sites'
+                      ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                    </svg>
+                    <span className="hidden sm:inline">Sites</span>
+                    <span className="sm:hidden">Sites</span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveTab('domains')}
+                  className={`flex-1 px-4 py-3 text-sm md:text-base font-medium rounded-xl transition-all duration-200 ${
+                    activeTab === 'domains'
+                      ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                    <span className="hidden sm:inline">Domains</span>
+                    <span className="sm:hidden">Domains</span>
+                  </div>
+                </button>
+                <button
+                  onClick={() => setActiveTab('leads')}
+                  className={`flex-1 px-4 py-3 text-sm md:text-base font-medium rounded-xl transition-all duration-200 ${
+                    activeTab === 'leads'
+                      ? 'bg-white text-gray-900 shadow-sm border border-gray-200'
+                      : 'text-gray-600 hover:text-gray-900 hover:bg-white/50'
+                  }`}
+                >
+                  <div className="flex items-center justify-center gap-2">
+                    <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <span className="hidden sm:inline">Leads</span>
+                    <span className="sm:hidden">Leads</span>
+                  </div>
+                </button>
+              </div>
+            </div>
+
             {/* Sites Section */}
-            <section className="space-y-6 md:space-y-8">
+            {activeTab === 'sites' && (
+              <section className="space-y-6 md:space-y-8">
               <div className="flex items-start md:items-center justify-between gap-4">
                 <div className="min-w-0 flex-1">
                   <h2 className="text-xl md:text-2xl font-bold text-gray-900">Your Sites</h2>
@@ -375,9 +431,11 @@ export default function DashboardPage() {
                 </div>
               )}
             </section>
+            )}
 
             {/* Domain Management Section */}
-            <section className="space-y-6 md:space-y-8">
+            {activeTab === 'domains' && (
+              <section className="space-y-6 md:space-y-8">
               <div>
                 <h2 className="text-xl md:text-2xl font-bold text-gray-900">Domain Management</h2>
                 <p className="text-sm md:text-base text-gray-600 mt-1">Monitor and renew your custom domains</p>
@@ -543,9 +601,11 @@ export default function DashboardPage() {
                 </div>
               )}
             </section>
+            )}
 
             {/* Leads Section */}
-            <section className="space-y-6 md:space-y-8">
+            {activeTab === 'leads' && (
+              <section className="space-y-6 md:space-y-8">
               <div>
                 <h2 className="text-xl md:text-2xl font-bold text-gray-900">Recent Leads</h2>
                 <p className="text-sm md:text-base text-gray-600 mt-1">Contact submissions from your sites</p>
@@ -647,6 +707,7 @@ export default function DashboardPage() {
                 </div>
               )}
             </section>
+            )}
           </main>
         </div>
 
