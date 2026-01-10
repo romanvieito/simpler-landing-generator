@@ -103,14 +103,13 @@ export async function PATCH(req: Request, { params }: Params) {
       console.log(`Domain ${customDomain} verified and ready to be assigned to site`);
     }
 
-    // For subdomains, add DNS record
+    // For subdomains, add DNS record (non-blocking)
     if (isSubdomain && customDomain !== currentCustomDomain) {
       console.log(`Setting subdomain: ${customDomain}`);
       const dnsSuccess = await addSubdomainCNAME(customDomain);
       if (!dnsSuccess) {
-        return NextResponse.json({
-          error: 'Failed to configure DNS for subdomain. Please try again.'
-        }, { status: 500 });
+        console.warn('⚠️ DNS setup failed, but continuing with subdomain assignment');
+        console.warn('⚠️ Subdomain may not work until DNS is properly configured');
       }
     }
 
