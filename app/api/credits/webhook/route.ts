@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { getStripe } from '@/lib/stripe';
-import { addCredits, ensureCreditsTable, ensureCreditTransactionsTable } from '@/lib/db';
+import { addCredits, ensureCreditsTable, ensureCreditTransactionsTable, setPendingConversion } from '@/lib/db';
 import { logStripeEvent, ensureStripeLogsTable, getStripeLogsByType } from '@/lib/stripe-logger';
 
 // Helper function to safely get error message
@@ -185,6 +185,14 @@ async function handleCheckoutSessionCompleted(session: any, stripe: any) {
       description: `Purchased ${credits} credits (${packageType || 'custom'})`,
       stripePaymentId: session.payment_intent || session.id,
     });
+
+    // Set pending conversion for Google Ads
+    try {
+      const amount = session.amount_total / 100;
+      await setPendingConversion({ userId, amount });
+    } catch (e) {
+      console.warn('Failed to set pending conversion flag', e);
+    }
 
     // Update customer metadata if we have a customer
     if (session.customer && typeof session.customer === 'string') {

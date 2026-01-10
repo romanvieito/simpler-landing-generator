@@ -54,6 +54,12 @@ export async function ensureCreditsTable() {
     ADD COLUMN IF NOT EXISTS last_free_credits_at TIMESTAMPTZ;
   `;
 
+  // Migration: Add pending_conversion_value if it doesn't exist
+  await sql`
+    ALTER TABLE user_credits
+    ADD COLUMN IF NOT EXISTS pending_conversion_value DECIMAL(10,2) DEFAULT 0;
+  `;
+
   // Migration: change balance from INTEGER to DECIMAL if it exists as INTEGER
   await sql`
     DO $$
@@ -451,4 +457,30 @@ export async function getCreditTransactions({ userId }: { userId: string }) {
     ...row,
     amount: parseFloat(row.amount)
   }));
+}
+
+export async function setPendingConversion({ userId, amount }: { userId: string, amount: number }) {
+  await sql`
+    UPDATE user_credits
+    SET pending_conversion_value = ${amount}, updated_at = NOW()
+    WHERE user_id = ${userId}
+  `;
+}
+
+export async function getPendingConversion(userId: string) {
+  const { rows } = await sql`
+    SELECT pending_conversion_value
+    FROM user_credits
+    WHERE user_id = ${userId}
+    LIMIT 1
+  `;
+  return parseFloat(rows[0]?.pending_conversion_value || '0');
+}
+
+export async function clearPendingConversion(userId: string) {
+  await sql`
+    UPDATE user_credits
+    SET pending_conversion_value = 0, updated_at = NOW()
+    WHERE user_id = ${userId}
+  `;
 }

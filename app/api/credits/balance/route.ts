@@ -1,7 +1,7 @@
 // app/api/credits/balance/route.ts
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
-import { getUserCredits, ensureCreditsTable, ensureCreditTransactionsTable } from '@/lib/db';
+import { getUserCredits, ensureCreditsTable, ensureCreditTransactionsTable, getPendingConversion } from '@/lib/db';
 
 export async function GET() {
   try {
@@ -21,9 +21,12 @@ export async function GET() {
     await ensureCreditsTable();
     await ensureCreditTransactionsTable();
 
-    const balance = await getUserCredits({ userId });
+    const [balance, pendingConversionValue] = await Promise.all([
+      getUserCredits({ userId }),
+      getPendingConversion(userId)
+    ]);
 
-    return NextResponse.json({ balance });
+    return NextResponse.json({ balance, pendingConversionValue });
   } catch (error) {
     console.error('Error fetching credit balance:', error);
     return NextResponse.json(

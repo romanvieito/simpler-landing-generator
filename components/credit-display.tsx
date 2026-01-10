@@ -27,6 +27,22 @@ export function CreditDisplay({ onPurchaseClick, showCredits = true, showButton 
       if (res.ok) {
         const data = await res.json();
         setCredits(data.balance);
+        
+        // Handle pending Google Ads conversion
+        if (data.pendingConversionValue > 0) {
+          // @ts-ignore
+          if (typeof window !== 'undefined' && window.gtag) {
+            // @ts-ignore
+            window.gtag('event', 'conversion', {
+              'send_to': 'AW-16510475658/HKhPCK_az-AbEIq758A9',
+              'value': data.pendingConversionValue,
+              'currency': 'USD'
+            });
+            
+            // Clear the flag so it doesn't fire again
+            fetch('/api/credits/clear-conversion', { method: 'POST' });
+          }
+        }
       }
     } catch (error) {
       console.error('Failed to fetch credits:', error);
