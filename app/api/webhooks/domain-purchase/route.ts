@@ -45,7 +45,7 @@ export async function POST(req: Request) {
           eventType: 'domain.webhook_received',
           eventId: event.id,
           userId,
-          status: 'processing',
+          status: 'success',
           message: `Received domain purchase webhook for ${domain}`,
           metadata: { domain, siteId, sessionId: session.id }
         });

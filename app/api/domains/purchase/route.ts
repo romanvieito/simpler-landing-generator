@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { purchaseDomain } from '@/lib/vercel';
 import { getUserCredits, deductCredits, ensureCreditsTable } from '@/lib/db';
+import { getStripe } from '@/lib/stripe';
 
 import { logStripeEvent, ensureStripeLogsTable } from '@/lib/stripe-logger';
 
@@ -75,7 +76,7 @@ export async function POST(req: Request) {
       eventId: `domain_${domain}`,
       userId,
       amount: price / 100, // Convert cents to dollars for logging
-      status: 'processing',
+      status: 'success',
       message: `Starting domain purchase for ${domain}`,
       metadata: { domain, siteId, projectId, price }
     });
@@ -155,16 +156,14 @@ export async function POST(req: Request) {
     await logStripeEvent({
       eventType: 'domain.purchase',
       eventId: `domain_${domain}`,
-      userId,
-      amount: DOMAIN_PRICING.creditsCost,
+      userId: userId || undefined,
+      amount: (price || 0) / 100, // Convert cents to dollars
       status: 'success',
       message: `Successfully purchased domain ${domain}`,
       metadata: {
         domain,
         siteId,
-        projectId,
-        verified: purchaseResult.verified,
-        nameservers: purchaseResult.nameservers
+        projectId
       }
     });
 
