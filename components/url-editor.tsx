@@ -62,7 +62,7 @@ export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className =
 
   if (isEditing) {
     return (
-      <div className={`flex items-center gap-2 ${className}`}>
+      <div className={`flex items-center gap-2 flex-wrap ${className}`}>
         <input
           type="text"
           value={urlInput}
