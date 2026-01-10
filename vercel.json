@@ -1,1 +1,8 @@
-{"public": true}
+{
+  "public": true,
+  "functions": {
+    "app/api/webhooks/domain-purchase/route.ts": {
+      "maxDuration": 30
+    }
+  }
+}

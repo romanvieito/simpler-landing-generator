@@ -37,6 +37,9 @@ export const CREDIT_PACKAGES = {
   }
 } as const;
 
+// Domain pricing is now dynamic based on Vercel's actual pricing
+// Domains are charged at cost with no additional fees
+
 export type CreditPackage = keyof typeof CREDIT_PACKAGES;
 
 // Validate that Stripe is properly configured

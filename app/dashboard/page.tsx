@@ -6,6 +6,7 @@ import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import UrlEditor from '@/components/url-editor';
+import { PurchaseDomainModal } from '@/components/purchase-domain-modal';
 
 type Site = {
   id: string;
@@ -33,6 +34,7 @@ export default function DashboardPage() {
   const [loadingSites, setLoadingSites] = useState(true);
   const [loadingLeads, setLoadingLeads] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [domainModalSiteId, setDomainModalSiteId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSites();
@@ -93,6 +95,15 @@ export default function DashboardPage() {
           : site
       )
     );
+  }
+
+  function handleDomainPurchase(siteId: string) {
+    setDomainModalSiteId(siteId);
+  }
+
+  function handleDomainPurchased(domain: string) {
+    // Refresh sites to show the updated domain
+    fetchSites();
   }
 
   return (
@@ -265,6 +276,17 @@ export default function DashboardPage() {
                                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                 </svg>
                               </button>
+                              {!site.custom_domain && (
+                                <button
+                                  onClick={() => handleDomainPurchase(site.id)}
+                                  className="p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                  title="Buy custom domain"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                                  </svg>
+                                </button>
+                              )}
                             </div>
 
                             {/* Right: Secondary actions */}
@@ -409,6 +431,14 @@ export default function DashboardPage() {
             </section>
           </main>
         </div>
+
+        {/* Domain Purchase Modal */}
+        <PurchaseDomainModal
+          isOpen={!!domainModalSiteId}
+          onClose={() => setDomainModalSiteId(null)}
+          siteId={domainModalSiteId || undefined}
+          onDomainPurchased={handleDomainPurchased}
+        />
       </SignedIn>
     </>
   );

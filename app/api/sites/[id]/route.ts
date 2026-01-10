@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { deleteSite, getSite, updateSiteCustomDomain } from '@/lib/db';
 import { addSubdomainCNAME, removeSubdomainCNAME } from '@/lib/dns';
+import { purchaseDomain, checkDomainAvailability, getDomainStatus } from '@/lib/vercel';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -64,37 +65,61 @@ export async function PATCH(req: Request, { params }: Params) {
     // Check if we're in shared project mode
     const isSharedProject = !!(process.env.VERCEL_PUBLISH_PROJECT || '').trim();
 
-    // Validate subdomain format
-    const domainRegex = /^[a-zA-Z0-9-]+\.easyland\.site$/;
-    if (customDomain && !domainRegex.test(customDomain)) {
+    // Validate domain format - allow both easyland.site subdomains and full custom domains
+    const subdomainRegex = /^[a-zA-Z0-9-]+\.easyland\.site$/;
+    const fullDomainRegex = /^[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(\.[a-zA-Z0-9]([a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+
+    const isSubdomain = customDomain && subdomainRegex.test(customDomain);
+    const isFullDomain = customDomain && fullDomainRegex.test(customDomain) && !subdomainRegex.test(customDomain);
+
+    if (customDomain && !isSubdomain && !isFullDomain) {
       return NextResponse.json({
-        error: 'Custom domain must be a subdomain of easyland.site (e.g., mysite.easyland.site)'
+        error: 'Invalid domain format. Use either a subdomain of easyland.site (e.g., mysite.easyland.site) or purchase a full custom domain.'
       }, { status: 400 });
     }
 
-    // Warn about shared project limitation
-    if (customDomain && isSharedProject) {
-      console.warn('⚠️  Setting custom domain in shared Vercel project mode');
-      console.warn('⚠️  This domain will serve the same content as all other domains');
-      console.warn('⚠️  For proper custom domains, remove VERCEL_PUBLISH_PROJECT env var');
+    // For full custom domains, verify domain ownership (domains are purchased separately)
+    if (isFullDomain) {
+      // Check if domain is actually owned by this Vercel account
+      try {
+        const domainStatus = await getDomainStatus(customDomain);
+        if (!domainStatus.verified) {
+          return NextResponse.json({
+            error: `Domain ${customDomain} is not verified in your Vercel account. Please purchase the domain first.`
+          }, { status: 400 });
+        }
+      } catch (error) {
+        return NextResponse.json({
+          error: 'Failed to verify domain ownership. Please try again.'
+        }, { status: 500 });
+      }
+
+      console.log(`Domain ${customDomain} verified and ready to be assigned to site`);
     }
 
-    // If we're setting a new custom domain, add DNS record
-    if (customDomain && customDomain !== currentCustomDomain) {
-      console.log(`Setting custom domain: ${customDomain}`);
+    // For subdomains, add DNS record
+    if (isSubdomain && customDomain !== currentCustomDomain) {
+      console.log(`Setting subdomain: ${customDomain}`);
       const dnsSuccess = await addSubdomainCNAME(customDomain);
       if (!dnsSuccess) {
         return NextResponse.json({
-          error: 'Failed to configure DNS for custom domain. Please try again.'
+          error: 'Failed to configure DNS for subdomain. Please try again.'
         }, { status: 500 });
       }
     }
 
-    // If we're removing a custom domain, remove DNS record
+    // Warn about shared project limitation for subdomains
+    if (isSubdomain && isSharedProject) {
+      console.warn('⚠️  Setting custom subdomain in shared Vercel project mode');
+      console.warn('⚠️  This domain will serve the same content as all other domains');
+      console.warn('⚠️  For proper custom domains, remove VERCEL_PUBLISH_PROJECT env var');
+    }
+
+    // If we're removing a custom domain, clean up if needed
     if (!customDomain && currentCustomDomain) {
       console.log(`Removing custom domain: ${currentCustomDomain}`);
       // Note: DNS removal is optional as the record can stay
-      // await removeSubdomainCNAME(currentCustomDomain);
+      // For purchased domains, they remain in Vercel account
     }
 
     await updateSiteCustomDomain({

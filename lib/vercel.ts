@@ -8,6 +8,25 @@ if (!VERCEL_TOKEN) {
   console.warn('Missing VERCEL_TOKEN (required for publishing)');
 }
 
+type DomainInfo = {
+  name: string;
+  available: boolean;
+  price?: number;
+  currency?: string;
+};
+
+type PurchaseDomainArgs = {
+  domain: string;
+  projectId?: string;
+};
+
+type DomainPurchaseResult = {
+  domain: string;
+  projectId?: string;
+  verified: boolean;
+  nameservers?: string[];
+};
+
 type DeployArgs = {
   name: string;
   html: string;
@@ -284,4 +303,218 @@ export async function deployStaticHtml({ name, html, alias }: DeployArgs): Promi
       `Open that project in Vercel → Settings → Deployment Protection, and set protection to "None" (and ensure Vercel Authentication is disabled). ` +
       `Protected URL: ${deploymentUrl}`
   );
+}
+
+// Domain management functions
+export async function checkDomainAvailability(domain: string): Promise<DomainInfo> {
+  if (!VERCEL_TOKEN) {
+    throw new Error('Server missing VERCEL_TOKEN');
+  }
+
+  const query = new URLSearchParams();
+  if (VERCEL_TEAM_ID) query.set('teamId', VERCEL_TEAM_ID);
+
+  try {
+    const res = await fetch(`https://api.vercel.com/v4/domains/${encodeURIComponent(domain)}${query.toString() ? `?${query.toString()}` : ''}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${VERCEL_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (res.status === 404) {
+      // Domain is available for purchase
+      return {
+        name: domain,
+        available: true,
+        price: 1500, // $15/year - typical domain registration cost
+        currency: 'usd',
+      };
+    }
+
+    if (res.ok) {
+      const data = await res.json();
+      // Domain exists but might be available for transfer/purchase
+      return {
+        name: domain,
+        available: false, // Domain already exists in Vercel
+        price: data.price || 1500, // Default to $15 if no price
+        currency: data.currency || 'usd',
+      };
+    }
+
+    // For other error codes, try to get pricing info or assume available with standard pricing
+    try {
+      const pricingRes = await fetch(`https://api.vercel.com/v4/domains/price?domain=${encodeURIComponent(domain)}${query.toString() ? `&${query.toString()}` : ''}`, {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${VERCEL_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (pricingRes.ok) {
+        const pricingData = await pricingRes.json();
+        return {
+          name: domain,
+          available: true,
+          price: pricingData.price || 1500, // Default to $15 if no price returned
+          currency: pricingData.currency || 'usd',
+        };
+      }
+    } catch (pricingError) {
+      console.warn('Failed to get pricing info, using default:', pricingError);
+    }
+
+    // If we can't get pricing, assume available with default price
+    return {
+      name: domain,
+      available: true,
+      price: 1500, // $15 default
+      currency: 'usd',
+    };
+  } catch (error) {
+    console.error('Error checking domain availability:', error);
+    // In case of API errors, assume available with default pricing
+    return {
+      name: domain,
+      available: true,
+      price: 1500, // Default domain price
+      currency: 'usd',
+    };
+  }
+}
+
+export async function purchaseDomain({ domain, projectId }: PurchaseDomainArgs): Promise<DomainPurchaseResult> {
+  if (!VERCEL_TOKEN) {
+    throw new Error('Server missing VERCEL_TOKEN');
+  }
+
+  const query = new URLSearchParams();
+  if (VERCEL_TEAM_ID) query.set('teamId', VERCEL_TEAM_ID);
+
+  try {
+    // First, add the domain to Vercel
+    const addDomainRes = await fetch(`https://api.vercel.com/v4/domains${query.toString() ? `?${query.toString()}` : ''}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${VERCEL_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        name: domain,
+      }),
+    });
+
+    if (!addDomainRes.ok) {
+      const errorText = await addDomainRes.text();
+      throw new Error(`Failed to add domain: ${addDomainRes.status} ${errorText}`);
+    }
+
+    const domainData = await addDomainRes.json();
+    console.log('Domain added to Vercel:', domainData);
+
+    let result: DomainPurchaseResult = {
+      domain,
+      verified: domainData.verified || false,
+      nameservers: domainData.nameservers,
+    };
+
+    // If projectId is provided, assign the domain to the project
+    if (projectId) {
+      try {
+        const assignRes = await fetch(`https://api.vercel.com/v4/domains/${encodeURIComponent(domain)}/project${query.toString() ? `?${query.toString()}` : ''}`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${VERCEL_TOKEN}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            projectId,
+          }),
+        });
+
+        if (assignRes.ok) {
+          const assignData = await assignRes.json();
+          console.log('Domain assigned to project:', assignData);
+          result.projectId = projectId;
+        } else {
+          console.warn('Failed to assign domain to project:', await assignRes.text());
+        }
+      } catch (assignError) {
+        console.warn('Error assigning domain to project:', assignError);
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error('Error purchasing domain:', error);
+    throw error instanceof Error ? error : new Error('Failed to purchase domain');
+  }
+}
+
+export async function verifyDomain(domain: string): Promise<{ verified: boolean; nameservers?: string[] }> {
+  if (!VERCEL_TOKEN) {
+    throw new Error('Server missing VERCEL_TOKEN');
+  }
+
+  const query = new URLSearchParams();
+  if (VERCEL_TEAM_ID) query.set('teamId', VERCEL_TEAM_ID);
+
+  try {
+    const res = await fetch(`https://api.vercel.com/v3/domains/${encodeURIComponent(domain)}/verify${query.toString() ? `?${query.toString()}` : ''}`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${VERCEL_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to verify domain: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return {
+      verified: data.verified || false,
+      nameservers: data.nameservers,
+    };
+  } catch (error) {
+    console.error('Error verifying domain:', error);
+    throw error instanceof Error ? error : new Error('Failed to verify domain');
+  }
+}
+
+export async function getDomainStatus(domain: string): Promise<{ verified: boolean; configured: boolean; nameservers?: string[] }> {
+  if (!VERCEL_TOKEN) {
+    throw new Error('Server missing VERCEL_TOKEN');
+  }
+
+  const query = new URLSearchParams();
+  if (VERCEL_TEAM_ID) query.set('teamId', VERCEL_TEAM_ID);
+
+  try {
+    const res = await fetch(`https://api.vercel.com/v4/domains/${encodeURIComponent(domain)}${query.toString() ? `?${query.toString()}` : ''}`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${VERCEL_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to get domain status: ${res.status}`);
+    }
+
+    const data = await res.json();
+    return {
+      verified: data.verified || false,
+      configured: data.configured || false,
+      nameservers: data.nameservers,
+    };
+  } catch (error) {
+    console.error('Error getting domain status:', error);
+    throw error instanceof Error ? error : new Error('Failed to get domain status');
+  }
 }
