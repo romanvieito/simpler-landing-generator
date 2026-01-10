@@ -7,9 +7,10 @@ interface UrlEditorProps {
   currentUrl: string | null;
   onUrlUpdate: (newUrl: string) => Promise<void>;
   className?: string;
+  readOnly?: boolean;
 }
 
-export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className = '' }: UrlEditorProps) {
+export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className = '', readOnly = false }: UrlEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [urlInput, setUrlInput] = useState(currentUrl || '');
   const [isUpdating, setIsUpdating] = useState(false);
@@ -19,45 +20,36 @@ export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className =
 
     setIsUpdating(true);
     try {
-      // Extract slug from the full URL input
-      const slug = urlInput.trim().split('.')[0];
+      // Set custom subdomain
+      const subdomain = urlInput.trim();
+      const fullDomain = subdomain.includes('.') ? subdomain : `${subdomain}.easyland.site`;
 
-      // First, fetch the existing site data to get the HTML
-      const siteResponse = await fetch(`/api/sites/${siteId}`);
-      if (!siteResponse.ok) {
-        throw new Error('Failed to fetch site data');
-      }
-      const siteData = await siteResponse.json();
-
-      if (!siteData.site?.html) {
-        throw new Error('Site HTML not found');
-      }
-
-      // Call the publish API to update the URL
-      const response = await fetch('/api/publish', {
-        method: 'POST',
+      const response = await fetch(`/api/sites/${siteId}`, {
+        method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          siteId: siteId,
-          nameHint: slug,
-          exactName: true,
-          html: siteData.site.html
+          customDomain: fullDomain
         }),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || 'Failed to update URL');
+        throw new Error(error.error || 'Failed to set custom domain');
       }
 
-      const data = await response.json();
-
-      // Update the local state with the new URL
-      await onUrlUpdate(data.url);
+      // Update the local state with the new custom domain
+      await onUrlUpdate(fullDomain);
       setIsEditing(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to update URL:', error);
-      alert('Failed to update URL. Please try again.');
+
+      // Check if this is the shared project URL renaming error
+      const errorMessage = error?.message || '';
+      if (errorMessage.includes('URL renaming is not supported when using a shared Vercel project')) {
+        alert('URL renaming is not supported when using a shared Vercel project. To enable URL renaming, remove the VERCEL_PUBLISH_PROJECT environment variable and deploy each site to its own project.');
+      } else {
+        alert('Failed to update URL. Please try again.');
+      }
     } finally {
       setIsUpdating(false);
     }
@@ -79,10 +71,10 @@ export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className =
           style={{
             fontSize: '0.875rem',
             padding: '0.25rem 0.5rem',
-            width: '160px',
+            width: '180px',
             height: 'auto'
           }}
-          placeholder="your-site.vercel.app"
+          placeholder="mysite.easyland.site"
           disabled={isUpdating}
         />
         <button
@@ -91,7 +83,7 @@ export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className =
           className="btn btn-primary text-xs px-2 py-1"
           style={{ height: 'auto' }}
         >
-          {isUpdating ? '...' : 'Save'}
+          {isUpdating ? '...' : 'Set Domain'}
         </button>
         <button
           onClick={handleCancel}
@@ -117,13 +109,13 @@ export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className =
           {currentUrl}
         </a>
       )}
-      {currentUrl && (
+      {currentUrl && !readOnly && (
         <button
           onClick={() => setIsEditing(true)}
           className="text-gray-400 hover:text-gray-600 p-1"
-          title="Edit URL"
+          title="Set custom domain"
         >
-          ✏️
+          🌐
         </button>
       )}
     </div>

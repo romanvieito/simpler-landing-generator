@@ -42,18 +42,41 @@ export async function POST(req: Request) {
     await ensureCreditTransactionsTable();
     await ensureStripeLogsTable();
 
-    const { packageType: requestedPackageType }: { packageType: CreditPackage } = await req.json();
-    packageType = requestedPackageType;
+    const body = await req.json();
+    const { packageType: requestedPackageType, quantity: requestedQuantity }: { packageType?: CreditPackage; quantity?: number } = body;
 
-    if (!packageType || !CREDIT_PACKAGES[packageType]) {
-      await logStripeEvent({
-        eventType: 'checkout_session.create',
-        eventId: 'invalid_package',
-        userId,
-        status: 'error',
-        message: `Invalid package type requested: ${packageType}`
-      });
-      return NextResponse.json({ error: 'Invalid package type' }, { status: 400 });
+    let packageType: CreditPackage | null = null;
+    let credits: number;
+    let price: number; // in cents
+    let packageName: string;
+    let packageDescription: string;
+
+    if (requestedPackageType) {
+      // Using predefined package
+      packageType = requestedPackageType;
+      if (!CREDIT_PACKAGES[packageType]) {
+        await logStripeEvent({
+          eventType: 'checkout_session.create',
+          eventId: 'invalid_package',
+          userId,
+          status: 'error',
+          message: `Invalid package type requested: ${packageType}`
+        });
+        return NextResponse.json({ error: 'Invalid package type' }, { status: 400 });
+      }
+      const pkg = CREDIT_PACKAGES[packageType];
+      credits = pkg.credits;
+      price = pkg.price;
+      packageName = pkg.name;
+      packageDescription = pkg.description;
+    } else if (requestedQuantity && requestedQuantity > 0) {
+      // Custom quantity - $1 per credit
+      credits = requestedQuantity;
+      price = credits * 100; // $1 per credit in cents
+      packageName = `${credits} Credits`;
+      packageDescription = 'Custom credit package';
+    } else {
+      return NextResponse.json({ error: 'Either packageType or quantity must be provided' }, { status: 400 });
     }
 
     // Validate Stripe configuration (skip in development for UI testing)
@@ -67,7 +90,6 @@ export async function POST(req: Request) {
       console.warn('Stripe configuration warning:', getErrorMessage(error));
     }
 
-    const packageInfo = CREDIT_PACKAGES[packageType];
     const stripe = getStripe();
 
     // Create or retrieve customer
@@ -125,22 +147,22 @@ export async function POST(req: Request) {
       ? 'http://localhost:3000'
       : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
 
-    // Create checkout session - use price_data in development if price IDs are not configured
+    // Create checkout session - use price_data in development if price IDs are not configured or for custom quantities
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const usePriceData = isDevelopment && packageInfo.priceId.includes('placeholder');
+    const usePriceData = isDevelopment || !packageType; // Always use price_data for custom quantities
 
     const lineItem = usePriceData ? {
       price_data: {
         currency: 'usd',
         product_data: {
-          name: packageInfo.name,
-          description: packageInfo.description,
+          name: packageName,
+          description: packageDescription,
         },
-        unit_amount: packageInfo.price,
+        unit_amount: price,
       },
       quantity: 1,
     } : {
-      price: packageInfo.priceId,
+      price: CREDIT_PACKAGES[packageType!].priceId,
       quantity: 1,
     };
 
@@ -149,12 +171,12 @@ export async function POST(req: Request) {
       line_items: [lineItem],
       mode: 'payment',
       customer: customer?.id,
-      success_url: `${baseUrl}/?success=true&session_id={CHECKOUT_SESSION_ID}&credits=${packageInfo.credits}`,
+      success_url: `${baseUrl}/?success=true&session_id={CHECKOUT_SESSION_ID}&credits=${credits}`,
       cancel_url: `${baseUrl}/?canceled=true`,
       metadata: {
         userId,
-        packageType,
-        credits: packageInfo.credits.toString(),
+        packageType: packageType || 'custom',
+        credits: credits.toString(),
       },
       allow_promotion_codes: true, // Allow discount codes
       billing_address_collection: 'auto',
@@ -167,11 +189,11 @@ export async function POST(req: Request) {
       eventType: 'checkout_session.created',
       eventId: session.id,
       userId,
-      amount: packageInfo.credits,
+      amount: credits,
       status: 'success',
-      message: `Created checkout session for ${packageInfo.credits} credits`,
+      message: `Created checkout session for ${credits} credits`,
       metadata: {
-        packageType,
+        packageType: packageType || 'custom',
         customerId: customer?.id,
         sessionUrl: session.url
       }

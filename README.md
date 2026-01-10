@@ -76,3 +76,41 @@ This app can publish generated HTML to Vercel using `VERCEL_TOKEN`.
 - **Important**: do **not** set `VERCEL_PUBLISH_PROJECT` to your main app’s project name, or you’ll overwrite its deployments.
 - If published links prompt for login, disable it once on that dedicated project:
   - **Project → Settings → Deployment Protection → None** (and ensure **Vercel Authentication** is disabled)
+
+### Custom Domains with easyland.site
+
+Instead of Vercel URL renaming (which doesn't work in shared project mode), you can now set custom subdomains on your easyland.site domain.
+
+#### How it works:
+1. User enters a subdomain name (e.g., "mysite")
+2. System sets the custom domain to `mysite.easyland.site`
+3. You need to configure DNS to point the subdomain to the Vercel deployment
+
+#### DNS Setup Required:
+For each subdomain, add a CNAME record in your DNS provider (where easyland.site is configured):
+
+- **Name**: `mysite` (just the subdomain part, not the full domain)
+- **Type**: CNAME
+- **Value**: Your Vercel deployment URL (e.g., `simpler-published-sites.vercel.app`)
+
+#### Example DNS Records for easyland.site:
+```
+Type: CNAME
+Name: mysite
+Value: simpler-published-sites.vercel.app
+
+Type: CNAME
+Name: anothersite
+Value: simpler-published-sites.vercel.app
+```
+
+#### Vercel Configuration:
+1. Add `easyland.site` as a domain in your Vercel project
+2. Enable SSL for the domain
+3. Make sure your project allows deployments from this domain
+
+#### ✅ **Custom Domains Now Work!**
+Custom subdomains work properly with server-side routing. Each subdomain serves its specific site's content through the main app's routing system.
+
+#### Manual DNS Setup:
+After a user sets a custom domain, you'll need to manually add the DNS record, or set up automated DNS management with your DNS provider's API.

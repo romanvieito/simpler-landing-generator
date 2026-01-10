@@ -1018,7 +1018,7 @@ function LandingGeneratorContent() {
     }
   }
 
-  async function handlePublish(urlSlug?: string) {
+  async function handlePublish() {
     try {
       if (!html) {
         alert('No HTML to publish.');
@@ -1063,9 +1063,9 @@ function LandingGeneratorContent() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           html: savedHtml,
-          nameHint: urlSlug || customUrlSlug || plan?.title || 'landing',
+          nameHint: customUrlSlug || plan?.title || 'landing',
           siteId: siteIdToUse,
-          exactName: !!urlSlug, // Use exact name when urlSlug is provided (from URL editing)
+          // No longer using exactName - custom domains are set separately via sites management
         }),
       });
       const data = await res.json();
@@ -1080,9 +1080,6 @@ function LandingGeneratorContent() {
       }
 
       // If we're republishing with a new slug, update the customUrlSlug
-      if (urlSlug) {
-        setCustomUrlSlug(urlSlug);
-      }
 
       setEditingUrl(false);
     } catch (e) {
@@ -1477,7 +1474,7 @@ function LandingGeneratorContent() {
             <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
               <div className="w-full max-w-2xl flex flex-col gap-6">
                 <div className="text-gray-600 text-lg text-center font-bold">
-                  What landing page do you want to create?
+                  What do you want to create?
                 </div>
                 <div className="space-y-4">
 
@@ -1733,11 +1730,7 @@ function LandingGeneratorContent() {
                               placeholder="your-site.vercel.app"
                             />
                             <button
-                              onClick={() => {
-                                // Extract slug from the full URL input
-                                const slug = publishedUrl.trim().split('.')[0];
-                                handlePublish(slug);
-                              }}
+                              onClick={() => handlePublish()}
                               disabled={!publishedUrl.trim() || loading === 'publishing'}
                               className="btn btn-primary"
                               style={{

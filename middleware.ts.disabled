@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 /**
  * Clerk middleware: protect authenticated app APIs, but keep certain endpoints public.
@@ -14,12 +15,29 @@ const isPublicApiRoute = createRouteMatcher([
   "/api/test-env(.*)",
   "/api/credits/create-checkout-session(.*)", // Allow checkout creation for testing
   "/api/credits/balance(.*)", // Allow balance checking for testing
+  "/api/subdomain-handler(.*)", // Allow subdomain handler for published sites
 ]);
 
 // Disable Clerk protection in development for easier testing
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 export default clerkMiddleware(async (auth, request) => {
+  // Handle subdomain routing for easyland.site
+  const host = request.headers.get('host') || '';
+
+  // Check if this is a subdomain (not the root domain or www)
+  const isSubdomain = host.endsWith('.easyland.site') &&
+                     host !== 'easyland.site' &&
+                     !host.startsWith('www.');
+
+  console.log('Middleware check:', { host, isSubdomain, pathname: request.nextUrl.pathname });
+
+  if (isSubdomain && request.nextUrl.pathname === '/') {
+    console.log('Rewriting subdomain request to handler');
+    // Rewrite subdomain requests to the subdomain handler
+    return NextResponse.rewrite(new URL('/api/subdomain-handler', request.url));
+  }
+
   // Skip authentication in development for easier testing
   if (isDevelopment) return;
 

@@ -198,6 +198,16 @@ export async function getSiteDomainMeta({
   return rows[0] as { id: string; vercel_url: string | null; custom_domain: string | null } || null;
 }
 
+export async function getSiteByCustomDomain(customDomain: string): Promise<{ id: string; html: string | null; title: string | null; description: string | null } | null> {
+  const { rows } = await sql`
+    SELECT id, html, title, description
+    FROM sites
+    WHERE custom_domain = ${customDomain}
+    LIMIT 1
+  `;
+  return rows[0] as { id: string; html: string | null; title: string | null; description: string | null } || null;
+}
+
 export async function deleteSite({ id, userId }: { id: string; userId: string }) {
   await sql`DELETE FROM sites WHERE id = ${id} AND user_id = ${userId}`;
 }

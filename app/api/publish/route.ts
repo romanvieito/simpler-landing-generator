@@ -2,7 +2,7 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { deployStaticHtml } from '@/lib/vercel';
-import { updateSiteUrl } from '@/lib/db';
+import { updateSiteUrl, getSite } from '@/lib/db';
 
 export async function POST(req: Request) {
   const { userId } = await auth();
@@ -54,24 +54,24 @@ export async function POST(req: Request) {
       `$1${baseUrl}/api/contact/`
     );
 
-    // Publish target project:
-    // - If VERCEL_PUBLISH_PROJECT is set, we deploy all sites into a single dedicated Vercel project.
-    //   This avoids creating a new project per site and makes "Deployment Protection" a one-time setting.
-    // - Otherwise (backward compatible), we create/use a per-site project name.
-    // - If exactName is true, use nameHint as the project name for URL renaming.
-    const sharedProject = (process.env.VERCEL_PUBLISH_PROJECT || '').trim();
-    const name = sharedProject || (exactName && nameHint ? nameHint : `site-${siteId}`);
+    // Check if this site has a custom domain set
+    const site = await getSite({ id: siteId, userId });
+    const hasCustomDomain = !!(site?.custom_domain);
 
-    // Check if we're trying to rename URL in shared project mode
-    const isSharedProject = (process.env.VERCEL_PUBLISH_PROJECT || '').trim();
-    if (exactName && isSharedProject) {
-      console.warn('⚠️  Attempting URL rename in shared project mode - this may not work due to Vercel alias restrictions');
-    }
+    // Publish target project:
+    // - If site has custom domain: use individual project (site-{id})
+    // - If VERCEL_PUBLISH_PROJECT is set: use shared project for cost savings
+    // - Otherwise: use individual project
+    const sharedProject = (process.env.VERCEL_PUBLISH_PROJECT || '').trim();
+    const useSharedProject = sharedProject && !hasCustomDomain;
+    const name = useSharedProject ? sharedProject : `site-${siteId}`;
+
+    // Note: exactName is no longer used in shared project mode - aliases are disabled
 
     const url = await deployStaticHtml({
       name,
       html: processedHtml,
-      alias: exactName ? nameHint : undefined
+      alias: exactName && !useSharedProject ? nameHint : undefined
     });
 
     try {
