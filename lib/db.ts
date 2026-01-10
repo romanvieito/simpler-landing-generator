@@ -284,19 +284,19 @@ export async function refreshFreeCredits({ userId }: { userId: string }) {
   const now = new Date();
   const lastGrant = last_free_credits_at ? new Date(last_free_credits_at) : null;
   
-  // Check if 24 hours have passed since last grant (or never granted) and balance is below 3
-  const shouldGrant = balance < 3 && (!lastGrant || (now.getTime() - lastGrant.getTime()) >= 24 * 60 * 60 * 1000);
+  // Check if 24 hours have passed since last grant (or never granted) and balance is below 1
+  const shouldGrant = balance < 1 && (!lastGrant || (now.getTime() - lastGrant.getTime()) >= 24 * 60 * 60 * 1000);
 
   if (shouldGrant) {
-    // Set balance to 3 and update last_free_credits_at
+    // Set balance to 1 and update last_free_credits_at
     await sql`
       UPDATE user_credits
-      SET balance = 3, last_free_credits_at = NOW(), updated_at = NOW()
+      SET balance = 1, last_free_credits_at = NOW(), updated_at = NOW()
       WHERE user_id = ${userId}
     `;
 
     // Record the free grant transaction
-    const amountGranted = 3 - balance;
+    const amountGranted = 1 - balance;
     await sql`
       INSERT INTO credit_transactions (user_id, amount, type, description)
       VALUES (${userId}, ${amountGranted}, 'free_grant', 'Daily free credits top-up')
