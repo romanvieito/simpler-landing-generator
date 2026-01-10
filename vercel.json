@@ -1,15 +1,1 @@
-{
-  "public": true,
-  "redirects": [
-    {
-      "source": "/(.*)",
-      "destination": "/api/subdomain-handler",
-      "has": [
-        {
-          "type": "host",
-          "value": "*.easyland.site"
-        }
-      ]
-    }
-  ]
-}
+{"public": true}

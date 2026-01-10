@@ -147,9 +147,9 @@ export async function POST(req: Request) {
       ? 'http://localhost:3000'
       : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
 
-    // Create checkout session - use price_data in development if price IDs are not configured or for custom quantities
+    // Create checkout session - use price_data in development or for custom quantities
     const isDevelopment = process.env.NODE_ENV === 'development';
-    const usePriceData = isDevelopment || !packageType; // Always use price_data for custom quantities
+    const usePriceData = isDevelopment || !packageType; // Always use price_data for custom quantities or in development
 
     const lineItem = usePriceData ? {
       price_data: {
