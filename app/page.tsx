@@ -1061,14 +1061,23 @@ function LandingGeneratorContent() {
         }),
       });
       const saveData = await saveRes.json();
+      console.log('Save response:', saveData);
       if (!saveRes.ok) throw new Error(saveData?.error || 'Save failed');
       const siteIdToUse = saveData.id;
+      console.log('Site ID to use:', siteIdToUse);
       setSavedSiteId(siteIdToUse);
 
       // Fetch the saved HTML from the database (which has the placeholder replaced)
+      console.log('Fetching site data for ID:', siteIdToUse);
       const siteRes = await fetch(`/api/sites/${siteIdToUse}`);
-      if (!siteRes.ok) throw new Error('Failed to fetch saved site data');
+      console.log('Site fetch response status:', siteRes.status);
+      if (!siteRes.ok) {
+        const errorText = await siteRes.text();
+        console.error('Site fetch error:', errorText);
+        throw new Error(`Failed to fetch saved site data: ${siteRes.status} ${errorText}`);
+      }
       const siteData = await siteRes.json();
+      console.log('Site data fetched:', siteData);
       const savedHtml = siteData.site?.html;
 
       if (!savedHtml) {

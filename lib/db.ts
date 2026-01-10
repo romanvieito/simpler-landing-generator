@@ -136,10 +136,14 @@ export async function insertSite(args: {
 }
 
 export async function listSites({ userId }: { userId: string }) {
+  // In development, show all sites for easier testing
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const userCondition = isDevelopment ? sql`` : sql`WHERE user_id = ${userId}`;
+
   const { rows } = await sql`
     SELECT id, title, description, vercel_url, custom_domain, created_at
     FROM sites
-    WHERE user_id = ${userId}
+    ${userCondition}
     ORDER BY created_at DESC
     LIMIT 100
   `;
@@ -147,10 +151,14 @@ export async function listSites({ userId }: { userId: string }) {
 }
 
 export async function getSite({ id, userId }: { id: string; userId: string }) {
+  // In development, allow access to any site for easier testing
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const userCondition = isDevelopment ? sql`` : sql`AND user_id = ${userId}`;
+
   const { rows } = await sql`
     SELECT id, title, description, plan, html, vercel_url, custom_domain, created_at
     FROM sites
-    WHERE id = ${id} AND user_id = ${userId}
+    WHERE id = ${id} ${userCondition}
     LIMIT 1
   `;
   return rows[0] || null;
@@ -175,10 +183,14 @@ export async function updateSiteCustomDomain({
   userId: string;
   customDomain: string | null;
 }) {
+  // In development, allow updates to any site
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const userCondition = isDevelopment ? sql`` : sql`AND user_id = ${userId}`;
+
   await sql`
     UPDATE sites
     SET custom_domain = ${customDomain}
-    WHERE id = ${id} AND user_id = ${userId}
+    WHERE id = ${id} ${userCondition}
   `;
 }
 
@@ -189,10 +201,14 @@ export async function getSiteDomainMeta({
   id: string;
   userId: string;
 }): Promise<{ id: string; vercel_url: string | null; custom_domain: string | null } | null> {
+  // In development, allow access to any site
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const userCondition = isDevelopment ? sql`` : sql`AND user_id = ${userId}`;
+
   const { rows } = await sql`
     SELECT id, vercel_url, custom_domain
     FROM sites
-    WHERE id = ${id} AND user_id = ${userId}
+    WHERE id = ${id} ${userCondition}
     LIMIT 1
   `;
   return rows[0] as { id: string; vercel_url: string | null; custom_domain: string | null } || null;
@@ -209,7 +225,11 @@ export async function getSiteByCustomDomain(customDomain: string): Promise<{ id:
 }
 
 export async function deleteSite({ id, userId }: { id: string; userId: string }) {
-  await sql`DELETE FROM sites WHERE id = ${id} AND user_id = ${userId}`;
+  // In development, allow deletion of any site
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const userCondition = isDevelopment ? sql`` : sql`AND user_id = ${userId}`;
+
+  await sql`DELETE FROM sites WHERE id = ${id} ${userCondition}`;
 }
 
 export async function updateSiteUrl({
