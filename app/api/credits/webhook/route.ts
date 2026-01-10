@@ -3,7 +3,7 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { getStripe } from '@/lib/stripe';
 import { addCredits, ensureCreditsTable, ensureCreditTransactionsTable } from '@/lib/db';
-import { logStripeEvent, ensureStripeLogsTable } from '@/lib/stripe-logger';
+import { logStripeEvent, ensureStripeLogsTable, getStripeLogsByType } from '@/lib/stripe-logger';
 
 // Helper function to safely get error message
 const getErrorMessage = (error: unknown): string => {
@@ -13,11 +13,9 @@ const getErrorMessage = (error: unknown): string => {
   return String(error);
 };
 
-// Store processed event IDs to handle idempotency
-const processedEvents = new Set<string>();
-
 export async function POST(req: Request) {
   let event: any;
+  let body: string;
 
   try {
     // Ensure all required tables exist
@@ -25,7 +23,7 @@ export async function POST(req: Request) {
     await ensureCreditTransactionsTable();
     await ensureStripeLogsTable();
 
-    const body = await req.text();
+    body = await req.text();
     const headersList = await headers();
     const sig = headersList.get('stripe-signature');
     const stripe = getStripe();
@@ -33,7 +31,7 @@ export async function POST(req: Request) {
     if (!sig) {
       await logStripeEvent({
         eventType: 'webhook_error',
-        eventId: 'no_signature',
+        eventId: 'no_signature_' + Date.now(),
         status: 'error',
         message: 'Webhook received without signature'
       });
@@ -50,47 +48,45 @@ export async function POST(req: Request) {
     } catch (err: any) {
       await logStripeEvent({
         eventType: 'webhook_error',
-        eventId: 'signature_verification_failed',
+        eventId: 'sig_fail_' + Date.now(),
         status: 'error',
-        message: `Webhook signature verification failed: ${err.message}`
+        message: `Webhook signature verification failed: ${err.message}`,
+        metadata: { signature: sig?.substring(0, 20) + '...' }
       });
       return NextResponse.json({ error: 'Invalid signature' }, { status: 400 });
     }
 
-    // Check for idempotency - skip if already processed
-    if (processedEvents.has(event.id)) {
-      await logStripeEvent({
-        eventType: event.type,
-        eventId: event.id,
-        status: 'warning',
-        message: 'Event already processed (idempotency check)'
-      });
-      return NextResponse.json({ received: true, status: 'already_processed' });
+    // Check if event was already successfully processed
+    // We use the database for this instead of a memory Set
+    try {
+      const existingLogs = await getStripeLogsByType(event.type, 50);
+      const isProcessed = existingLogs.some(log => log.event_id === event.id && log.status === 'success' && log.message.includes('Successfully processed'));
+      
+      if (isProcessed) {
+        console.log(`Event ${event.id} already processed, skipping.`);
+        return NextResponse.json({ received: true, status: 'already_processed' });
+      }
+    } catch (e) {
+      console.warn('Error checking idempotency, continuing anyway:', e);
     }
 
+    // Initial log of receipt
     await logStripeEvent({
       eventType: event.type,
       eventId: event.id,
-      status: 'success',
+      status: 'warning', // 'warning' while processing
       message: `Processing webhook event: ${event.type}`,
       metadata: {
         created: event.created,
-        livemode: event.livemode
+        livemode: event.livemode,
+        apiVersion: event.api_version
       }
     });
 
     // Handle different event types
     const result = await handleWebhookEvent(event);
 
-    // Mark event as processed
-    processedEvents.add(event.id);
-
-    // Clean up old processed events (keep last 1000)
-    if (processedEvents.size > 1000) {
-      const toDelete = Array.from(processedEvents).slice(0, 100);
-      toDelete.forEach(id => processedEvents.delete(id));
-    }
-
+    // Final log of success
     await logStripeEvent({
       eventType: event.type,
       eventId: event.id,
@@ -99,7 +95,7 @@ export async function POST(req: Request) {
       amount: (result as any).credits ? parseInt((result as any).credits) : undefined,
       status: 'success',
       message: `Successfully processed webhook event: ${event.type}`,
-      metadata: result
+      metadata: { ...(result as any), eventId: event.id }
     });
 
     return NextResponse.json({
@@ -116,7 +112,7 @@ export async function POST(req: Request) {
     if (event) {
       await logStripeEvent({
         eventType: event.type || 'unknown',
-        eventId: event.id || 'unknown',
+        eventId: event.id || 'unknown_err_' + Date.now(),
         status: 'error',
         message: `Webhook processing failed: ${getErrorMessage(error)}`,
         metadata: {
@@ -128,7 +124,7 @@ export async function POST(req: Request) {
     } else {
       await logStripeEvent({
         eventType: 'webhook_error',
-        eventId: 'unknown',
+        eventId: 'unknown_crash_' + Date.now(),
         status: 'error',
         message: `Webhook processing failed before event parsing: ${getErrorMessage(error)}`
       });
@@ -154,51 +150,31 @@ async function handleWebhookEvent(event: any) {
     case 'checkout.session.async_payment_failed':
       return await handleAsyncPaymentFailed(event.data.object, stripe);
 
-    case 'invoice.payment_succeeded':
-      return await handleInvoicePaymentSucceeded(event.data.object, stripe);
-
-    case 'invoice.payment_failed':
-      return await handleInvoicePaymentFailed(event.data.object, stripe);
-
-    case 'customer.subscription.created':
-    case 'customer.subscription.updated':
-    case 'customer.subscription.deleted':
-      // Handle subscription events if needed in the future
-      console.log(`Subscription event: ${event.type}`);
-      return { status: 'subscription_event_handled' };
-
     default:
       console.log(`Unhandled event type: ${event.type}`);
-      return { status: 'unhandled_event_type' };
+      return { status: 'unhandled_event_type', type: event.type };
   }
 }
 
 async function handleCheckoutSessionCompleted(session: any, stripe: any) {
   try {
-    const { userId, credits, packageType } = session.metadata;
+    const metadata = session.metadata || {};
+    const { userId, credits, packageType } = metadata;
 
     if (!userId || !credits) {
-      await logStripeEvent({
-        eventType: 'checkout.session.completed',
-        eventId: session.id,
-        status: 'error',
-        message: 'Checkout session missing required metadata',
-        metadata: { userId, credits, packageType, sessionId: session.id }
-      });
-      return { status: 'missing_metadata', userId, credits };
+      console.error('Missing metadata in session:', session.id, metadata);
+      return { 
+        status: 'missing_metadata', 
+        userId: userId || 'unknown', 
+        credits: credits || 'unknown',
+        sessionId: session.id 
+      };
     }
 
     // Double-check payment was successful
     if (session.payment_status !== 'paid') {
-      await logStripeEvent({
-        eventType: 'checkout.session.completed',
-        eventId: session.id,
-        userId,
-        status: 'warning',
-        message: `Checkout session payment not completed: ${session.payment_status}`,
-        metadata: { sessionId: session.id, paymentStatus: session.payment_status }
-      });
-      return { status: 'payment_not_completed', paymentStatus: session.payment_status };
+      console.warn('Payment not completed for session:', session.id, session.payment_status);
+      return { status: 'payment_not_completed', paymentStatus: session.payment_status, sessionId: session.id };
     }
 
     // Add credits to user account
@@ -206,51 +182,24 @@ async function handleCheckoutSessionCompleted(session: any, stripe: any) {
       userId,
       amount: parseInt(credits),
       type: 'purchase',
-      description: `Purchased ${credits} credits (${packageType})`,
-      stripePaymentId: session.payment_intent,
-    });
-
-    await logStripeEvent({
-      eventType: 'checkout.session.completed',
-      eventId: session.id,
-      userId,
-      amount: parseInt(credits),
-      status: 'success',
-      message: `Successfully added ${credits} credits to user account`,
-      metadata: {
-        sessionId: session.id,
-        packageType,
-        newBalance: result,
-        paymentIntent: session.payment_intent
-      }
+      description: `Purchased ${credits} credits (${packageType || 'custom'})`,
+      stripePaymentId: session.payment_intent || session.id,
     });
 
     // Update customer metadata if we have a customer
-    if (session.customer) {
+    if (session.customer && typeof session.customer === 'string') {
       try {
+        // We don't try to read old metadata to avoid expansion issues, 
+        // Stripe will keep other metadata fields intact.
         await stripe.customers.update(session.customer, {
           metadata: {
             lastPurchase: new Date().toISOString(),
-            totalCreditsPurchased: (parseInt(session.customer.metadata?.totalCreditsPurchased || '0') + parseInt(credits)).toString(),
+            clerkUserId: userId
           },
         });
-        await logStripeEvent({
-          eventType: 'customer.metadata.updated',
-          eventId: session.id,
-          userId,
-          status: 'success',
-          message: 'Updated customer metadata with purchase info',
-          metadata: { customerId: session.customer }
-        });
       } catch (error) {
-        await logStripeEvent({
-          eventType: 'customer.metadata.update_failed',
-          eventId: session.id,
-          userId,
-          status: 'warning',
-          message: `Failed to update customer metadata: ${getErrorMessage(error)}`,
-          metadata: { customerId: session.customer, error: getErrorMessage(error) }
-        });
+        console.warn('Failed to update customer metadata:', getErrorMessage(error));
+        // Don't fail the whole process if just customer metadata update fails
       }
     }
 
@@ -263,48 +212,21 @@ async function handleCheckoutSessionCompleted(session: any, stripe: any) {
     };
 
   } catch (error) {
-    await logStripeEvent({
-      eventType: 'checkout.session.completed',
-      eventId: session.id || 'unknown',
-      userId: session.metadata?.userId,
-      status: 'error',
-      message: `Error processing checkout session: ${getErrorMessage(error)}`,
-      metadata: { error: getErrorMessage(error), stack: error instanceof Error ? error.stack : undefined, sessionData: session }
-    });
+    console.error('Error in handleCheckoutSessionCompleted:', error);
     throw error;
   }
 }
 
 async function handleAsyncPaymentSucceeded(session: any, stripe: any) {
   console.log(`Async payment succeeded for session ${session.id}`);
-  // Handle async payment success (e.g., bank transfers, etc.)
-  // For now, treat it the same as completed checkout
   return await handleCheckoutSessionCompleted(session, stripe);
 }
 
 async function handleAsyncPaymentFailed(session: any, stripe: any) {
   console.error(`Async payment failed for session ${session.id}`);
-  // Log the failure - we might want to send notifications or take other actions
   return {
     status: 'async_payment_failed',
     sessionId: session.id,
     reason: session.payment_status
-  };
-}
-
-async function handleInvoicePaymentSucceeded(invoice: any, stripe: any) {
-  console.log(`Invoice payment succeeded: ${invoice.id}`);
-  // Invoice payments are automatically handled by checkout.session.completed
-  // This is just for additional logging/monitoring
-  return { status: 'invoice_payment_succeeded', invoiceId: invoice.id };
-}
-
-async function handleInvoicePaymentFailed(invoice: any, stripe: any) {
-  console.error(`Invoice payment failed: ${invoice.id}`);
-  // Log failed invoice payments for manual review
-  return {
-    status: 'invoice_payment_failed',
-    invoiceId: invoice.id,
-    customerId: invoice.customer
   };
 }

@@ -142,13 +142,12 @@ export async function POST(req: Request) {
     }
 
     // Get the base URL for success/cancel URLs
-    // In development, always use localhost regardless of env var
-    const baseUrl = process.env.NODE_ENV === 'development'
+    const isDevelopment = process.env.NODE_ENV === 'development';
+    const baseUrl = isDevelopment
       ? 'http://localhost:3000'
       : (process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000');
 
     // Create checkout session - use price_data in development or for custom quantities
-    const isDevelopment = process.env.NODE_ENV === 'development';
     const usePriceData = isDevelopment || !packageType; // Always use price_data for custom quantities or in development
 
     const lineItem = usePriceData ? {

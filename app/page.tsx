@@ -528,8 +528,8 @@ function LandingGeneratorContent() {
       if (site.html) {
         setHtml(site.html);
         setHistory([site.html]);
-        setView('preview'); // Show preview directly when loading site for editing
-        setEditMode(true); // Automatically enable edit mode when loading site for editing
+        setView('input'); // Show input form when loading site for editing
+        setEditMode(false); // Don't enable edit mode - show input form
       }
       if (site.vercel_url) {
         setPublishedUrl(site.vercel_url);

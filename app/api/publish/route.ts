@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { deployStaticHtml } from '@/lib/vercel';
 import { updateSiteUrl, getSite } from '@/lib/db';
+import { generateShortSiteName } from '@/lib/utils';
 
 export async function POST(req: Request) {
   // Skip authentication in development for easier testing
@@ -61,12 +62,12 @@ export async function POST(req: Request) {
     const hasCustomDomain = !!(site?.custom_domain);
 
     // Publish target project:
-    // - If site has custom domain: use individual project (site-{id})
+    // - If site has custom domain: use individual project (short name)
     // - If VERCEL_PUBLISH_PROJECT is set: use shared project for cost savings
-    // - Otherwise: use individual project
+    // - Otherwise: use individual project (short name)
     const sharedProject = (process.env.VERCEL_PUBLISH_PROJECT || '').trim();
     const useSharedProject = sharedProject && !hasCustomDomain;
-    const name = useSharedProject ? sharedProject : `site-${siteId}`;
+    const name = useSharedProject ? sharedProject : generateShortSiteName();
 
     // Note: exactName is no longer used in shared project mode - aliases are disabled
 

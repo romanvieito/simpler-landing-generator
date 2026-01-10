@@ -6,6 +6,9 @@ import './globals.css';
 export const metadata: Metadata = {
   title: 'Landing Generator',
   description: 'AI-powered landing page generator',
+  icons: {
+    icon: '/globe.svg',
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

@@ -36,6 +36,15 @@ export async function logStripeEvent(entry: StripeLogEntry) {
         ${JSON.stringify(entry.metadata || {})},
         NOW()
       )
+      ON CONFLICT (event_id, event_type) 
+      DO UPDATE SET
+        user_id = EXCLUDED.user_id,
+        session_id = EXCLUDED.session_id,
+        amount = EXCLUDED.amount,
+        status = EXCLUDED.status,
+        message = EXCLUDED.message,
+        metadata = EXCLUDED.metadata,
+        created_at = NOW()
     `;
   } catch (error) {
     // Fallback to console logging if database logging fails
