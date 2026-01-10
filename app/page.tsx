@@ -115,6 +115,24 @@ function LandingGeneratorContent() {
   const [draftHydrated, setDraftHydrated] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
+  // Check for subdomain routing
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const host = window.location.host;
+
+      // Check if this is a subdomain (not root domain or www)
+      const isSubdomain = host.endsWith('.easyland.site') &&
+                         host !== 'easyland.site' &&
+                         !host.startsWith('www.');
+
+      if (isSubdomain) {
+        console.log('Detected subdomain, redirecting to handler');
+        // Redirect to subdomain handler
+        window.location.href = `/api/subdomain-handler`;
+      }
+    }
+  }, []);
+
   const loadSiteIdFromUrl = searchParams.get('loadSite');
   const activeDraftKey = loadSiteIdFromUrl
     ? `easyland:draft:v1:site:${loadSiteIdFromUrl}`
