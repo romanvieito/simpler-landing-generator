@@ -9,13 +9,6 @@
           "type": "host",
           "value": "*.easyland.site"
         }
-      ],
-      "conditions": [
-        {
-          "type": "host",
-          "operator": "not",
-          "value": "easyland.site"
-        }
       ]
     }
   ]
