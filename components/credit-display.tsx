@@ -29,7 +29,8 @@ export function CreditDisplay({ onPurchaseClick, showCredits = true, showButton 
         setCredits(data.balance);
         
         // Handle pending Google Ads conversion
-        if (data.pendingConversionValue > 0) {
+        // Fire if value is >= 0 (to handle coupons) and we have a flag
+        if (data.pendingConversionValue !== undefined && data.pendingConversionValue !== null && data.pendingConversionValue >= 0 && data.hasPendingConversion) {
           // @ts-ignore
           if (typeof window !== 'undefined' && window.gtag) {
             // @ts-ignore

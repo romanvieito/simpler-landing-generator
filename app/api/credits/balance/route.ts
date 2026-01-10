@@ -26,7 +26,11 @@ export async function GET() {
       getPendingConversion(userId)
     ]);
 
-    return NextResponse.json({ balance, pendingConversionValue });
+    return NextResponse.json({ 
+      balance, 
+      pendingConversionValue: pendingConversionValue ?? 0,
+      hasPendingConversion: pendingConversionValue !== null 
+    });
   } catch (error) {
     console.error('Error fetching credit balance:', error);
     return NextResponse.json(

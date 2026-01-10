@@ -57,7 +57,14 @@ export async function ensureCreditsTable() {
   // Migration: Add pending_conversion_value if it doesn't exist
   await sql`
     ALTER TABLE user_credits
-    ADD COLUMN IF NOT EXISTS pending_conversion_value DECIMAL(10,2) DEFAULT 0;
+    ADD COLUMN IF NOT EXISTS pending_conversion_value DECIMAL(10,2) DEFAULT NULL;
+  `;
+
+  // Migration: Ensure the column is nullable if it was previously created as DEFAULT 0
+  await sql`
+    ALTER TABLE user_credits 
+    ALTER COLUMN pending_conversion_value DROP DEFAULT,
+    ALTER COLUMN pending_conversion_value SET DEFAULT NULL;
   `;
 
   // Migration: change balance from INTEGER to DECIMAL if it exists as INTEGER
@@ -474,13 +481,14 @@ export async function getPendingConversion(userId: string) {
     WHERE user_id = ${userId}
     LIMIT 1
   `;
-  return parseFloat(rows[0]?.pending_conversion_value || '0');
+  const val = rows[0]?.pending_conversion_value;
+  return val === null || val === undefined ? null : parseFloat(val);
 }
 
 export async function clearPendingConversion(userId: string) {
   await sql`
     UPDATE user_credits
-    SET pending_conversion_value = 0, updated_at = NOW()
+    SET pending_conversion_value = NULL, updated_at = NOW()
     WHERE user_id = ${userId}
   `;
 }
