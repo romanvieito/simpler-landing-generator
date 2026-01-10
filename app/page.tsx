@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CreditDisplay } from '@/components/credit-display';
 import { PurchaseCreditsModal } from '@/components/purchase-credits-modal';
+import SubdomainEditor from '@/components/subdomain-editor';
 
 type Plan = {
   title: string;
@@ -46,7 +47,6 @@ type DraftSnapshot = {
   savedSiteId: string;
   view: 'input' | 'preview';
   editMode: boolean;
-  editingUrl: boolean;
   customUrlSlug: string;
 };
 
@@ -109,7 +109,6 @@ function LandingGeneratorContent() {
   const [publishedUrl, setPublishedUrl] = useState<string>('');
   const [savedSiteId, setSavedSiteId] = useState<string>('');
   const [view, setView] = useState<'input' | 'preview'>('input');
-  const [editingUrl, setEditingUrl] = useState<boolean>(false);
   const [customUrlSlug, setCustomUrlSlug] = useState<string>('');
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
   const [draftHydrated, setDraftHydrated] = useState(false);
@@ -227,7 +226,6 @@ function LandingGeneratorContent() {
       setSavedSiteId(snapshot.savedSiteId ?? '');
       setView(snapshot.view ?? 'input');
       setEditMode(!!snapshot.editMode);
-      setEditingUrl(!!snapshot.editingUrl);
       setCustomUrlSlug(snapshot.customUrlSlug ?? '');
     };
 
@@ -294,7 +292,6 @@ function LandingGeneratorContent() {
       savedSiteId,
       view,
       editMode,
-      editingUrl,
       customUrlSlug,
     };
 
@@ -330,7 +327,6 @@ function LandingGeneratorContent() {
     savedSiteId,
     view,
     editMode,
-    editingUrl,
     customUrlSlug,
   ]);
 
@@ -943,7 +939,6 @@ function LandingGeneratorContent() {
       setHtml('');
       setHistory([]);
       setSelectedEl(null);
-      setEditingUrl(false);
       setCustomUrlSlug('');
 
       const planRes = await fetch('/api/generate-plan', {
@@ -1036,6 +1031,35 @@ function LandingGeneratorContent() {
     }
   }
 
+  async function handleSubdomainUpdate(subdomain: string) {
+    if (!savedSiteId) return;
+
+    setCustomUrlSlug(subdomain);
+
+    // If already published, update the custom domain
+    if (publishedUrl) {
+      try {
+        const response = await fetch(`/api/sites/${savedSiteId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            customDomain: `${subdomain}.easyland.site`
+          }),
+        });
+
+        if (response.ok) {
+          setPublishedUrl(`${subdomain}.easyland.site`);
+        } else {
+          const error = await response.json();
+          throw new Error(error.error || 'Failed to update subdomain');
+        }
+      } catch (error: any) {
+        console.error('Failed to update subdomain:', error);
+        alert('Failed to update subdomain. Please try again.');
+      }
+    }
+  }
+
   async function handlePublish() {
     try {
       if (!html) {
@@ -1097,18 +1121,38 @@ function LandingGeneratorContent() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Publish failed');
-      setPublishedUrl(data.url);
 
-      // Extract and set the slug from the published URL for future editing
+      // Set custom domain if user has specified a subdomain
+      if (customUrlSlug) {
+        try {
+          const customDomainResponse = await fetch(`/api/sites/${siteIdToUse}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              customDomain: `${customUrlSlug}.easyland.site`
+            }),
+          });
+
+          if (customDomainResponse.ok) {
+            setPublishedUrl(`${customUrlSlug}.easyland.site`);
+          } else {
+            console.warn('Failed to set custom domain, falling back to Vercel URL');
+            setPublishedUrl(data.url);
+          }
+        } catch (error) {
+          console.warn('Failed to set custom domain, falling back to Vercel URL', error);
+          setPublishedUrl(data.url);
+        }
+      } else {
+        setPublishedUrl(data.url);
+      }
+
+      // Extract and set the slug from the published URL for future editing (only if no custom slug set)
       if (data.url && !customUrlSlug) {
         const url = new URL(`https://${data.url}`);
         const slug = url.hostname.split('.')[0];
         setCustomUrlSlug(slug);
       }
-
-      // If we're republishing with a new slug, update the customUrlSlug
-
-      setEditingUrl(false);
     } catch (e) {
       console.error(e);
       alert((e as Error)?.message ?? 'Error publishing');
@@ -1717,7 +1761,7 @@ function LandingGeneratorContent() {
                     disabled={!html || isGenerating}
                     className="btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base"
                   >
-                    {loading === 'publishing' ? 'Publishing...' : 'Publish Live'}
+                    {loading === 'publishing' ? 'Publishing...' : customUrlSlug ? `Publish to ${customUrlSlug}.easyland.site` : 'Publish Live'}
                   </button>
 
                   <div style={{
@@ -1741,69 +1785,11 @@ function LandingGeneratorContent() {
                         <span className="status status-success" style={{ fontSize: '0.625rem', padding: '0.125rem 0.5rem' }}>
                           Published
                         </span>
-                        {editingUrl ? (
-                          <div className="flex items-center gap-2">
-                            <input
-                              type="text"
-                              value={publishedUrl || ''}
-                              onChange={(e) => setPublishedUrl(e.target.value)}
-                              className="input"
-                              style={{
-                                fontSize: '0.875rem',
-                                padding: '0.25rem 0.5rem',
-                                width: '200px',
-                                height: 'auto'
-                              }}
-                              placeholder="your-site.vercel.app"
-                            />
-                            <button
-                              onClick={() => handlePublish()}
-                              disabled={!publishedUrl.trim() || loading === 'publishing'}
-                              className="btn btn-primary"
-                              style={{
-                                fontSize: '0.75rem',
-                                padding: '0.25rem 0.5rem',
-                                height: 'auto'
-                              }}
-                            >
-                              {loading === 'publishing' ? '...' : 'Update'}
-                            </button>
-                            <button
-                              onClick={() => setEditingUrl(false)}
-                              className="btn btn-ghost"
-                              style={{
-                                fontSize: '0.75rem',
-                                padding: '0.25rem 0.5rem',
-                                height: 'auto'
-                              }}
-                            >
-                              Cancel
-                            </button>
-                          </div>
-                        ) : (
-                          <div className="flex items-center gap-2">
-                            <a
-                              href={`https://${publishedUrl}`}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="link text-sm"
-                            >
-                              {publishedUrl}
-                            </a>
-                            <button
-                              onClick={() => setEditingUrl(true)}
-                              className="btn btn-ghost"
-                              style={{
-                                fontSize: '0.75rem',
-                                padding: '0.125rem 0.25rem',
-                                height: 'auto'
-                              }}
-                              title="Edit URL"
-                            >
-                              ✏️
-                            </button>
-                          </div>
-                        )}
+                        <SubdomainEditor
+                          currentSubdomain={customUrlSlug}
+                          onSubdomainUpdate={handleSubdomainUpdate}
+                          disabled={loading === 'publishing'}
+                        />
                       </div>
                     )}
                     {savedSiteId && !publishedUrl && (
