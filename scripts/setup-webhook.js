@@ -37,9 +37,29 @@ async function setupWebhook() {
   }
 
   const stripe = getStripe();
-  const webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/credits/webhook`;
+
+  // Determine webhook URL based on environment
+  let webhookUrl;
+  const isProduction = process.env.NODE_ENV === 'production' || process.env.NEXT_PUBLIC_APP_URL?.includes('vercel.app');
+
+  if (isProduction && process.env.NEXT_PUBLIC_APP_URL) {
+    webhookUrl = `${process.env.NEXT_PUBLIC_APP_URL}/api/credits/webhook`;
+  } else {
+    // For development or when NEXT_PUBLIC_APP_URL is not set
+    webhookUrl = 'http://localhost:3000/api/credits/webhook';
+  }
 
   console.log(`📍 Webhook URL: ${webhookUrl}`);
+  console.log(`   Environment: ${isProduction ? 'Production' : 'Development'}`);
+
+  // Validate URL format
+  try {
+    new URL(webhookUrl);
+    console.log('✅ Webhook URL is valid');
+  } catch (error) {
+    console.error('❌ Invalid webhook URL format:', webhookUrl);
+    process.exit(1);
+  }
 
   try {
     // Check if webhook already exists
@@ -122,8 +142,14 @@ async function setupWebhook() {
   } catch (error) {
     console.error('❌ Failed to setup webhook:', error.message);
     if (error.response) {
-      console.error('   Stripe API Error:', error.response.data);
+      console.error('   Stripe API Error:', JSON.stringify(error.response.data, null, 2));
+    } else if (error.raw) {
+      console.error('   Stripe Error Details:', error.raw);
     }
+    console.log('\n🔧 Troubleshooting tips:');
+    console.log('   1. Make sure the URL is publicly accessible (for production webhooks)');
+    console.log('   2. Check if you have the right Stripe permissions');
+    console.log('   3. Try using Stripe CLI instead: stripe listen --forward-to', webhookUrl);
     process.exit(1);
   }
 }
@@ -198,12 +224,65 @@ async function testWebhook() {
   }
 }
 
+// Setup webhook using Stripe CLI (recommended for development)
+function setupWithCLI() {
+  console.log('🔧 Setting up webhook using Stripe CLI (recommended approach):');
+  console.log('');
+  console.log('1. Install Stripe CLI if not already installed:');
+  console.log('   npm install -g stripe');
+  console.log('');
+  console.log('2. Login to Stripe:');
+  console.log('   stripe login');
+  console.log('');
+  console.log('3. Start webhook forwarding (in one terminal):');
+  console.log('   stripe listen --forward-to http://localhost:3000/api/credits/webhook');
+  console.log('');
+  console.log('4. Copy the webhook signing secret from the CLI output');
+  console.log('5. Add it to your .env.local file:');
+  console.log('   STRIPE_WEBHOOK_SECRET=whsec_...');
+  console.log('');
+  console.log('6. Test with a checkout session (in another terminal):');
+  console.log('   stripe trigger checkout.session.completed');
+}
+
+// Setup production webhook via Stripe Dashboard
+function setupProductionWebhook() {
+  console.log('🌐 Setting up production webhook via Stripe Dashboard:');
+  console.log('');
+  console.log('1. Go to Stripe Dashboard: https://dashboard.stripe.com/webhooks');
+  console.log('2. Click "Add endpoint"');
+  console.log('3. Enter endpoint URL:');
+  console.log(`   ${process.env.NEXT_PUBLIC_APP_URL}/api/credits/webhook`);
+  console.log('4. Select these events:');
+  console.log('   - checkout.session.completed');
+  console.log('   - checkout.session.async_payment_succeeded');
+  console.log('   - checkout.session.async_payment_failed');
+  console.log('   - invoice.payment_succeeded');
+  console.log('   - invoice.payment_failed');
+  console.log('5. Copy the webhook signing secret');
+  console.log('6. Add it to your production environment variables');
+}
+
 // Main execution
 async function main() {
+  const args = process.argv.slice(2);
+
+  if (args.includes('--cli')) {
+    setupWithCLI();
+    return;
+  }
+
+  if (args.includes('--production')) {
+    setupProductionWebhook();
+    return;
+  }
+
+  // Try API approach first, fallback to CLI instructions
   try {
+    console.log('🔄 Attempting to create webhook via Stripe API...');
     const webhook = await setupWebhook();
 
-    console.log('\n🎉 Webhook setup completed!');
+    console.log('\n🎉 Webhook setup completed via API!');
     console.log(`   Webhook ID: ${webhook.id}`);
     console.log(`   Webhook URL: ${webhook.url}`);
     console.log(`   Secret: ${webhook.secret ? '✅ Configured' : '❌ Missing'}`);
@@ -211,22 +290,14 @@ async function main() {
     // Test the webhook
     const testPassed = await testWebhook();
 
-    console.log('\n📋 Next steps:');
     if (testPassed) {
       console.log('✅ Webhook is working correctly');
-      console.log('✅ Ready to process Stripe payments');
-    } else {
-      console.log('⚠️  Webhook may need manual testing');
     }
 
-    console.log('\n💡 To test webhook delivery:');
-    console.log('   1. Start your dev server: npm run dev');
-    console.log('   2. Use Stripe CLI: stripe listen --forward-to localhost:3000/api/credits/webhook');
-    console.log('   3. Trigger test event: stripe trigger checkout.session.completed');
-
   } catch (error) {
-    console.error('❌ Webhook setup failed:', error.message);
-    process.exit(1);
+    console.log('\n⚠️  API approach failed, falling back to CLI instructions:');
+    console.log('');
+    setupWithCLI();
   }
 }
 

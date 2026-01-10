@@ -8,7 +8,9 @@ import { purchaseDomain, checkDomainAvailability, getDomainStatus } from '@/lib/
 type Params = { params: Promise<{ id: string }> };
 
 export async function GET(_req: Request, { params }: Params) {
-  const { userId } = await auth();
+  // Skip authentication in development for easier testing
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const { userId } = isDevelopment ? { userId: 'dev-user' } : await auth();
   const { id } = await params;
 
   if (!userId) {
@@ -26,7 +28,9 @@ export async function GET(_req: Request, { params }: Params) {
 }
 
 export async function DELETE(_req: Request, { params }: Params) {
-  const { userId } = await auth();
+  // Skip authentication in development for easier testing
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const { userId } = isDevelopment ? { userId: 'dev-user' } : await auth();
   const { id } = await params;
 
   if (!userId) {
@@ -43,7 +47,9 @@ export async function DELETE(_req: Request, { params }: Params) {
 }
 
 export async function PATCH(req: Request, { params }: Params) {
-  const { userId } = await auth();
+  // Skip authentication in development for easier testing
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  const { userId } = isDevelopment ? { userId: 'dev-user' } : await auth();
   const { id } = await params;
 
   if (!userId) {
