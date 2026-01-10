@@ -12,7 +12,11 @@ interface UrlEditorProps {
 
 export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className = '', readOnly = false }: UrlEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
-  const [urlInput, setUrlInput] = useState(currentUrl || '');
+  const [urlInput, setUrlInput] = useState(() => {
+    if (!currentUrl) return '';
+    // Extract subdomain from full domain (remove .easyland.site)
+    return currentUrl.replace(/\.easyland\.site$/, '');
+  });
   const [isUpdating, setIsUpdating] = useState(false);
 
   const handleSave = async () => {
@@ -20,9 +24,30 @@ export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className =
 
     setIsUpdating(true);
     try {
-      // Set custom subdomain
-      const subdomain = urlInput.trim();
-      const fullDomain = subdomain.includes('.') ? subdomain : `${subdomain}.easyland.site`;
+      // Only allow subdomain names, always append .easyland.site
+      const subdomain = urlInput.trim().replace(/\.easyland\.site$/, ''); // Remove .easyland.site if present
+      const fullDomain = `${subdomain}.easyland.site`;
+
+      // Check if subdomain is available
+      const checkResponse = await fetch(`/api/sites/check-subdomain`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          subdomain: fullDomain,
+          excludeSiteId: siteId
+        }),
+      });
+
+      if (!checkResponse.ok) {
+        const checkError = await checkResponse.json();
+        throw new Error(checkError.error || 'Failed to check subdomain availability');
+      }
+
+      const checkResult = await checkResponse.json();
+      if (!checkResult.available) {
+        alert(`The subdomain "${subdomain}" is already taken. Please choose a different subdomain name.`);
+        return;
+      }
 
       const response = await fetch(`/api/sites/${siteId}`, {
         method: 'PATCH',
@@ -56,7 +81,11 @@ export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className =
   };
 
   const handleCancel = () => {
-    setUrlInput(currentUrl || '');
+    setUrlInput(() => {
+      if (!currentUrl) return '';
+      // Extract subdomain from full domain (remove .easyland.site)
+      return currentUrl.replace(/\.easyland\.site$/, '');
+    });
     setIsEditing(false);
   };
 
@@ -74,7 +103,7 @@ export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className =
             width: '180px',
             height: 'auto'
           }}
-          placeholder="mysite.easyland.site"
+          placeholder="mysite"
           disabled={isUpdating}
         />
         <button
@@ -113,9 +142,9 @@ export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className =
         <button
           onClick={() => setIsEditing(true)}
           className="text-gray-400 hover:text-gray-600 p-1"
-          title="Set custom domain"
+          title="Set subdomain"
         >
-          🌐
+          ✏️
         </button>
       )}
     </div>

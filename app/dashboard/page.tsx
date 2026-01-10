@@ -91,7 +91,11 @@ export default function DashboardPage() {
     setSites(prevSites =>
       prevSites.map(site =>
         site.id === siteId
-          ? { ...site, vercel_url: newUrl }
+          ? {
+              ...site,
+              custom_domain: newUrl.includes('.easyland.site') ? newUrl : site.custom_domain,
+              vercel_url: !newUrl.includes('.easyland.site') ? newUrl : site.vercel_url
+            }
           : site
       )
     );
