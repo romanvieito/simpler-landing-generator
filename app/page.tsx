@@ -485,12 +485,18 @@ function LandingGeneratorContent() {
     const canceled = searchParams.get('canceled');
 
     if (success) {
-      alert('Payment successful! Credits have been added to your account.');
+      const credits = searchParams.get('credits');
+      alert(`Payment completed! Credits are being processed and will appear in your account within a few seconds. Please refresh the page if credits don't appear automatically.`);
       // Clear the URL parameters
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
         url.searchParams.delete('success');
+        url.searchParams.delete('credits');
         window.history.replaceState({}, '', url.toString());
+        // Refresh the page after a delay to show updated credits
+        setTimeout(() => {
+          window.location.reload();
+        }, 5000);
       }
     }
 
