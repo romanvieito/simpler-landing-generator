@@ -1818,13 +1818,13 @@ function LandingGeneratorContent() {
             />
             {editMode && (
               <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-                <div className="bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
+                {/* <div className="bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
                   <div className="text-xs text-gray-600 text-center">
                     <span className="sm:hidden">Tap text to edit</span>
                     <span className="hidden sm:inline">Click text to edit</span>
                     <span className="ml-2 text-gray-400">• Esc to exit</span>
                   </div>
-                </div>
+                </div> */}
               </div>
             )}
           </div>
