@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import UrlEditor from '@/components/url-editor';
 import { PurchaseDomainModal } from '@/components/purchase-domain-modal';
+import { DomainRenewalModal } from '@/components/domain-renewal-modal';
 
 type Site = {
   id: string;
@@ -50,6 +51,7 @@ export default function DashboardPage() {
   const [domainModalSiteId, setDomainModalSiteId] = useState<string | null>(null);
   const [domains, setDomains] = useState<Domain[]>([]);
   const [renewingDomain, setRenewingDomain] = useState<string | null>(null);
+  const [renewalModalDomain, setRenewalModalDomain] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'sites' | 'domains' | 'leads'>('sites');
 
   useEffect(() => {
@@ -141,19 +143,7 @@ export default function DashboardPage() {
   }
 
   async function handleDomainRenewal(domainName: string) {
-    if (!confirm(`Renew domain ${domainName}? This will create a new payment for domain renewal.`)) return;
-
-    setRenewingDomain(domainName);
-    try {
-      // For now, redirect to a renewal page or show a message
-      // In the future, this would integrate with Stripe for domain renewal payments
-      alert(`Domain renewal for ${domainName} is not yet implemented. Please contact support to renew your domain.`);
-    } catch (e) {
-      console.error(e);
-      alert('Failed to initiate domain renewal. Please try again.');
-    } finally {
-      setRenewingDomain(null);
-    }
+    setRenewalModalDomain(domainName);
   }
 
   return (
@@ -717,6 +707,13 @@ export default function DashboardPage() {
           onClose={() => setDomainModalSiteId(null)}
           siteId={domainModalSiteId || undefined}
           onDomainPurchased={handleDomainPurchased}
+        />
+
+        {/* Domain Renewal Modal */}
+        <DomainRenewalModal
+          isOpen={!!renewalModalDomain}
+          onClose={() => setRenewalModalDomain(null)}
+          domainName={renewalModalDomain || ''}
         />
       </SignedIn>
     </>
