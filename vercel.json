@@ -1,6 +1,6 @@
 {
   "public": true,
-  "rewrites": [
+  "redirects": [
     {
       "source": "/(.*)",
       "destination": "/api/subdomain-handler",
@@ -8,6 +8,13 @@
         {
           "type": "host",
           "value": "*.easyland.site"
+        }
+      ],
+      "conditions": [
+        {
+          "type": "host",
+          "operator": "not",
+          "value": "easyland.site"
         }
       ]
     }
