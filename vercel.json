@@ -1,1 +1,15 @@
-{"public": true}
+{
+  "public": true,
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/api/subdomain-handler",
+      "has": [
+        {
+          "type": "host",
+          "value": "*.easyland.site"
+        }
+      ]
+    }
+  ]
+}
