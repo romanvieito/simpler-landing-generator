@@ -479,7 +479,9 @@ export async function purchaseDomain({ domain, projectId }: PurchaseDomainArgs):
   if (VERCEL_TEAM_ID) query.set('teamId', VERCEL_TEAM_ID);
 
   try {
-    // First, add the domain to Vercel
+    // Add domain to Vercel WITHOUT auto-renewal
+    // Domains will expire at the end of their registration period
+    // Users must manually renew through the Domain Management Dashboard
     const addDomainRes = await fetch(`https://api.vercel.com/v4/domains${query.toString() ? `?${query.toString()}` : ''}`, {
       method: 'POST',
       headers: {
@@ -488,6 +490,8 @@ export async function purchaseDomain({ domain, projectId }: PurchaseDomainArgs):
       },
       body: JSON.stringify({
         name: domain,
+        // Explicitly disable auto-renewal - domains will NOT renew automatically
+        renew: false,
       }),
     });
 
@@ -497,7 +501,13 @@ export async function purchaseDomain({ domain, projectId }: PurchaseDomainArgs):
     }
 
     const domainData = await addDomainRes.json();
-    console.log('Domain added to Vercel:', domainData);
+    console.log('Domain added to Vercel (NO auto-renewal):', {
+      domain,
+      verified: domainData.verified,
+      nameservers: domainData.nameservers,
+      // Note: renew: false prevents automatic renewal
+      renewalDisabled: true
+    });
 
     let result: DomainPurchaseResult = {
       domain,
@@ -570,7 +580,7 @@ export async function verifyDomain(domain: string): Promise<{ verified: boolean;
   }
 }
 
-export async function getDomainStatus(domain: string): Promise<{ verified: boolean; configured: boolean; nameservers?: string[] }> {
+export async function getDomainStatus(domain: string): Promise<{ verified: boolean; configured: boolean; nameservers?: string[]; expiresAt?: string; renewable?: boolean }> {
   if (!VERCEL_TOKEN) {
     throw new Error('Server missing VERCEL_TOKEN');
   }
@@ -596,9 +606,35 @@ export async function getDomainStatus(domain: string): Promise<{ verified: boole
       verified: data.verified || false,
       configured: data.configured || false,
       nameservers: data.nameservers,
+      expiresAt: data.expiresAt, // When domain expires
+      renewable: data.renewable, // Whether domain can be renewed
     };
   } catch (error) {
     console.error('Error getting domain status:', error);
     throw error instanceof Error ? error : new Error('Failed to get domain status');
+  }
+}
+
+// Function to renew a domain (for future Domain Management Dashboard)
+export async function renewDomain(domain: string): Promise<{ success: boolean; expiresAt?: string }> {
+  if (!VERCEL_TOKEN) {
+    throw new Error('Server missing VERCEL_TOKEN');
+  }
+
+  const query = new URLSearchParams();
+  if (VERCEL_TEAM_ID) query.set('teamId', VERCEL_TEAM_ID);
+
+  try {
+    // This would need to be implemented when creating the Domain Management Dashboard
+    // For now, this is a placeholder that throws an error
+    throw new Error('Domain renewal not yet implemented. Use Domain Management Dashboard when available.');
+
+    // Future implementation would:
+    // 1. Create Stripe checkout session for renewal fee
+    // 2. Call Vercel API to renew domain
+    // 3. Update expiration date
+  } catch (error) {
+    console.error('Error renewing domain:', error);
+    throw error instanceof Error ? error : new Error('Failed to renew domain');
   }
 }

@@ -117,13 +117,13 @@ export async function POST(req: Request) {
           currency: 'usd',
           product_data: {
             name: `Domain: ${domain}`,
-            description: `Registration and setup for ${domain}`,
+            description: `Domain registration for ${domain} (1 year, no auto-renewal)`,
           },
           unit_amount: price,
         },
         quantity: 1,
       }],
-      mode: 'payment',
+      mode: 'payment', // One-time payment, NOT subscription
       customer: customer?.id,
       success_url: `${baseUrl}/dashboard?domain_success=true&domain=${encodeURIComponent(domain)}&siteId=${siteId || ''}`,
       cancel_url: `${baseUrl}/dashboard?domain_canceled=true`,
@@ -132,6 +132,8 @@ export async function POST(req: Request) {
         domain,
         siteId: siteId || '',
         type: 'domain_purchase',
+        // Note: Domains do NOT auto-renew - users must renew manually
+        renewalDisabled: true,
       },
       allow_promotion_codes: true,
       billing_address_collection: 'auto',

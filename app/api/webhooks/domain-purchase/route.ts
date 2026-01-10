@@ -67,20 +67,22 @@ export async function POST(req: Request) {
             });
           }
 
-          await logStripeEvent({
-            eventType: 'domain.purchase_completed',
-            eventId: event.id,
-            userId,
-            status: 'success',
-            message: `Successfully purchased and configured domain ${domain}`,
-            metadata: {
-              domain,
-              siteId,
-              projectId,
-              verified: purchaseResult.verified,
-              nameservers: purchaseResult.nameservers
-            }
-          });
+        await logStripeEvent({
+          eventType: 'domain.purchase_completed',
+          eventId: event.id,
+          userId,
+          status: 'success',
+          message: `Successfully purchased and configured domain ${domain} (NO auto-renewal)`,
+          metadata: {
+            domain,
+            siteId,
+            projectId,
+            verified: purchaseResult.verified,
+            nameservers: purchaseResult.nameservers,
+            renewalDisabled: true, // Domains do NOT auto-renew
+            renewalNote: 'Users must manually renew through Domain Management Dashboard'
+          }
+        });
 
         } catch (error) {
           console.error('Error purchasing domain from Vercel:', error);

@@ -114,3 +114,14 @@ Custom subdomains work properly with server-side routing. Each subdomain serves 
 
 #### Manual DNS Setup:
 After a user sets a custom domain, you'll need to manually add the DNS record, or set up automated DNS management with your DNS provider's API.
+
+### Domain Renewal Policy
+
+**Important**: Domains purchased through this application do **NOT** auto-renew. When a domain expires:
+
+1. The domain will become unavailable
+2. Users must manually renew through the planned Domain Management Dashboard
+3. No automatic charges will occur
+4. This prevents unexpected costs and gives users control over renewals
+
+The domain purchase explicitly sets `renew: false` in the Vercel API to prevent auto-renewal.
