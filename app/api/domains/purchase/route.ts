@@ -133,10 +133,8 @@ export async function POST(req: Request) {
         siteId: siteId || '',
         type: 'domain_purchase',
         // Note: Domains do NOT auto-renew - users must renew manually
-        renewalDisabled: true,
+        renewalDisabled: 'true',
       },
-      allow_promotion_codes: true,
-      billing_address_collection: 'auto',
     });
 
     await logStripeEvent({

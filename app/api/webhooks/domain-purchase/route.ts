@@ -77,9 +77,9 @@ export async function POST(req: Request) {
             domain,
             siteId,
             projectId,
-            verified: purchaseResult.verified,
-            nameservers: purchaseResult.nameservers,
-            renewalDisabled: true, // Domains do NOT auto-renew
+            verified: purchaseResult.verified ? 'true' : 'false',
+            nameservers: purchaseResult.nameservers?.join(',') || '',
+            renewalDisabled: 'true', // Domains do NOT auto-renew
             renewalNote: 'Users must manually renew through Domain Management Dashboard'
           }
         });
