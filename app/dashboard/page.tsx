@@ -27,18 +27,34 @@ type Lead = {
   site_id: string;
 };
 
+type Domain = {
+  name: string;
+  expiresAt?: string;
+  verified: boolean;
+  configured: boolean;
+  renewable: boolean;
+  siteId?: string;
+  siteTitle?: string;
+  purchaseDate?: string;
+  status: 'active' | 'expiring' | 'expired' | 'unknown';
+};
+
 export default function DashboardPage() {
   const router = useRouter();
   const [sites, setSites] = useState<Site[]>([]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [loadingSites, setLoadingSites] = useState(true);
   const [loadingLeads, setLoadingLeads] = useState(true);
+  const [loadingDomains, setLoadingDomains] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [domainModalSiteId, setDomainModalSiteId] = useState<string | null>(null);
+  const [domains, setDomains] = useState<Domain[]>([]);
+  const [renewingDomain, setRenewingDomain] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSites();
     fetchLeads();
+    fetchDomains();
   }, []);
 
   async function fetchSites() {
@@ -64,6 +80,19 @@ export default function DashboardPage() {
       console.error(e);
     } finally {
       setLoadingLeads(false);
+    }
+  }
+
+  async function fetchDomains() {
+    try {
+      const res = await fetch('/api/domains');
+      if (!res.ok) return;
+      const data = await res.json();
+      setDomains(data.domains ?? []);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoadingDomains(false);
     }
   }
 
@@ -108,6 +137,22 @@ export default function DashboardPage() {
   function handleDomainPurchased(domain: string) {
     // Refresh sites to show the updated domain
     fetchSites();
+  }
+
+  async function handleDomainRenewal(domainName: string) {
+    if (!confirm(`Renew domain ${domainName}? This will create a new payment for domain renewal.`)) return;
+
+    setRenewingDomain(domainName);
+    try {
+      // For now, redirect to a renewal page or show a message
+      // In the future, this would integrate with Stripe for domain renewal payments
+      alert(`Domain renewal for ${domainName} is not yet implemented. Please contact support to renew your domain.`);
+    } catch (e) {
+      console.error(e);
+      alert('Failed to initiate domain renewal. Please try again.');
+    } finally {
+      setRenewingDomain(null);
+    }
   }
 
   return (
@@ -321,6 +366,174 @@ export default function DashboardPage() {
                                   </svg>
                                 )}
                               </button>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
+            {/* Domain Management Section */}
+            <section className="space-y-6 md:space-y-8">
+              <div>
+                <h2 className="text-xl md:text-2xl font-bold text-gray-900">Domain Management</h2>
+                <p className="text-sm md:text-base text-gray-600 mt-1">Monitor and renew your custom domains</p>
+              </div>
+
+              {loadingDomains ? (
+                <div className="flex items-center justify-center py-16">
+                  <div className="spinner"></div>
+                  <span className="ml-3 text-gray-600">Loading your domains...</span>
+                </div>
+              ) : domains.length === 0 ? (
+                <div className="text-center py-16 space-y-6 animate-fade-in">
+                  <div className="w-20 h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded-3xl mx-auto flex items-center justify-center">
+                    <svg className="w-10 h-10 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+                    </svg>
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="text-xl font-semibold text-gray-900">No custom domains yet</h3>
+                    <p className="text-gray-600 max-w-md mx-auto leading-relaxed">
+                      Purchase custom domains for your sites to see them here. Domains are managed manually and do not auto-renew.
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {domains.map((domain, index) => (
+                    <div
+                      key={domain.name}
+                      className="card group hover:shadow-lg transition-all duration-300 animate-fade-in flex flex-col h-full"
+                      style={{ animationDelay: `${index * 100}ms` }}
+                    >
+                      <div className="p-6 flex flex-col h-full">
+                        {/* Header with domain name and status */}
+                        <div className="flex items-start justify-between gap-3 mb-4">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-semibold text-gray-900 text-lg group-hover:text-blue-600 transition-colors duration-200 truncate">
+                              {domain.name}
+                            </h3>
+                          </div>
+                          <span className={`status text-xs flex-shrink-0 whitespace-nowrap ${
+                            domain.status === 'active' ? 'status-success' :
+                            domain.status === 'expiring' ? 'status-warning' :
+                            domain.status === 'expired' ? 'status-error' : 'status-neutral'
+                          }`}>
+                            {domain.status === 'active' ? 'Active' :
+                             domain.status === 'expiring' ? 'Expiring Soon' :
+                             domain.status === 'expired' ? 'Expired' : 'Unknown'}
+                          </span>
+                        </div>
+
+                        {/* Site association */}
+                        {domain.siteTitle && (
+                          <div className="flex items-center text-sm text-gray-600 mb-3">
+                            <svg className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                            </svg>
+                            <span className="truncate">{domain.siteTitle}</span>
+                          </div>
+                        )}
+
+                        {/* Expiration date */}
+                        {domain.expiresAt && (
+                          <div className="flex items-center text-sm text-gray-600 mb-3">
+                            <svg className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                            </svg>
+                            <span>Expires: {new Date(domain.expiresAt).toLocaleDateString()}</span>
+                          </div>
+                        )}
+
+                        {/* Purchase date */}
+                        {domain.purchaseDate && (
+                          <div className="flex items-center text-sm text-gray-600 mb-4">
+                            <svg className="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1" />
+                            </svg>
+                            <span>Purchased: {new Date(domain.purchaseDate).toLocaleDateString()}</span>
+                          </div>
+                        )}
+
+                        {/* Domain status indicators */}
+                        <div className="flex items-center gap-4 mb-6">
+                          <div className="flex items-center text-xs">
+                            <div className={`w-2 h-2 rounded-full mr-2 ${domain.verified ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                            <span className={domain.verified ? 'text-green-600' : 'text-red-600'}>
+                              {domain.verified ? 'Verified' : 'Unverified'}
+                            </span>
+                          </div>
+                          <div className="flex items-center text-xs">
+                            <div className={`w-2 h-2 rounded-full mr-2 ${domain.configured ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+                            <span className={domain.configured ? 'text-green-600' : 'text-yellow-600'}>
+                              {domain.configured ? 'Configured' : 'Configuring'}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="mt-auto pt-4 border-t border-gray-100">
+                          <div className="flex items-center justify-between">
+                            {/* Left: Primary actions */}
+                            <div className="flex gap-2">
+                              {domain.status === 'expiring' || domain.status === 'expired' ? (
+                                <button
+                                  onClick={() => handleDomainRenewal(domain.name)}
+                                  disabled={renewingDomain === domain.name}
+                                  className="px-3 py-2 text-sm bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                                >
+                                  {renewingDomain === domain.name ? (
+                                    <div className="w-4 h-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
+                                  ) : (
+                                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                  )}
+                                  Renew
+                                </button>
+                              ) : (
+                                <button
+                                  onClick={() => handleDomainRenewal(domain.name)}
+                                  className="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                  </svg>
+                                  Renew
+                                </button>
+                              )}
+                            </div>
+
+                            {/* Right: Secondary actions */}
+                            <div className="flex gap-1">
+                              <a
+                                href={`https://${domain.name}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                                title="Visit domain"
+                              >
+                                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                              </a>
+                              {domain.siteId && (
+                                <a
+                                  href={`/sites/${domain.siteId}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="p-2 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-lg transition-colors"
+                                  title="View associated site"
+                                >
+                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                                  </svg>
+                                </a>
+                              )}
                             </div>
                           </div>
                         </div>
