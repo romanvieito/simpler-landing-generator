@@ -83,7 +83,7 @@ export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className =
           className="btn btn-primary text-xs px-2 py-1"
           style={{ height: 'auto' }}
         >
-          {isUpdating ? '...' : 'Set Domain'}
+          {isUpdating ? '...' : 'Set URL'}
         </button>
         <button
           onClick={handleCancel}
