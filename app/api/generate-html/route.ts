@@ -36,7 +36,7 @@ const system = `You generate complete, mobile-responsive HTML documents with inl
  * Avoid fixed heights on text containers that could cause text overflow.
  * Use max-width with appropriate padding to ensure text is never clipped.
  * Test that all content is readable and fully visible on narrow viewports (320px+).
-|- CTA BUTTON BEHAVIOR: The primary CTA button in the hero section should NOT cause any navigation or UI breakage. Use a simple button element or link with href="#" to prevent any unwanted behavior.
+|- CTA BUTTON BEHAVIOR: The primary CTA button in the hero section should link to the contact form at the bottom of the page using href="#contact-section".
 
 Generate ONLY these 3 sections in this exact order:
 1. Hero section (with headline, subhead, primary CTA button)
@@ -70,10 +70,9 @@ IMPORTANT: For the contact form, use this exact format:
   </form>
 </div>
 
-CRITICAL: The primary CTA button in the hero section MUST be safe and not cause UI breakage. Use one of these safe implementations:
-- <button type="button">${plan.sectionsContent?.hero?.primaryCta || 'Get Started'}</button>
-- <a href="#" onclick="return false;">${plan.sectionsContent?.hero?.primaryCta || 'Get Started'}</a>
-Do NOT use href="#contact" or any other href that could cause navigation issues.
+CRITICAL: The primary CTA button in the hero section MUST link to the contact form at the bottom of the page. Use this implementation:
+- <a href="#contact-section" class="cta-button">${plan.sectionsContent?.hero?.primaryCta || 'Get Started'}</a>
+The contact form section has id="contact-section" so this link will smoothly scroll to the form.
 
 <script>
 // Contact form UX:

@@ -1,30 +1,30 @@
-// Test the CTA button fix by checking the system prompt and user instructions
+// Test the CTA button linking fix by checking that header CTA links to contact form
 const fs = require('fs');
 const path = require('path');
 
 try {
-  console.log('Testing CTA button fix in generate-html route...');
+  console.log('Testing CTA button linking fix in generate-html route...');
 
   // Read the generate-html route file
   const routePath = path.join(__dirname, 'app', 'api', 'generate-html', 'route.ts');
   const routeContent = fs.readFileSync(routePath, 'utf8');
 
-  // Check if the system prompt includes the CTA button safety instructions
-  const hasCtaSafetyInstruction = routeContent.includes('CTA BUTTON BEHAVIOR: The primary CTA button in the hero section should NOT cause any navigation or UI breakage');
+  // Check if the system prompt includes the CTA button linking instructions
+  const hasCtaLinkInstruction = routeContent.includes('CTA BUTTON BEHAVIOR: The primary CTA button in the hero section should link to the contact form at the bottom of the page');
 
-  // Check if the user instructions include safe CTA button implementations
-  const hasSafeButtonInstructions = routeContent.includes('CRITICAL: The primary CTA button in the hero section MUST be safe and not cause UI breakage');
-  const hasButtonExamples = routeContent.includes('<button type="button">') && routeContent.includes('href="#" onclick="return false;"');
+  // Check if the user instructions include contact form linking
+  const hasContactLinkInstructions = routeContent.includes('CRITICAL: The primary CTA button in the hero section MUST link to the contact form at the bottom of the page');
+  const hasContactSectionLink = routeContent.includes('href="#contact-section"');
 
-  console.log('✓ System prompt includes CTA safety instructions:', hasCtaSafetyInstruction);
-  console.log('✓ User instructions include safe CTA requirements:', hasSafeButtonInstructions);
-  console.log('✓ User instructions include safe button examples:', hasButtonExamples);
+  console.log('✓ System prompt includes CTA linking instructions:', hasCtaLinkInstruction);
+  console.log('✓ User instructions include contact form linking:', hasContactLinkInstructions);
+  console.log('✓ User instructions include contact section link:', hasContactSectionLink);
 
-  if (hasCtaSafetyInstruction && hasSafeButtonInstructions && hasButtonExamples) {
-    console.log('SUCCESS: CTA button fix has been properly implemented');
-    console.log('The generated HTML should now use safe CTA buttons that won\'t break the UI');
+  if (hasCtaLinkInstruction && hasContactLinkInstructions && hasContactSectionLink) {
+    console.log('SUCCESS: CTA button linking fix has been properly implemented');
+    console.log('The generated HTML should now have header CTA buttons that link to the contact form');
   } else {
-    console.log('ERROR: CTA button fix is incomplete');
+    console.log('ERROR: CTA button linking fix is incomplete');
   }
 
 } catch (e) {
