@@ -19,9 +19,46 @@ export default function SitePage() {
   const id = params.id as string;
   const [site, setSite] = useState<Site | null>(null);
   const [loading, setLoading] = useState(true);
+  const [backUrl, setBackUrl] = useState('/dashboard');
 
   useEffect(() => {
     fetchSite();
+
+    // Determine back URL based on referrer
+    if (typeof window !== 'undefined') {
+      const referrer = document.referrer;
+      if (referrer.includes('/sites') && !referrer.includes(`/sites/${id}`)) {
+        // Came from sites list page
+        setBackUrl('/sites');
+      } else if (referrer.includes('/dashboard')) {
+        // Came from dashboard
+        setBackUrl('/dashboard');
+      } else if (referrer.includes('/?loadSite=') || referrer.includes(window.location.origin + '/')) {
+        // Came from main generator page, go back to editing this site
+        setBackUrl(`/?loadSite=${id}`);
+      } else if (referrer.includes(window.location.origin)) {
+        // Came from another page on our site, go to dashboard
+        setBackUrl('/dashboard');
+      }
+      // Default is already '/dashboard'
+    }
+
+    // Handle browser back button
+    const handlePopState = (event: PopStateEvent) => {
+      // If user presses back button, ensure we go to the right place
+      if (event.state?.fromSitePage) {
+        window.history.back();
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+
+    // Push a state so browser back button works properly
+    window.history.pushState({ fromSitePage: true }, '', window.location.href);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
   }, [id]);
 
   async function fetchSite() {
@@ -62,9 +99,31 @@ export default function SitePage() {
   }
 
   return (
-    <div
-      dangerouslySetInnerHTML={{ __html: site.html }}
-      style={{ width: '100%' }}
-    />
+    <>
+      {/* Back button overlay */}
+      <div className="fixed top-4 left-4 z-50 animate-fade-in">
+        <Link
+          href={backUrl}
+          className="btn btn-ghost bg-white/90 backdrop-blur-sm border border-gray-200 shadow-lg hover:bg-white hover:shadow-xl transition-all duration-200 flex items-center gap-2 px-3 py-2 rounded-lg text-gray-700 hover:text-gray-900"
+          title={backUrl.includes('?loadSite=') ? 'Back to Editor' :
+                  backUrl === '/sites' ? 'Back to My Sites' : 'Back to Dashboard'}
+        >
+          <svg className="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          <span className="hidden sm:inline">
+            {backUrl.includes('?loadSite=') ? 'Back to Editor' :
+             backUrl === '/sites' ? 'Back to My Sites' : 'Back to Dashboard'}
+          </span>
+          <span className="sm:hidden">Back</span>
+        </Link>
+      </div>
+
+      {/* Generated site content */}
+      <div
+        dangerouslySetInnerHTML={{ __html: site.html }}
+        style={{ width: '100%' }}
+      />
+    </>
   );
 }
