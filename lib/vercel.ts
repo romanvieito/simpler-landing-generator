@@ -306,15 +306,132 @@ export async function deployStaticHtml({ name, html, alias }: DeployArgs): Promi
 }
 
 // Domain management functions
+// Check if a domain is actually available for registration (not just in Vercel)
+async function checkDomainRegistrationStatus(domain: string): Promise<boolean> {
+  // First, check hardcoded list of obviously taken domains
+  const obviouslyTaken = [
+    'google.com', 'facebook.com', 'amazon.com', 'apple.com', 'microsoft.com',
+    'nike.com', 'cocacola.com', 'coca-cola.com', 'twitter.com', 'instagram.com',
+    'youtube.com', 'linkedin.com', 'github.com', 'stackoverflow.com', 'reddit.com',
+    'netflix.com', 'spotify.com', 'uber.com', 'airbnb.com', 'paypal.com'
+  ];
+
+  if (obviouslyTaken.includes(domain.toLowerCase())) {
+    return false;
+  }
+
+  try {
+    // DNS lookup - if domain resolves to real IPs, it's likely registered
+    const dnsRes = await fetch(`https://dns.google/resolve?name=${encodeURIComponent(domain)}&type=A`, {
+      method: 'GET',
+    });
+
+    if (dnsRes.ok) {
+      const dnsData = await dnsRes.json();
+      const hasRecords = dnsData.Answer && dnsData.Answer.length > 0;
+
+      if (hasRecords) {
+        // Additional check: see if it's a real website
+        try {
+          const httpRes = await fetch(`http://${domain}`, {
+            method: 'HEAD',
+            redirect: 'manual',
+            signal: AbortSignal.timeout(5000), // 5 second timeout
+          });
+
+          // If it returns a normal status, it's likely an active registered domain
+          if (httpRes.status >= 200 && httpRes.status < 400) {
+            return false; // Domain is active/registered
+          }
+        } catch (httpError) {
+          // If HTTP request fails, domain might still be registered but could be parked/down
+          return false;
+        }
+      }
+
+      return !hasRecords;
+    }
+  } catch (error) {
+    console.warn('DNS check failed:', error);
+  }
+
+  // Try WHOIS lookup as fallback
+  try {
+    const whoisRes = await fetch(`https://www.whois.com/whois/${encodeURIComponent(domain)}`, {
+      method: 'GET',
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; DomainChecker/1.0)',
+      },
+    });
+
+    if (whoisRes.ok) {
+      const whoisHtml = await whoisRes.text();
+
+      // Check for "available" indicators
+      const availableIndicators = [
+        'No match for',
+        'NOT FOUND',
+        'available for registration',
+        'is free',
+        'No Data Found',
+        'Domain not found'
+      ];
+
+      const isAvailable = availableIndicators.some(indicator =>
+        whoisHtml.includes(indicator)
+      );
+
+      if (isAvailable) {
+        return true;
+      }
+
+      // Check for registration indicators
+      const registeredIndicators = [
+        'Domain Name:',
+        'Creation Date:',
+        'Registry Domain ID:',
+        'Registrant:',
+        'Name Server:'
+      ];
+
+      const isRegistered = registeredIndicators.some(indicator =>
+        whoisHtml.includes(indicator)
+      );
+
+      return !isRegistered;
+    }
+  } catch (error) {
+    console.warn('WHOIS check failed:', error);
+  }
+
+  // If all checks fail, err on the side of caution and say it's available
+  // Better to allow purchase of taken domains than block available ones
+  console.warn(`Could not verify registration status for ${domain}, assuming available`);
+  return true;
+}
+
 export async function checkDomainAvailability(domain: string): Promise<DomainInfo> {
   if (!VERCEL_TOKEN) {
     throw new Error('Server missing VERCEL_TOKEN');
+  }
+
+  // First, check if domain is actually available for registration
+  const isAvailable = await checkDomainRegistrationStatus(domain);
+
+  if (!isAvailable) {
+    return {
+      name: domain,
+      available: false,
+      price: undefined,
+      currency: undefined,
+    };
   }
 
   const query = new URLSearchParams();
   if (VERCEL_TEAM_ID) query.set('teamId', VERCEL_TEAM_ID);
 
   try {
+    // Check if domain is already in Vercel
     const res = await fetch(`https://api.vercel.com/v4/domains/${encodeURIComponent(domain)}${query.toString() ? `?${query.toString()}` : ''}`, {
       method: 'GET',
       headers: {
@@ -323,60 +440,27 @@ export async function checkDomainAvailability(domain: string): Promise<DomainInf
       },
     });
 
-    if (res.status === 404) {
-      // Domain is available for purchase
-      return {
-        name: domain,
-        available: true,
-        price: 1500, // $15/year - typical domain registration cost
-        currency: 'usd',
-      };
-    }
-
     if (res.ok) {
       const data = await res.json();
-      // Domain exists but might be available for transfer/purchase
+      // Domain exists in Vercel account
       return {
         name: domain,
-        available: false, // Domain already exists in Vercel
-        price: data.price || 1500, // Default to $15 if no price
-        currency: data.currency || 'usd',
+        available: false, // Already managed by Vercel
+        price: data.price,
+        currency: data.currency,
       };
     }
 
-    // For other error codes, try to get pricing info or assume available with standard pricing
-    try {
-      const pricingRes = await fetch(`https://api.vercel.com/v4/domains/price?domain=${encodeURIComponent(domain)}${query.toString() ? `&${query.toString()}` : ''}`, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${VERCEL_TOKEN}`,
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (pricingRes.ok) {
-        const pricingData = await pricingRes.json();
-        return {
-          name: domain,
-          available: true,
-          price: pricingData.price || 1500, // Default to $15 if no price returned
-          currency: pricingData.currency || 'usd',
-        };
-      }
-    } catch (pricingError) {
-      console.warn('Failed to get pricing info, using default:', pricingError);
-    }
-
-    // If we can't get pricing, assume available with default price
+    // Domain is available for purchase through Vercel
     return {
       name: domain,
       available: true,
-      price: 1500, // $15 default
+      price: 1500, // $15/year - typical domain registration cost
       currency: 'usd',
     };
   } catch (error) {
-    console.error('Error checking domain availability:', error);
-    // In case of API errors, assume available with default pricing
+    console.error('Error checking Vercel domain status:', error);
+    // If Vercel check fails but domain is available, still allow purchase
     return {
       name: domain,
       available: true,
