@@ -63,7 +63,7 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
         </div>
 
         <p className="text-gray-600 mb-6 text-sm">
-          Credits are used to cover API costs for AI generation and image searches. 
+          Credits are used to cover API costs for AI generation. 
           Choose a package to continue.
         </p>
 
