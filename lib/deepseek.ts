@@ -19,12 +19,14 @@ type ApiResponse = {
   cost: number; // Cost in USD cents
 };
 
-// Deepseek pricing (as of 2024): $0.14 per million input tokens, $0.28 per million output tokens
-const DEEPSEEK_INPUT_PRICE_PER_MILLION = 0.14; // $0.000014 per token
-const DEEPSEEK_OUTPUT_PRICE_PER_MILLION = 0.28; // $0.000028 per token
+// DeepSeek pricing (as of 2025): Input cache hit $0.028, cache miss $0.28, output $0.42 per million tokens
+const DEEPSEEK_INPUT_CACHE_HIT_PRICE_PER_MILLION = 0.028; // $0.000028 per token
+const DEEPSEEK_INPUT_CACHE_MISS_PRICE_PER_MILLION = 0.28; // $0.00028 per token
+const DEEPSEEK_OUTPUT_PRICE_PER_MILLION = 0.42; // $0.00042 per token
 
 function calculateApiCost(promptTokens: number, completionTokens: number): number {
-  const inputCost = (promptTokens / 1000000) * DEEPSEEK_INPUT_PRICE_PER_MILLION;
+  // Using cache miss pricing as conservative estimate (cache hits are $0.028/M vs $0.28/M for cache misses)
+  const inputCost = (promptTokens / 1000000) * DEEPSEEK_INPUT_CACHE_MISS_PRICE_PER_MILLION;
   const outputCost = (completionTokens / 1000000) * DEEPSEEK_OUTPUT_PRICE_PER_MILLION;
   const totalCost = inputCost + outputCost;
   // Add 50% markup (return in dollars, not cents)
