@@ -1866,7 +1866,7 @@ function LandingGeneratorContent() {
                     <span className="sm:hidden">Tap text to edit</span>
                     <span className="hidden sm:inline">Click text to edit</span>
                     <span className="ml-2 text-gray-400">• Buttons & forms disabled</span>
-                    <span className="ml-2 text-gray-400">• Esc to deselect</span>
+                    {/* <span className="ml-2 text-gray-400">• Esc to deselect</span> */}
                   </div>
                 </div>
               </div>
