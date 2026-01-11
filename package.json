@@ -10,7 +10,19 @@
     "vercel:setup-publish-project": "bash ./scripts/vercel-setup-publish-project.sh",
     "stripe:setup-products": "node scripts/setup-stripe-products.js",
     "stripe:test-webhook": "node scripts/test-stripe-webhook.js",
-    "stripe:test-integration": "node scripts/test-stripe-integration.js"
+    "stripe:test-integration": "node scripts/test-stripe-integration.js",
+    "monitor:pricing": "node scripts/check-deepseek-pricing.js",
+    "monitor:costs": "node scripts/analyze-costs.js",
+    "monitor:deploy": "node scripts/deployment-monitor.js",
+    "monitor:setup": "node scripts/setup-monitoring.js",
+    "monitor:secrets": "node scripts/setup-github-secrets.js",
+    "vercel:quick-setup": "node scripts/quick-vercel-setup.js",
+    "vercel:setup-monitoring": "node scripts/vercel-monitoring-setup.js",
+    "vercel:auto-setup": "node scripts/auto-setup-secrets.js",
+    "finish-setup": "node scripts/finish-setup.js",
+    "test:costs": "node test-cost-validation.js",
+    "ci:pre-deploy": "npm run monitor:deploy",
+    "ci:daily-monitor": "npm run monitor:costs 24h"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.1",

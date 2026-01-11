@@ -61,6 +61,82 @@ Email notifications are automatically sent to the **site creator's email** (from
 3. Select event: `checkout.session.completed`
 4. Copy the webhook secret to `STRIPE_WEBHOOK_SECRET`
 
+## 🔍 API Cost Monitoring
+
+The application includes comprehensive monitoring to ensure pricing integrity and profitability.
+
+### Automated Monitoring
+
+#### GitHub Actions (CI/CD)
+- **Pre-deployment checks**: Runs on every push to main branch
+- **Daily monitoring**: Scheduled cost analysis every 24 hours
+- **Pricing alerts**: Detects DeepSeek API pricing changes
+- **Manual triggers**: Run specific checks via workflow dispatch
+
+#### Available Scripts
+```bash
+# Run all pre-deployment checks
+npm run ci:pre-deploy
+
+# Check for DeepSeek pricing changes
+npm run monitor:pricing
+
+# Analyze costs (24h, 7d, 30d periods)
+npm run monitor:costs 24h
+npm run monitor:costs 7d
+
+# Validate cost calculations
+npm run test:costs
+
+# Run deployment monitor (comprehensive check)
+npm run monitor:deploy
+```
+
+### Setting up GitHub Secrets
+
+Add these secrets to your GitHub repository:
+
+```
+DEEPSEEK_API_KEY=your_deepseek_api_key
+DEEPSEEK_API_BASE=https://api.deepseek.com
+DEEPSEEK_MODEL=deepseek-chat
+VERCEL_TOKEN=your_vercel_token
+```
+
+### Monitoring Alerts
+
+The system provides alerts for:
+- **Pricing changes**: When DeepSeek updates their API costs
+- **High costs**: Transactions exceeding $1 threshold
+- **Low margins**: Profit margins below 30%
+- **Negative profits**: Critical alerts if costs exceed revenue
+
+### Manual Monitoring
+
+Run these commands locally or in production:
+
+```bash
+# Check current pricing
+npm run monitor:pricing
+
+# Analyze recent costs
+npm run monitor:costs 24h
+
+# Validate all calculations
+npm run test:costs
+```
+
+### Vercel Deployment
+
+The `vercel.json` includes pre-deployment checks:
+```json
+{
+  "buildCommand": "npm run ci:pre-deploy && npm run build"
+}
+```
+
+This ensures deployments only proceed if all pricing checks pass.
+
 ### Tests and lint
 ```bash
 npm run lint

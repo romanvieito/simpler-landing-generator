@@ -145,11 +145,19 @@ Return ONLY the HTML (no markdown, no fences).`;
     const apiCost = response.cost; // Already in dollars with 50% markup
     const htmlCost = apiCost; // Charge exact API cost (fractional credits)
 
+    // Enhanced cost logging for monitoring
+    console.log(`💰 HTML Generation Cost: User ${userId}, Tokens: ${response.usage.prompt_tokens} prompt + ${response.usage.completion_tokens} completion, Cost: $${apiCost.toFixed(6)}, Credits: ${htmlCost.toFixed(6)}`);
+
+    // Alert if cost seems unusually high (potential pricing change or bug)
+    if (apiCost > 1.0) { // More than $1 for HTML generation
+      console.warn(`🚨 HIGH COST ALERT: HTML generation cost $${apiCost.toFixed(4)} exceeds $1 threshold for user ${userId}`);
+    }
+
     try {
       await deductCredits({
         userId,
         amount: htmlCost,
-        description: `Landing page HTML generation: $${apiCost.toFixed(2)} → ${htmlCost.toFixed(2)} credits`
+        description: `Landing page HTML generation: $${apiCost.toFixed(4)} (tokens: ${response.usage.prompt_tokens}/${response.usage.completion_tokens})`
       });
     } catch (error: any) {
       if (error.message === 'Insufficient credits') {

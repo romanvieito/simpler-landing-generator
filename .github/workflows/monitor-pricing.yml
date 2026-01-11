@@ -1,0 +1,107 @@
+name: Monitor DeepSeek Pricing & Costs
+
+on:
+  # Run on every push to main branch
+  push:
+    branches: [ main, master ]
+
+  # Run daily at 9 AM UTC for cost analysis
+  schedule:
+    - cron: '0 9 * * *'
+
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      check_type:
+        description: 'Type of check to run'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+          - all
+          - pricing
+          - costs
+          - validation
+
+jobs:
+  pricing-monitor:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Copy environment variables
+      run: |
+        echo "DEEPSEEK_API_KEY=${{ secrets.DEEPSEEK_API_KEY }}" >> .env.local
+        echo "DEEPSEEK_API_BASE=${{ secrets.DEEPSEEK_API_BASE || 'https://api.deepseek.com' }}" >> .env.local
+        echo "DEEPSEEK_MODEL=${{ secrets.DEEPSEEK_MODEL || 'deepseek-chat' }}" >> .env.local
+
+    - name: Run cost validation tests
+      run: npm run test:costs
+      if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'validation' || github.event_name == 'push'
+
+    - name: Check DeepSeek pricing changes
+      run: npm run monitor:pricing
+      if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'pricing' || github.event_name == 'push'
+
+    - name: Analyze costs (24h)
+      run: npm run monitor:costs 24h
+      if: github.event.inputs.check_type == 'all' || github.event.inputs.check_type == 'costs' || github.event_name == 'schedule'
+
+    - name: Analyze costs (7d)
+      run: npm run monitor:costs 7d
+      if: github.event_name == 'schedule'
+
+  deploy-check:
+    runs-on: ubuntu-latest
+    needs: pricing-monitor
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run pre-deployment checks
+      run: npm run ci:pre-deploy
+
+    - name: Deploy to Vercel
+      run: |
+        npm i -g vercel
+        vercel --prod --yes
+      env:
+        VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+  alert-on-failure:
+    runs-on: ubuntu-latest
+    needs: pricing-monitor
+    if: failure() && github.event_name != 'workflow_dispatch'
+
+    steps:
+    - name: Send failure alert
+      run: |
+        echo "🚨 DeepSeek Pricing Monitor Failed!"
+        echo "Check: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+        # Add your preferred alerting mechanism here (Slack, Discord, email, etc.)
+        # Example for Slack webhook:
+        # curl -X POST -H 'Content-type: application/json' \
+        #   --data '{"text":"🚨 DeepSeek Pricing Monitor Failed! Check: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"}' \
+        #   ${{ secrets.SLACK_WEBHOOK_URL }}
