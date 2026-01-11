@@ -5,6 +5,9 @@
  * Analyzes API costs from logs to monitor usage patterns and detect anomalies
  */
 
+// Load environment variables from .env.local (like Next.js does)
+require('dotenv').config({ path: '.env.local' });
+
 const { sql } = require('@vercel/postgres');
 
 // Time periods for analysis
@@ -22,14 +25,18 @@ async function getCostAnalytics(period = '24h') {
 
   try {
     // Get credit transactions with API costs
+    // Calculate the timestamp for the period
+    const periodHours = period === '1h' ? 1 : period === '24h' ? 24 : period === '7d' ? 168 : period === '30d' ? 720 : 24;
+    const periodTimestamp = new Date(Date.now() - (periodHours * 60 * 60 * 1000));
+
     const { rows } = await sql`
       SELECT
-        ct.amount as credit_amount,
+        ct.amount,
         ct.description,
         ct.created_at,
         ct.type
       FROM credit_transactions ct
-      WHERE ct.created_at >= NOW() - INTERVAL '${period}'
+      WHERE ct.created_at >= ${periodTimestamp}
         AND ct.type = 'usage'
         AND ct.description LIKE '%generation%'
       ORDER BY ct.created_at DESC
@@ -49,7 +56,7 @@ async function getCostAnalytics(period = '24h') {
 
     // Extract cost information from descriptions
     rows.forEach(row => {
-      const creditAmount = Math.abs(parseFloat(row.amount));
+      const creditAmount = Math.abs(parseFloat(row.amount) || 0);
       totalCreditsUsed += creditAmount;
 
       // Parse cost from description (format: "Landing page X generation: $0.XXXX")
