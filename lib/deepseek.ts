@@ -27,8 +27,8 @@ function calculateApiCost(promptTokens: number, completionTokens: number): numbe
   const inputCost = (promptTokens / 1000000) * DEEPSEEK_INPUT_PRICE_PER_MILLION;
   const outputCost = (completionTokens / 1000000) * DEEPSEEK_OUTPUT_PRICE_PER_MILLION;
   const totalCost = inputCost + outputCost;
-  // Add 10% markup (return in dollars, not cents)
-  return totalCost * 1.1;
+  // Add 50% markup (return in dollars, not cents)
+  return totalCost * 1.5;
 }
 
 async function callDeepseek(messages: Message[], jsonMode = false): Promise<ApiResponse> {

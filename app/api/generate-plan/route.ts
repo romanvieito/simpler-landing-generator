@@ -72,9 +72,9 @@ ${description}
 """
 Return ONLY the JSON.`;
 
-    // Deduct credits based on API cost for plan generation (API cost + 10% markup)
+    // Deduct credits based on API cost for plan generation (API cost + 50% markup)
     const planResponse = await chatJSON(system, user);
-    const apiCost = planResponse.cost; // Already in dollars with 10% markup
+    const apiCost = planResponse.cost; // Already in dollars with 50% markup
     const planCost = apiCost; // Charge exact API cost (fractional credits)
 
     try {
