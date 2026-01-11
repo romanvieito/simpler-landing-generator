@@ -400,6 +400,16 @@ function LandingGeneratorContent() {
     } catch (e) {
       // Ignore errors if querySelector fails on some elements
     }
+    
+    // Restore original position if we modified it
+    if (node.hasAttribute('data-easyland-original-position')) {
+      const originalPosition = node.getAttribute('data-easyland-original-position');
+      if (originalPosition === 'static') {
+        node.style.position = '';
+      }
+      node.removeAttribute('data-easyland-original-position');
+    }
+    
     node.contentEditable = 'false';
   }
 
@@ -439,6 +449,16 @@ function LandingGeneratorContent() {
       ) {
         el.disabled = false;
       }
+    });
+
+    // Restore original positions that were modified for badge display
+    const modifiedPositions = doc.querySelectorAll<HTMLElement>('[data-easyland-original-position]');
+    modifiedPositions.forEach((el) => {
+      const originalPosition = el.getAttribute('data-easyland-original-position');
+      if (originalPosition === 'static') {
+        el.style.position = '';
+      }
+      el.removeAttribute('data-easyland-original-position');
     });
 
     const allEls = doc.querySelectorAll<HTMLElement>('*');
@@ -681,7 +701,16 @@ function LandingGeneratorContent() {
             const badge = doc.createElement('div');
             badge.className = 'edit-mode-badge';
             badge.textContent = getElementTypeName(tag);
-            target.style.position = target.style.position || 'relative';
+            
+            // Only set position to relative if it's not already positioned
+            // Store original position to restore later
+            const computedStyle = doc.defaultView?.getComputedStyle(target);
+            const currentPosition = computedStyle?.position || 'static';
+            if (currentPosition === 'static') {
+              target.setAttribute('data-easyland-original-position', 'static');
+              target.style.position = 'relative';
+            }
+            
             target.insertBefore(badge, target.firstChild);
           }
         }
@@ -892,6 +921,15 @@ function LandingGeneratorContent() {
       // Remove contentEditable attribute
       if (el.hasAttribute('contenteditable')) {
         el.removeAttribute('contenteditable');
+      }
+
+      // Restore original position if we modified it during editing
+      if (el.hasAttribute('data-easyland-original-position')) {
+        const originalPosition = el.getAttribute('data-easyland-original-position');
+        if (originalPosition === 'static') {
+          htmlEl.style.position = '';
+        }
+        el.removeAttribute('data-easyland-original-position');
       }
 
       // Restore form controls that were disabled only for editing
@@ -1825,7 +1863,7 @@ function LandingGeneratorContent() {
                     <span className="sm:hidden">Tap text to edit</span>
                     <span className="hidden sm:inline">Click text to edit</span>
                     <span className="ml-2 text-gray-400">• Buttons & forms disabled</span>
-                    <span className="ml-2 text-gray-400">• Esc to exit</span>
+                    <span className="ml-2 text-gray-400">• Esc to deselect</span>
                   </div>
                 </div>
               </div>
