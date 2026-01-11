@@ -72,34 +72,11 @@ ${description}
 """
 Return ONLY the JSON.`;
 
-    // Deduct credits based on API cost for plan generation (API cost + 50% markup)
+    // Generate plan (free - cost charged during HTML generation)
     const planResponse = await chatJSON(system, user);
-    const apiCost = planResponse.cost; // Already in dollars with 50% markup
-    const planCost = apiCost; // Charge exact API cost (fractional credits)
 
-    // Enhanced cost logging for monitoring
-    console.log(`💰 Plan Generation Cost: User ${userId}, Tokens: ${planResponse.usage.prompt_tokens} prompt + ${planResponse.usage.completion_tokens} completion, Cost: $${apiCost.toFixed(6)}, Credits: ${planCost.toFixed(6)}`);
-
-    // Alert if cost seems unusually high (potential pricing change or bug)
-    if (apiCost > 1.0) { // More than $1 for plan generation
-      console.warn(`🚨 HIGH COST ALERT: Plan generation cost $${apiCost.toFixed(4)} exceeds $1 threshold for user ${userId}`);
-    }
-
-    try {
-      await deductCredits({
-        userId,
-        amount: planCost,
-        description: `Landing page plan generation: $${apiCost.toFixed(4)} (tokens: ${planResponse.usage.prompt_tokens}/${planResponse.usage.completion_tokens})`
-      });
-    } catch (error: any) {
-      if (error.message === 'Insufficient credits') {
-        return NextResponse.json(
-          { error: 'Insufficient credits. Please purchase more credits to continue.' },
-          { status: 402 }
-        );
-      }
-      throw error;
-    }
+    // Log API usage for monitoring (but don't charge)
+    console.log(`📋 Plan Generation (FREE): User ${userId}, Tokens: ${planResponse.usage.prompt_tokens} prompt + ${planResponse.usage.completion_tokens} completion, API Cost: $${planResponse.cost.toFixed(6)}`);
 
     const jsonText = extractJSON(planResponse.content);
     const plan = JSON.parse(jsonText);

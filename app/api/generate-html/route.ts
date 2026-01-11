@@ -141,23 +141,17 @@ Return ONLY the HTML (no markdown, no fences).`;
     const response = await chatText(system, user);
     const html = response.content;
 
-    // Deduct credits based on API cost for HTML generation (API cost + 50% markup)
-    const apiCost = response.cost; // Already in dollars with 50% markup
-    const htmlCost = apiCost; // Charge exact API cost (fractional credits)
+    // Charge fixed $0.05 per site for HTML generation
+    const htmlCost = 0.05; // Fixed price per landing page
 
     // Enhanced cost logging for monitoring
-    console.log(`💰 HTML Generation Cost: User ${userId}, Tokens: ${response.usage.prompt_tokens} prompt + ${response.usage.completion_tokens} completion, Cost: $${apiCost.toFixed(6)}, Credits: ${htmlCost.toFixed(6)}`);
-
-    // Alert if cost seems unusually high (potential pricing change or bug)
-    if (apiCost > 1.0) { // More than $1 for HTML generation
-      console.warn(`🚨 HIGH COST ALERT: HTML generation cost $${apiCost.toFixed(4)} exceeds $1 threshold for user ${userId}`);
-    }
+    console.log(`💰 HTML Generation Cost: User ${userId}, Tokens: ${response.usage.prompt_tokens} prompt + ${response.usage.completion_tokens} completion, API Cost: $${response.cost.toFixed(6)}, Charged: $${htmlCost.toFixed(2)}`);
 
     try {
       await deductCredits({
         userId,
         amount: htmlCost,
-        description: `Landing page HTML generation: $${apiCost.toFixed(4)} (tokens: ${response.usage.prompt_tokens}/${response.usage.completion_tokens})`
+        description: `Landing page generation: $0.05 (tokens: ${response.usage.prompt_tokens}/${response.usage.completion_tokens})`
       });
     } catch (error: any) {
       if (error.message === 'Insufficient credits') {

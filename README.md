@@ -35,10 +35,10 @@ Generated landing pages now include working contact forms that store submissions
 Email notifications are automatically sent to the **site creator's email** (from their Clerk account). Without the Resend API key, forms still work but skip email notifications. Submissions are always stored in the database.
 
 ### Credit System
-**New users get $1 in free credits** to test the service. After that, users must purchase credits to continue generating landing pages. We charge the actual API cost plus 50% markup. Each landing page generation consists of two API calls (plan generation + HTML generation), with costs calculated dynamically based on token usage.
+**New users get $1 in free credits** to test the service. After that, users must purchase credits to continue generating landing pages. We charge a fixed **$0.05 per landing page**.
 
 #### Free Testing Credits
-- **New users**: $1 in credits (enough for 1 landing page)
+- **New users**: $1 in credits (enough for 20 landing pages)
 - **Returning users**: $1 daily refresh when balance is low
 
 #### Setup
@@ -49,11 +49,11 @@ Email notifications are automatically sent to the **site creator's email** (from
    - `NEXT_PUBLIC_APP_URL`: Your app's URL (for Stripe redirects)
 
 #### Credit Packages
-- **5 Credits ($5)**: Perfect for testing
-- **15 Credits ($12)**: Great for multiple landing pages
-- **50 Credits ($30)**: Ideal for agencies
+- **5 Credits ($5)**: Perfect for testing (100 landing pages)
+- **15 Credits ($12)**: Great for multiple landing pages (240 landing pages)
+- **50 Credits ($30)**: Ideal for agencies (600 landing pages)
 
-**1 credit = $1.00**. Each landing page costs the exact API usage + 50% markup (fractional credits).
+**1 credit = $1.00**. Each landing page costs $0.05 (fixed price).
 
 #### Webhook Setup
 1. In your Stripe dashboard, go to **Webhooks**
@@ -107,8 +107,8 @@ VERCEL_TOKEN=your_vercel_token
 
 The system provides alerts for:
 - **Pricing changes**: When DeepSeek updates their API costs
-- **High costs**: Transactions exceeding $1 threshold
-- **Low margins**: Profit margins below 30%
+- **High costs**: Transactions exceeding expected thresholds
+- **Low margins**: Profit margins below expected levels
 - **Negative profits**: Critical alerts if costs exceed revenue
 
 ### Manual Monitoring
