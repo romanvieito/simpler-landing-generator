@@ -1707,6 +1707,7 @@ function LandingGeneratorContent() {
                       });
                     }}
                     disabled={!html || isGenerating}
+                    title={editMode ? 'Edit Mode: Click text to edit it. Buttons, links, and forms are disabled.' : 'Enable edit mode to modify text content'}
                     className={`btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base ${editMode ? 'text-green-600' : ''}`}
                   >
                     {editMode ? '✓ Edit Mode' : 'Edit Text'}
@@ -1824,13 +1825,14 @@ function LandingGeneratorContent() {
             />
             {editMode && (
               <div className="fixed bottom-4 left-1/2 transform -translate-x-1/2 z-50">
-                {/* <div className="bg-white px-3 py-2 rounded-lg border border-gray-200 shadow-sm">
+                <div className="bg-white px-4 py-2 rounded-lg border border-gray-200 shadow-sm">
                   <div className="text-xs text-gray-600 text-center">
                     <span className="sm:hidden">Tap text to edit</span>
                     <span className="hidden sm:inline">Click text to edit</span>
+                    <span className="ml-2 text-gray-400">• Buttons & forms disabled</span>
                     <span className="ml-2 text-gray-400">• Esc to exit</span>
                   </div>
-                </div> */}
+                </div>
               </div>
             )}
           </div>
