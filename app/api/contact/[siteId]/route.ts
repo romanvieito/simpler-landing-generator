@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { auth, currentUser, clerkClient } from '@clerk/nextjs/server';
 import { ensureContactSubmissionsTable, insertContactSubmission, getSitePublic, getContactSubmissions } from '@/lib/db';
 import { Resend } from 'resend';
+import { analytics } from '@/lib/mixpanel';
 
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
@@ -74,6 +75,13 @@ export async function POST(
       email: email.trim(),
       message: message.trim(),
     });
+
+    // Track lead submitted in Mixpanel
+    try {
+      analytics.leadSubmitted(siteId, site.title || 'Untitled Site', email.trim());
+    } catch (e) {
+      console.warn('Failed to track lead submission in Mixpanel:', e);
+    }
 
     // Send email notification if Resend is configured
     if (resend && site.user_id) {

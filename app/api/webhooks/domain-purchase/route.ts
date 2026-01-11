@@ -6,6 +6,7 @@ import { getStripe } from '@/lib/stripe';
 import { purchaseDomain } from '@/lib/vercel';
 import { updateSiteCustomDomain } from '@/lib/db';
 import { logStripeEvent } from '@/lib/stripe-logger';
+import { analytics } from '@/lib/mixpanel';
 
 const stripe = getStripe();
 const webhookSecret = process.env.STRIPE_WEBHOOK_SECRET;
@@ -65,6 +66,14 @@ export async function POST(req: Request) {
               userId,
               customDomain: domain,
             });
+          }
+
+          // Track domain purchased in Mixpanel
+          try {
+            const price = session.amount_total / 100; // Convert from cents to dollars
+            analytics.domainPurchased(domain, price, siteId);
+          } catch (e) {
+            console.warn('Failed to track domain purchase in Mixpanel:', e);
           }
 
         await logStripeEvent({

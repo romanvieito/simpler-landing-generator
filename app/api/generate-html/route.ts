@@ -141,9 +141,9 @@ Return ONLY the HTML (no markdown, no fences).`;
     const response = await chatText(system, user);
     const html = response.content;
 
-    // Deduct credits based on API cost for HTML generation (4x API cost)
+    // Deduct credits based on API cost for HTML generation (3x API cost)
     const apiCost = response.cost;
-    const htmlCost = apiCost * 4;
+    const htmlCost = apiCost * 3;
     try {
       await deductCredits({
         userId,

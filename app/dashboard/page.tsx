@@ -8,6 +8,9 @@ import { useRouter } from 'next/navigation';
 import UrlEditor from '@/components/url-editor';
 import { PurchaseDomainModal } from '@/components/purchase-domain-modal';
 import { DomainRenewalModal } from '@/components/domain-renewal-modal';
+import { CreditDisplay } from '@/components/credit-display';
+import { PurchaseCreditsModal } from '@/components/purchase-credits-modal';
+import { analytics } from '@/lib/mixpanel';
 
 type Site = {
   id: string;
@@ -53,6 +56,7 @@ export default function DashboardPage() {
   const [renewingDomain, setRenewingDomain] = useState<string | null>(null);
   const [renewalModalDomain, setRenewalModalDomain] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'sites' | 'domains' | 'leads'>('sites');
+  const [showPurchaseModal, setShowPurchaseModal] = useState(false);
 
   useEffect(() => {
     fetchSites();
@@ -105,7 +109,13 @@ export default function DashboardPage() {
     try {
       const res = await fetch(`/api/sites/${id}`, { method: 'DELETE' });
       if (res.ok) {
+        const siteToDelete = sites.find(s => s.id === id);
         setSites((prev) => prev.filter((s) => s.id !== id));
+
+        // Track site deleted
+        if (siteToDelete) {
+          analytics.siteDeleted(id, siteToDelete.title || 'Untitled Site');
+        }
       }
     } catch (e) {
       console.error(e);
@@ -115,6 +125,9 @@ export default function DashboardPage() {
   }
 
   function handleLoadInEditor(site: Site) {
+    // Track site viewed/edited
+    analytics.siteViewed(site.id, site.title || 'Untitled Site');
+
     router.push(`/?loadSite=${site.id}`);
   }
 
@@ -187,6 +200,9 @@ export default function DashboardPage() {
                     <h1 className="text-xl md:text-2xl font-bold text-gray-900 truncate">Dashboard</h1>
                     <p className="text-xs md:text-sm text-gray-500 hidden sm:block">Manage your sites and leads</p>
                   </div>
+                </div>
+                <div className="flex items-center gap-4 min-w-0">
+                  <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
                 </div>
                 <Link
                   href="/"
@@ -375,12 +391,12 @@ export default function DashboardPage() {
                                 <button
                                   onClick={() => handleDomainPurchase(site.id)}
                                   className="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2"
-                                  title="Buy custom domain"
+                                  title="Get a custom domain - search available domains, see pricing, and purchase securely"
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
                                   </svg>
-                                  Buy Domain
+                                  Get Domain
                                 </button>
                               )}
                             </div>
@@ -714,6 +730,12 @@ export default function DashboardPage() {
           isOpen={!!renewalModalDomain}
           onClose={() => setRenewalModalDomain(null)}
           domainName={renewalModalDomain || ''}
+        />
+
+        {/* Purchase Credits Modal */}
+        <PurchaseCreditsModal
+          isOpen={showPurchaseModal}
+          onClose={() => setShowPurchaseModal(false)}
         />
       </SignedIn>
     </>

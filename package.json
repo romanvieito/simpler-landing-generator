@@ -17,6 +17,7 @@
     "@clerk/nextjs": "^6.36.1",
     "@vercel/postgres": "^0.10.0",
     "jszip": "^3.10.1",
+    "mixpanel-browser": "^2.73.0",
     "next": "16.0.8",
     "react": "19.2.1",
     "react-dom": "19.2.1",

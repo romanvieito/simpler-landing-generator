@@ -108,6 +108,10 @@ export function PurchaseDomainModal({ isOpen, onClose, siteId, onDomainPurchased
           </button>
         </div>
 
+        <p className="text-sm text-gray-600 mb-4">
+          Search available domains, see pricing, and purchase securely through Stripe.
+        </p>
+
         <div className="space-y-4">
           <div>
             <label htmlFor="domain" className="block text-sm font-medium text-gray-700 mb-1">

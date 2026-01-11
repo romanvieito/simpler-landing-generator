@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import { CreditDisplay } from '@/components/credit-display';
 import { PurchaseCreditsModal } from '@/components/purchase-credits-modal';
 import SubdomainEditor from '@/components/subdomain-editor';
+import { analytics } from '@/lib/mixpanel';
 
 type Plan = {
   title: string;
@@ -936,6 +937,9 @@ function LandingGeneratorContent() {
 
   async function handleGenerate() {
     try {
+      // Track generation started
+      analytics.generationStarted(description, websiteStyle);
+
       setLoading('planning');
       setPublishedUrl('');
       setSavedSiteId('');
@@ -1001,6 +1005,9 @@ function LandingGeneratorContent() {
       setRedoStack([]);
       setLoading('idle');
       setView('preview');
+
+      // Track generation completed
+      analytics.generationCompleted(savedSiteId, planOut.title, 3);
     } catch (err) {
       console.error(err);
       setLoading('idle');
@@ -1029,6 +1036,9 @@ function LandingGeneratorContent() {
       const data = await res.json();
       if (!res.ok) throw new Error(data?.error || 'Save failed');
       setSavedSiteId(data.id);
+
+      // Track site saved
+      analytics.siteSaved(data.id, plan?.title ?? 'Landing');
     } catch (e) {
       console.error(e);
       alert((e as Error)?.message ?? 'Error saving');
@@ -1152,6 +1162,9 @@ function LandingGeneratorContent() {
       } else {
         setPublishedUrl(data.url);
       }
+
+      // Track site published
+      analytics.sitePublished(siteIdToUse, publishedUrl, !!customUrlSlug);
 
       // Extract and set the slug from the published URL for future editing (only if no custom slug set)
       if (data.url && !customUrlSlug) {

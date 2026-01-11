@@ -23,24 +23,21 @@ export function ensureFullHtml(html: string) {
 
 export function generateShortSiteName(): string {
   // Generate a short, memorable name for published websites
-  // Format: prefix + random letters/numbers (total ~8-12 chars)
+  // Format: 3-5 random characters (much shorter than before)
 
-  const prefixes = ['site', 'page', 'land', 'web', 'hub', 'spot', 'link'];
   const consonants = 'bcdfghjklmnpqrstvwxyz';
   const vowels = 'aeiou';
   const numbers = '0123456789';
 
-  const prefix = prefixes[Math.floor(Math.random() * prefixes.length)];
+  // Generate 3-5 random characters (mix of letters and numbers)
+  let name = '';
+  const nameLength = 3 + Math.floor(Math.random() * 3); // 3-5 chars
 
-  // Generate 2-3 random characters (mix of letters and numbers)
-  let suffix = '';
-  const suffixLength = 2 + Math.floor(Math.random() * 2); // 2-3 chars
-
-  for (let i = 0; i < suffixLength; i++) {
+  for (let i = 0; i < nameLength; i++) {
     const charSets = [consonants, vowels, numbers];
     const charSet = charSets[Math.floor(Math.random() * charSets.length)];
-    suffix += charSet[Math.floor(Math.random() * charSet.length)];
+    name += charSet[Math.floor(Math.random() * charSet.length)];
   }
 
-  return `${prefix}-${suffix}`;
+  return name;
 }
