@@ -89,6 +89,8 @@ jobs:
         vercel --prod --yes
       env:
         VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        VERCEL_ORG_ID: team_bsJGEdJ098WKVGVRL0E1ddGi
+        VERCEL_PROJECT_ID: prj_YZVQH0XgByQpnxa2JrjQW300tPHJ
 
   alert-on-failure:
     runs-on: ubuntu-latest
