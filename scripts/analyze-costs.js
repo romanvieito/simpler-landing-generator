@@ -8,6 +8,21 @@
 // Load environment variables from .env.local (like Next.js does)
 require('dotenv').config({ path: '.env.local' });
 
+// Debug: Check what environment variables are available
+console.log(`🔍 Environment check:`);
+console.log(`   POSTGRES_URL: ${process.env.POSTGRES_URL ? '✅ Set' : '❌ Missing'}`);
+console.log(`   Working directory: ${process.cwd()}`);
+console.log(`   .env.local exists: ${require('fs').existsSync('.env.local')}`);
+
+// In CI/CD environments, GitHub Actions secrets are available as environment variables
+// Make sure POSTGRES_URL is available for Vercel Postgres
+if (!process.env.POSTGRES_URL) {
+  console.error('\n❌ POSTGRES_URL environment variable is not set');
+  console.error('   Make sure POSTGRES_URL is added to GitHub Actions secrets');
+  console.error('   Available env vars:', Object.keys(process.env).filter(key => key.includes('POSTGRES')).join(', '));
+  process.exit(1);
+}
+
 const { sql } = require('@vercel/postgres');
 
 // Time periods for analysis
