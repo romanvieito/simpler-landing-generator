@@ -773,6 +773,9 @@ function LandingGeneratorContent() {
           pushHistory();
           if (selectedElRef.current) {
             selectedElRef.current.contentEditable = 'false';
+            clearSelectionInPreview(selectedElRef.current);
+            selectedElRef.current = null;
+            setSelectedEl(null);
           }
           return;
         }
