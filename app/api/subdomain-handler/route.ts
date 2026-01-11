@@ -1,6 +1,6 @@
 // app/api/subdomain-handler/route.ts
 import { NextRequest, NextResponse } from 'next/server';
-import { getSiteByCustomDomain } from '@/lib/db';
+import { getSiteByCustomDomain, getSiteBySubdomain } from '@/lib/db';
 
 export async function GET(request: NextRequest) {
   const host = request.headers.get('host') || '';
@@ -15,9 +15,15 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    // Find site by custom domain
     const fullDomain = `${subdomain}.easyland.site`;
-    const site = await getSiteByCustomDomain(fullDomain);
+
+    // First try to find site by custom domain (for purchased custom domains)
+    let site = await getSiteByCustomDomain(fullDomain);
+
+    // If not found by custom domain, try to find by subdomain (for published sites)
+    if (!site) {
+      site = await getSiteBySubdomain(fullDomain);
+    }
 
     if (!site || !site.html) {
       // Site not found - show 404 or default content

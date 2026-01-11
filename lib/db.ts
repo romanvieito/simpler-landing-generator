@@ -271,6 +271,19 @@ export async function getSiteByCustomDomain(customDomain: string): Promise<{ id:
   return rows[0] as { id: string; html: string | null; title: string | null; description: string | null } || null;
 }
 
+export async function getSiteBySubdomain(subdomain: string): Promise<{ id: string; html: string | null; title: string | null; description: string | null } | null> {
+  // Look for sites where vercel_url contains the subdomain (e.g., "1eoi3.easyland.site")
+  const { rows } = await sql`
+    SELECT id, html, title, description
+    FROM sites
+    WHERE vercel_url LIKE ${`https://${subdomain}`}
+      OR vercel_url LIKE ${`${subdomain}`}
+      OR vercel_url LIKE ${`%.${subdomain}`}
+    LIMIT 1
+  `;
+  return rows[0] as { id: string; html: string | null; title: string | null; description: string | null } || null;
+}
+
 export async function deleteSite({ id, userId }: { id: string; userId: string }) {
   // In development, allow deletion of any site
   const isDevelopment = process.env.NODE_ENV === 'development';

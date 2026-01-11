@@ -70,7 +70,7 @@ export async function POST(req: Request) {
 
           // Track domain purchased in Mixpanel
           try {
-            const price = session.amount_total / 100; // Convert from cents to dollars
+            const price = (session.amount_total || 0) / 100; // Convert from cents to dollars
             analytics.domainPurchased(domain, price, siteId);
           } catch (e) {
             console.warn('Failed to track domain purchase in Mixpanel:', e);
