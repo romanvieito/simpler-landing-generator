@@ -394,10 +394,12 @@ function LandingGeneratorContent() {
     const node = el ?? selectedElRef.current;
     if (!node) return;
     node.classList.remove('edit-mode-selected');
-    const badge = node.querySelector('.edit-mode-badge');
-    if (badge) badge.remove();
-    const replaceBtn = node.querySelector('.edit-mode-replace-btn');
-    if (replaceBtn) replaceBtn.remove();
+    try {
+      const badge = node.querySelector('.edit-mode-badge');
+      if (badge) badge.remove();
+    } catch (e) {
+      // Ignore errors if querySelector fails on some elements
+    }
     node.contentEditable = 'false';
   }
 
@@ -645,11 +647,12 @@ function LandingGeneratorContent() {
         const tag = target.tagName.toLowerCase();
 
         // Prevent default behavior for interactive elements (including nested clicks) to avoid navigation/form submission
-        if (target.closest('a, button, input, textarea, select')) {
+        const interactiveEl = target.closest('a, button, input, textarea, select');
+        if (interactiveEl) {
           e.preventDefault();
           e.stopPropagation();
-          // Don't allow selecting interactive controls as editable elements
-          return;
+          // If it's a link with a fragment, we might want to allow it in preview mode, 
+          // but in edit mode we should allow selecting it for editing.
         }
 
         // Don't select edit mode UI elements
@@ -671,16 +674,19 @@ function LandingGeneratorContent() {
         target.classList.add('edit-mode-selected');
 
         // Add element type badge
-        const existingBadge = target.querySelector('.edit-mode-badge');
-        if (!existingBadge) {
-          const badge = doc.createElement('div');
-          badge.className = 'edit-mode-badge';
-          badge.textContent = getElementTypeName(tag);
-          target.style.position = target.style.position || 'relative';
-          target.insertBefore(badge, target.firstChild);
+        const voidElements = new Set(['img', 'input', 'br', 'hr', 'meta', 'link', 'svg', 'path', 'rect', 'circle']);
+        if (!voidElements.has(tag)) {
+          const existingBadge = target.querySelector('.edit-mode-badge');
+          if (!existingBadge) {
+            const badge = doc.createElement('div');
+            badge.className = 'edit-mode-badge';
+            badge.textContent = getElementTypeName(tag);
+            target.style.position = target.style.position || 'relative';
+            target.insertBefore(badge, target.firstChild);
+          }
         }
 
-        const nonEditableTags = new Set(['img', 'svg', 'a', 'button', 'input', 'form', 'select', 'textarea']);
+        const nonEditableTags = new Set(['img', 'svg', 'input', 'form', 'select', 'textarea']);
 
         // If clicking on a non-editable element that's already selected, deselect it
         if (nonEditableTags.has(tag) && prevSelected === target) {
@@ -693,34 +699,10 @@ function LandingGeneratorContent() {
           target.contentEditable = 'true';
           target.focus();
         } else if (tag === 'img') {
-          // For images, add a replace button
-          const existingReplaceBtn = target.querySelector('.edit-mode-replace-btn');
-          if (!existingReplaceBtn) {
-            const replaceBtn = doc.createElement('button');
-            replaceBtn.className = 'edit-mode-replace-btn';
-            replaceBtn.textContent = '📷 Replace Image';
-            replaceBtn.style.cssText = `
-              position: absolute !important;
-              top: 50% !important;
-              left: 50% !important;
-              transform: translate(-50%, -50%) !important;
-              background: #7c3aed !important;
-              color: white !important;
-              border: none !important;
-              padding: 8px 16px !important;
-              border-radius: 6px !important;
-              font-size: 14px !important;
-              font-weight: 600 !important;
-              cursor: pointer !important;
-              z-index: 10001 !important;
-              box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
-            `;
-            replaceBtn.onclick = (e) => {
-              e.stopPropagation();
-              triggerImageUpload();
-            };
-            target.style.position = 'relative';
-            target.appendChild(replaceBtn);
+          // For images, we can't append children. 
+          // If the image is already selected, trigger the upload
+          if (prevSelected === target) {
+            triggerImageUpload();
           }
         }
       }

@@ -35,7 +35,11 @@ Generated landing pages now include working contact forms that store submissions
 Email notifications are automatically sent to the **site creator's email** (from their Clerk account). Without the Resend API key, forms still work but skip email notifications. Submissions are always stored in the database.
 
 ### Credit System
-Users must purchase credits to generate landing pages. Pricing is based on actual API costs plus 10% markup. Each landing page generation consists of two API calls (plan generation + HTML generation), with costs calculated dynamically based on token usage.
+**New users get $1 in free credits** to test the service. After that, users must purchase credits to continue generating landing pages. We charge the actual API cost plus 10% markup. Each landing page generation consists of two API calls (plan generation + HTML generation), with costs calculated dynamically based on token usage.
+
+#### Free Testing Credits
+- **New users**: $1 in credits (enough for 1 landing page)
+- **Returning users**: $1 daily refresh when balance is low
 
 #### Setup
 1. **Stripe Integration**: Create a Stripe account and get your API keys
@@ -45,11 +49,11 @@ Users must purchase credits to generate landing pages. Pricing is based on actua
    - `NEXT_PUBLIC_APP_URL`: Your app's URL (for Stripe redirects)
 
 #### Credit Packages
-- **5 Credits**: $5.00 (Perfect for testing)
-- **15 Credits**: $12.00 (Great for multiple landing pages)
-- **50 Credits**: $30.00 (Ideal for agencies)
+- **5 Credits ($5)**: Perfect for testing
+- **15 Credits ($12)**: Great for multiple landing pages
+- **50 Credits ($30)**: Ideal for agencies
 
-Credits are charged in cents (1 credit = $0.01). The actual cost per landing page varies based on API usage but typically ranges from 2-10 credits depending on the complexity of the content.
+**1 credit = $1.00**. Each landing page costs the exact API usage + 10% markup (fractional credits).
 
 #### Webhook Setup
 1. In your Stripe dashboard, go to **Webhooks**

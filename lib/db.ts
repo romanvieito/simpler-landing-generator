@@ -363,23 +363,33 @@ export async function refreshFreeCredits({ userId }: { userId: string }) {
   const { balance, last_free_credits_at } = rows[0];
   const now = new Date();
   const lastGrant = last_free_credits_at ? new Date(last_free_credits_at) : null;
-  
-  // Check if 24 hours have passed since last grant (or never granted) and balance is below 1
-  const shouldGrant = balance < 1 && (!lastGrant || (now.getTime() - lastGrant.getTime()) >= 24 * 60 * 60 * 1000);
 
-  if (shouldGrant) {
-    // Set balance to 1 and update last_free_credits_at
+  // Check if user is new (never granted credits) or needs daily refresh
+  const isNewUser = !lastGrant;
+  const hasPassed24Hours = lastGrant && (now.getTime() - lastGrant.getTime()) >= 24 * 60 * 60 * 1000;
+
+  // For new users, give 1 credit for testing
+  // For existing users, give 1 credit daily if balance is low
+  const shouldGrantNewUser = isNewUser;
+  const shouldGrantExisting = !isNewUser && balance < 1 && hasPassed24Hours;
+
+  if (shouldGrantNewUser || shouldGrantExisting) {
+    const creditsToGrant = 1;
+    const newBalance = isNewUser ? creditsToGrant : Math.max(balance + creditsToGrant, creditsToGrant);
+
+    // Update balance and timestamp
     await sql`
       UPDATE user_credits
-      SET balance = 1, last_free_credits_at = NOW(), updated_at = NOW()
+      SET balance = ${newBalance}, last_free_credits_at = NOW(), updated_at = NOW()
       WHERE user_id = ${userId}
     `;
 
     // Record the free grant transaction
-    const amountGranted = 1 - balance;
+    const amountGranted = creditsToGrant;
+    const description = isNewUser ? 'Welcome bonus - 1 free credit for testing' : 'Daily free credits top-up';
     await sql`
       INSERT INTO credit_transactions (user_id, amount, type, description)
-      VALUES (${userId}, ${amountGranted}, 'free_grant', 'Daily free credits top-up')
+      VALUES (${userId}, ${amountGranted}, 'free_grant', ${description})
     `;
   }
 }
@@ -492,3 +502,4 @@ export async function clearPendingConversion(userId: string) {
     WHERE user_id = ${userId}
   `;
 }
+

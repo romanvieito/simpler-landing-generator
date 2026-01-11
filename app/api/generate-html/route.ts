@@ -141,14 +141,15 @@ Return ONLY the HTML (no markdown, no fences).`;
     const response = await chatText(system, user);
     const html = response.content;
 
-    // Deduct credits based on API cost for HTML generation (3x API cost)
-    const apiCost = response.cost;
-    const htmlCost = apiCost * 3;
+    // Deduct credits based on API cost for HTML generation (API cost + 10% markup)
+    const apiCost = response.cost; // Already in dollars with 10% markup
+    const htmlCost = apiCost; // Charge exact API cost (fractional credits)
+
     try {
       await deductCredits({
         userId,
         amount: htmlCost,
-        description: `Landing page HTML generation (4x API cost: $${Math.max(0.01, apiCost / 100).toFixed(2)} → $${Math.max(0.01, htmlCost / 100).toFixed(2)})`
+        description: `Landing page HTML generation: $${apiCost.toFixed(2)} → ${htmlCost.toFixed(2)} credits`
       });
     } catch (error: any) {
       if (error.message === 'Insufficient credits') {

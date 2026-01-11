@@ -72,16 +72,16 @@ ${description}
 """
 Return ONLY the JSON.`;
 
-    // Deduct credits based on API cost for plan generation (3x API cost)
+    // Deduct credits based on API cost for plan generation (API cost + 10% markup)
     const planResponse = await chatJSON(system, user);
-    const apiCost = planResponse.cost;
-    const planCost = apiCost * 3;
+    const apiCost = planResponse.cost; // Already in dollars with 10% markup
+    const planCost = apiCost; // Charge exact API cost (fractional credits)
 
     try {
       await deductCredits({
         userId,
         amount: planCost,
-        description: `Landing page plan generation (3x API cost: $${Math.max(0.01, apiCost / 100).toFixed(2)} → $${Math.max(0.01, planCost / 100).toFixed(2)})`
+        description: `Landing page plan generation: $${apiCost.toFixed(2)} → ${planCost.toFixed(2)} credits`
       });
     } catch (error: any) {
       if (error.message === 'Insufficient credits') {

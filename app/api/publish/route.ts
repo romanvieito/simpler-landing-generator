@@ -69,12 +69,58 @@ export async function POST(req: Request) {
     const useSharedProject = sharedProject && !hasCustomDomain;
     const name = useSharedProject ? sharedProject : generateShortSiteName();
 
-    // Note: exactName is no longer used in shared project mode - aliases are disabled
+    // Determine alias for the deployment
+    let alias = exactName && !useSharedProject ? nameHint : undefined;
+
+    // In shared project mode, we want to assign a short alias to avoid long Vercel URLs
+    // We'll use the app's main domain (e.g. easyland.site) to construct [short-code].easyland.site
+    if (useSharedProject && !alias) {
+      try {
+        const appUrlStr = process.env.NEXT_PUBLIC_APP_URL || '';
+        if (appUrlStr) {
+          const appHostname = new URL(appUrlStr).hostname;
+          // Only apply for production domains (not localhost)
+          if (appHostname && !appHostname.includes('localhost') && !appHostname.includes('127.0.0.1')) {
+            
+            // Try to reuse existing alias if it's a short one (not the default long Vercel URL)
+            let reusedAlias = false;
+            if (site?.vercel_url) {
+              try {
+                const currentUrlStr = site.vercel_url.startsWith('http') ? site.vercel_url : `https://${site.vercel_url}`;
+                const urlObj = new URL(currentUrlStr);
+                if (urlObj.hostname.endsWith(appHostname)) {
+                  // Extract subdomain part
+                  const subdomain = urlObj.hostname.slice(0, -(appHostname.length + 1));
+                  
+                  // If subdomain exists and doesn't start with the shared project name (which indicates a default Vercel URL)
+                  // then it's likely a custom/short alias we want to preserve
+                  if (subdomain && !subdomain.startsWith(sharedProject)) {
+                    alias = urlObj.hostname;
+                    reusedAlias = true;
+                    console.log('Reusing existing alias:', alias);
+                  }
+                }
+              } catch (e) {
+                // Ignore URL parsing errors
+              }
+            }
+
+            if (!reusedAlias) {
+              const shortCode = generateShortSiteName();
+              alias = `${shortCode}.${appHostname}`;
+              console.log('Generated short alias for shared project deployment:', alias);
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to generate alias for shared project:', e);
+      }
+    }
 
     const url = await deployStaticHtml({
       name,
       html: processedHtml,
-      alias: exactName && !useSharedProject ? nameHint : undefined
+      alias
     });
 
     try {
