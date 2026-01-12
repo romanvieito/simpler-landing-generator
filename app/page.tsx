@@ -1324,7 +1324,7 @@ function LandingGeneratorContent() {
                 </p>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 md:gap-10">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
                 {/* Creators */}
                 <div className="group card hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm">
                   <div className="p-8 text-center">
