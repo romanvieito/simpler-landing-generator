@@ -19,6 +19,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <MixpanelProvider>
         <html lang="en">
           <head>
+          </head>
+          <body>
             <Script
               src={`https://www.googletagmanager.com/gtag/js?id=AW-16510475658`}
               strategy="afterInteractive"
@@ -31,8 +33,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 gtag('config', 'AW-16510475658');
               `}
             </Script>
-          </head>
-          <body>
             {children}
           </body>
         </html>

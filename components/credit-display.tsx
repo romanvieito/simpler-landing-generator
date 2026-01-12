@@ -69,7 +69,7 @@ export function CreditDisplay({ onPurchaseClick, showCredits = true, showButton 
       {showButton && onPurchaseClick && (
         <button
           onClick={onPurchaseClick}
-          className={`btn ml-5text-xs px-3 py-1 ${credits === 0 ? 'btn-primary' : 'btn-outline'}`}
+          className={`btn ml-5 text-xs px-3 py-1 ${credits === 0 ? 'btn-primary' : 'btn-outline'}`}
         >
           {credits === 0 ? 'Buy Credits' : 'Add Credits'}
         </button>
