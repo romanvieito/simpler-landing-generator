@@ -12,6 +12,7 @@ const isProtectedApiRoute = createRouteMatcher(["/api/(.*)"]);
 const isPublicApiRoute = createRouteMatcher([
   "/api/contact(.*)",
   "/api/credits/webhook(.*)",
+  "/api/webhooks/clerk(.*)", // Allow Clerk webhooks for user tracking
   "/api/test-env(.*)",
   "/api/credits/create-checkout-session(.*)", // Allow checkout creation for testing
   "/api/credits/balance(.*)", // Allow balance checking for testing
