@@ -24,8 +24,10 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ siteId: string }> }
 ) {
+  let siteId = 'unknown';
   try {
-    const { siteId } = await params;
+    const paramsData = await params;
+    siteId = paramsData.siteId;
 
     // 1. Validate site exists first (publicly)
     const site = await getSitePublic(siteId);
@@ -146,7 +148,7 @@ export async function POST(
     analytics.errorOccurred('contact_form_submission_failed', e?.message ?? 'Unknown error', {
       siteId,
       endpoint: 'contact',
-      userId: userId || 'unknown'
+      userId: 'unknown'
     });
     return withCors(NextResponse.json(
       { error: e?.message ?? 'Failed to submit contact form' },

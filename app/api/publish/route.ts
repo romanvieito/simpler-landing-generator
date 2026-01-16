@@ -15,9 +15,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
+  let siteId: string | null | undefined;
   try {
     const body = await req.json() as { html: string; nameHint?: string; siteId?: string | null; exactName?: boolean };
-    const { html, nameHint, siteId, exactName } = body;
+    const { html, nameHint, exactName } = body;
+    siteId = body.siteId;
 
     if (!html || typeof html !== 'string') {
       return NextResponse.json({ error: 'Missing HTML' }, { status: 400 });
