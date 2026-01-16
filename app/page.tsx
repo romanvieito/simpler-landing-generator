@@ -1062,6 +1062,11 @@ function LandingGeneratorContent() {
 
       // Track site saved
       analytics.siteSaved(data.id, plan?.title ?? 'Landing');
+
+      // Track site edited if this was an existing site
+      if (savedSiteId) {
+        analytics.siteEdited(data.id, plan?.title ?? 'Landing');
+      }
     } catch (e) {
       console.error(e);
       alert((e as Error)?.message ?? 'Error saving');

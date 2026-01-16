@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { analytics } from '@/lib/mixpanel';
 
 interface UrlEditorProps {
   siteId: string;
@@ -64,6 +65,7 @@ export default function UrlEditor({ siteId, currentUrl, onUrlUpdate, className =
 
       // Update the local state with the new custom domain
       await onUrlUpdate(fullDomain);
+      analytics.featureUsed('custom_url_set', { siteId, url: fullDomain });
       setIsEditing(false);
     } catch (error: any) {
       console.error('Failed to update URL:', error);

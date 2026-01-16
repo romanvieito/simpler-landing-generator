@@ -143,6 +143,11 @@ export async function POST(
 
   } catch (e: any) {
     console.error('Contact form submission error:', e);
+    analytics.errorOccurred('contact_form_submission_failed', e?.message ?? 'Unknown error', {
+      siteId,
+      endpoint: 'contact',
+      userId: userId || 'unknown'
+    });
     return withCors(NextResponse.json(
       { error: e?.message ?? 'Failed to submit contact form' },
       { status: 500 }

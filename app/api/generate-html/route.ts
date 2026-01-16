@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { chatText } from '@/lib/deepseek';
 import { deductCredits, ensureCreditsTable, ensureCreditTransactionsTable } from '@/lib/db';
+import { analytics } from '@/lib/mixpanel';
 
 export async function POST(req: Request) {
   // Skip authentication in development for easier testing
@@ -171,6 +172,51 @@ Return ONLY the HTML (no markdown, no fences).`;
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>${plan?.title ?? 'Landing'}</title>
+<script src="https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js"></script>
+<script>
+  mixpanel.init('${process.env.NEXT_PUBLIC_MIXPANEL_TOKEN}', {
+    track_pageview: true,
+    persistence: 'localStorage'
+  });
+  mixpanel.track('Site Viewed', {
+    site_id: '${siteId}',
+    site_title: '${plan?.title ?? 'Landing'}'
+  });
+
+  // Track CTA clicks
+  function trackCTAClick(ctaText, location) {
+    mixpanel.track('CTA Clicked', {
+      cta_text: ctaText,
+      location: location,
+      site_id: '${siteId}'
+    });
+  }
+
+  // Add click tracking to CTA elements after page loads
+  document.addEventListener('DOMContentLoaded', function() {
+    // Track buttons with CTA-like text
+    document.querySelectorAll('button, a, input[type="submit"]').forEach(function(el) {
+      var text = el.textContent || el.value || el.innerText || '';
+      if (text && (text.toLowerCase().includes('get') ||
+                   text.toLowerCase().includes('start') ||
+                   text.toLowerCase().includes('join') ||
+                   text.toLowerCase().includes('sign up') ||
+                   text.toLowerCase().includes('contact') ||
+                   text.toLowerCase().includes('learn more'))) {
+        el.addEventListener('click', function() {
+          trackCTAClick(text.trim(), window.location.pathname);
+        });
+      }
+    });
+
+    // Track form submissions
+    document.querySelectorAll('form').forEach(function(form) {
+      form.addEventListener('submit', function() {
+        trackCTAClick('Form Submitted', window.location.pathname);
+      });
+    });
+  });
+</script>
 <style>
   :root {
     --color-primary: ${plan?.palette?.primary ?? '#111827'};
@@ -198,6 +244,10 @@ ${html}
     return NextResponse.json({ html: fullHtml });
   } catch (e: any) {
     console.error(e);
+    analytics.errorOccurred('html_generation_failed', e?.message ?? 'Unknown error', {
+      userId: userId || 'unknown',
+      endpoint: 'generate-html'
+    });
     return NextResponse.json({ error: e?.message ?? 'Failed to generate HTML' }, { status: 500 });
   }
 }

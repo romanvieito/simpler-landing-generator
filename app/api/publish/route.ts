@@ -4,6 +4,7 @@ import { auth } from '@clerk/nextjs/server';
 import { deployStaticHtml } from '@/lib/vercel';
 import { updateSiteUrl, getSite } from '@/lib/db';
 import { generateShortSiteName } from '@/lib/utils';
+import { analytics } from '@/lib/mixpanel';
 
 export async function POST(req: Request) {
   // Skip authentication in development for easier testing
@@ -133,6 +134,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ url });
   } catch (e: any) {
     console.error(e);
+    analytics.errorOccurred('site_publish_failed', e?.message ?? 'Unknown error', {
+      userId: userId || 'unknown',
+      siteId: siteId || 'unknown',
+      endpoint: 'publish'
+    });
     return NextResponse.json({ error: e?.message ?? 'Failed to publish' }, { status: 500 });
   }
 }

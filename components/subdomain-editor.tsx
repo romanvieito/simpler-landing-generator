@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { analytics } from '@/lib/mixpanel';
 
 interface SubdomainEditorProps {
   currentSubdomain: string | null;
@@ -52,6 +53,7 @@ export default function SubdomainEditor({
       }
 
       await onSubdomainUpdate(cleanSubdomain);
+      analytics.featureUsed('subdomain_updated', { subdomain: cleanSubdomain });
       setIsEditing(false);
     } catch (error: any) {
       console.error('Failed to update subdomain:', error);

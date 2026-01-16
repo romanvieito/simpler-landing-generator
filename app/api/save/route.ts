@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@clerk/nextjs/server';
 import { sql } from '@vercel/postgres';
 import { ensureSitesTable } from '@/lib/db';
+import { analytics } from '@/lib/mixpanel';
 
 export async function POST(req: Request) {
   // Skip authentication in development for easier testing
@@ -66,6 +67,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ id });
   } catch (e: any) {
     console.error(e);
+    analytics.errorOccurred('site_save_failed', e?.message ?? 'Unknown error', {
+      userId: userId || 'unknown',
+      endpoint: 'save'
+    });
     return NextResponse.json({ error: e?.message ?? 'Failed to save' }, { status: 500 });
   }
 }
