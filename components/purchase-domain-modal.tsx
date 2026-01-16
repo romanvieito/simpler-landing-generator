@@ -102,8 +102,10 @@ export function PurchaseDomainModal({ isOpen, onClose, siteId, onDomainPurchased
       <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
         <div className="flex justify-between items-center mb-4">
           <h2 className="text-lg font-semibold">Buy Custom Domain</h2>
-          <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 text-xl">
-            ×
+          <button onClick={handleClose} className="text-gray-400 hover:text-gray-600 transition-colors p-1">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
           </button>
         </div>
 
@@ -129,9 +131,18 @@ export function PurchaseDomainModal({ isOpen, onClose, siteId, onDomainPurchased
               <button
                 onClick={handleCheckAvailability}
                 disabled={!domain.trim() || checking}
-                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
               >
-                {checking ? '...' : 'Check'}
+                {checking ? (
+                  '...'
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Check
+                  </>
+                )}
               </button>
             </div>
           </div>
