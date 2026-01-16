@@ -1029,6 +1029,34 @@ function LandingGeneratorContent() {
       setHtml(htmlOut);
       setHistory([htmlOut]);
       setRedoStack([]);
+
+      // Automatically save the generated site to database to prevent loss on refresh
+      setLoading('saving');
+      try {
+        const cleanedHtml = cleanHtmlForPublishing(htmlOut);
+        const saveRes = await fetch('/api/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            title: planOut.title ?? 'Landing',
+            description,
+            plan: planOut,
+            html: cleanedHtml,
+            vercelUrl: null,
+          }),
+        });
+        const saveData = await saveRes.json();
+        if (saveRes.ok) {
+          setSavedSiteId(saveData.id);
+          // Track site saved
+          analytics.siteSaved(saveData.id, planOut.title ?? 'Landing');
+        } else {
+          console.warn('Failed to auto-save generated site:', saveData?.error);
+        }
+      } catch (saveErr) {
+        console.warn('Auto-save failed:', saveErr);
+      }
+
       setLoading('idle');
       setView('preview');
 
