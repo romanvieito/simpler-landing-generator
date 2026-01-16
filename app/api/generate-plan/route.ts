@@ -22,29 +22,64 @@ export async function POST(req: Request) {
 
     const { description, style = 'Professional' } = await req.json();
 
-    const styleGuidelines: Record<string, string> = {
-      Professional: 'Use clean lines, corporate colors (blues, grays), structured layouts, and formal tone. Emphasize trust and credibility.',
-      Creative: 'Use bold colors, unique layouts, playful fonts, and engaging visuals. Emphasize innovation and originality.',
-      Friendly: 'Use warm colors (oranges, yellows, soft blues), rounded corners, casual tone, and approachable imagery. Emphasize warmth and accessibility.',
-      Minimalist: 'Use lots of white space, monochromatic or limited color palette, simple typography, and clean design. Emphasize simplicity and clarity.'
-    };
+    const system = `You are an expert landing page designer inspired by Jonathan Ive's design philosophy: purposeful simplicity, emotional resonance, and premium aesthetics.
 
-    const system = `You are a landing page content generator. Output strictly a single JSON object that includes:
+Analyze the business description and generate a complete landing page plan as a single JSON object.
+
+REQUIRED JSON STRUCTURE:
 {
   "title": string,
-  "palette": { "primary": string, "secondary": string, "background": string, "text": string, "accent": string },
-  "fonts": { "heading": string, "body": string },
+  "designSystem": {
+    "mood": string,
+    "palette": {
+      "primary": string,
+      "secondary": string,
+      "accent": string,
+      "background": string,
+      "text": string,
+      "muted": string
+    },
+    "typography": {
+      "heading": string,
+      "body": string,
+      "style": string
+    },
+    "effects": {
+      "borderRadius": string,
+      "shadows": string,
+      "gradientStyle": string
+    }
+  },
   "sectionsContent": {
     "hero": {
       "headline": string,
       "subhead": string,
       "primaryCta": string
     },
+    "features": [
+      {
+        "icon": string,
+        "title": string,
+        "description": string
+      }
+    ],
     "audience": {
       "title": string,
       "description": string,
-      "segments": [{ "title": string, "description": string }]
+      "segments": [
+        {
+          "title": string,
+          "description": string
+        }
+      ]
     },
+    "howItWorks": [
+      {
+        "number": number,
+        "title": string,
+        "description": string
+      }
+    ],
     "contact": {
       "title": string,
       "nameLabel": string,
@@ -55,22 +90,45 @@ export async function POST(req: Request) {
   },
   "images": [{ "query": string }]
 }
-Rules:
-- Generate content for exactly 3 sections: hero, audience (who is this for), and contact form.
-- Keep copy concise and friendly. Avoid placeholder words like 'Lorem'.
-- Use accessible color contrast; prefer neutral background and clear text color.
-- Include up to 3 image queries for hero visuals.
-- Hero section: compelling headline, clear subhead, and 1 primary CTA button only.
-- Audience section: title and description explaining who the landing page is for.
-- Audience segments: exactly 3 items. Title = specific pain point (e.g. "Overwhelmed by X"). Description = how the offer solves it.
-- Contact section: form labels and submit button text.
-- Design Style: ${styleGuidelines[style as keyof typeof styleGuidelines] || styleGuidelines.Professional}`;
+
+DESIGN SYSTEM GUIDELINES:
+Analyze the business type and intelligently select a design archetype:
+- Tech/SaaS: Sharp geometry, blue-purple palettes (#3B82F6, #8B5CF6), fonts like "Space Grotesk" or "Inter", modern shadows
+- Health/Wellness: Organic shapes, earth tones (#2D5016, #C17F59), fonts like "Playfair Display" or "Source Sans 3", soft shadows
+- Professional Services: Navy/gold accents (#1E3A8A, #D97706), fonts like "Libre Baskerville" or "Source Serif 4", structured
+- Creative/Agency: Bold contrasts (#EF4444, #10B981), fonts like "Unbounded" or "Manrope", dynamic
+- Local/Artisan: Warm palettes (#92400E, #F59E0B), fonts like "Cormorant" or "Lora", textured feel
+- E-commerce/Retail: Clean whites (#FFFFFF), vibrant accents (#EC4899), fonts like "DM Sans" or "Inter", product-focused
+
+MOOD: One word describing the aesthetic (e.g., "serene-organic", "bold-tech", "warm-artisan", "clean-professional")
+
+TYPOGRAPHY: Choose Google Fonts that match the mood. Heading and body should pair well.
+
+EFFECTS:
+- borderRadius: "sharp" (2-4px), "modern" (8-12px), "organic" (16-24px), "pill" (full rounded)
+- shadows: "none", "subtle", "soft", "pronounced"
+- gradientStyle: "none", "warm-fade", "cool-fade", "vibrant", "subtle"
+
+CONTENT RULES:
+- Generate content for exactly 5 sections: hero, features, audience, howItWorks, contact
+- Keep copy concise, benefit-focused, and authentic. NO placeholder text like "Lorem"
+- Hero: Compelling headline with brand name, clear value prop subhead, action-oriented CTA (2-4 words)
+- Features: Exactly 3-4 benefit cards. Icon = single emoji. Title = 2-4 words. Description = 8-15 words explaining the benefit
+- Audience: Title + description of who this serves. Segments = exactly 3 pain/solution pairs. Title = pain point, Description = how you solve it
+- How It Works: Exactly 3 numbered steps. Title = action (2-4 words), Description = what happens (8-12 words)
+- Contact: Contextual form labels and submit button text
+- Images: 2-3 image search queries for hero visuals (generic, safe, relevant)
+
+ACCESSIBILITY: Ensure color contrast meets WCAG AA standards (4.5:1 for text)`;
 
     const user = `Business description:
 """
 ${description}
 """
-Return ONLY the JSON.`;
+
+Analyze this business and generate a complete landing page plan with an AI-driven design system that perfectly matches the business type and creates a unique, premium aesthetic.
+
+Return ONLY the JSON object, no markdown, no commentary.`;
 
     // Generate plan (free - cost charged during HTML generation)
     const planResponse = await chatJSON(system, user);

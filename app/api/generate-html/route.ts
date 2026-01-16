@@ -21,59 +21,126 @@ export async function POST(req: Request) {
 
     const { plan } = await req.json();
 
-const system = `You generate complete, mobile-responsive HTML documents with inline CSS only. CRITICAL REQUIREMENTS:
-|- Output a single complete HTML document: <!doctype html><html>...<head>...<style>... and <body>...</body></html>.
-|- Use inline <style> in <head>; do not import external CSS or fonts.
-|- Use provided color palette and font names (fallback to system fonts).
-|- Layout: modern, clean, responsive. Use semantic sections.
-|- Images: use provided image URLs if available; otherwise omit images. For hero images, use class="hero-image" for proper sizing.
-|- Accessibility: sufficient contrast, alt text for images, logical headings.
-|- Keep copy exactly as provided in the plan; do not add placeholders.
-|- Include smooth responsive behavior for mobile first.
-|- No scripts unless strictly necessary. No analytics, no external links except CTAs provided.
-|- CRITICAL TEXT HANDLING: All text content must be fully visible and NOT cut off or hidden.
- * Use word-wrap: break-word; and overflow-wrap: break-word; for all text containers.
- * Ensure headlines, paragraphs, and all text can wrap properly on mobile devices.
- * Avoid fixed heights on text containers that could cause text overflow.
- * Use max-width with appropriate padding to ensure text is never clipped.
- * Test that all content is readable and fully visible on narrow viewports (320px+).
-|- CTA BUTTON BEHAVIOR: The primary CTA button in the hero section should link to the contact form at the bottom of the page using href="#contact-section".
+const system = `You are an expert web designer creating stunning, conversion-optimized landing pages inspired by Jonathan Ive's design philosophy.
 
-Generate ONLY these 3 sections in this exact order:
-1. Hero section (with headline, subhead, primary CTA button)
-2. Audience section (with title, description, and the 3 problem/solution segments in a grid/list)
-3. Contact form section (with the provided form fields)
+DESIGN PRINCIPLES (Ive-Inspired):
+- Purposeful simplicity: Every element earns its place
+- Generous whitespace: Let content breathe (80-120px section padding on desktop, 40-60px mobile)
+- Typography hierarchy: Large, confident headlines (48-72px desktop); comfortable body text (16-18px)
+- Subtle depth: Soft shadows (0 4px 20px rgba(0,0,0,0.08)), gentle gradients, layered elements
+- Motion: Fade-in animations on scroll, smooth hover transitions (0.3s ease)
+- Color restraint: Use accent color sparingly for CTAs and highlights
+- Premium feel: High-quality spacing, refined details, polished interactions
 
-DO NOT add testimonials, or any other sections. Only these 3 sections.`;
+TECHNICAL REQUIREMENTS:
+- Output complete HTML: <!doctype html><html><head><style>...</style></head><body>...</body></html>
+- Use inline <style> in <head> only; import Google Fonts via @import
+- Use plan.designSystem for colors, typography, and effects
+- Mobile-first responsive design (320px+)
+- Accessibility: WCAG AA contrast, semantic HTML, alt text
+- Smooth scroll behavior: scroll-behavior: smooth on html
+- All text must wrap properly: word-wrap: break-word; overflow-wrap: break-word
+
+SECTION ORDER (5 sections, generate ALL):
+1. Hero section - Full-width with gradient/image background, centered content
+2. Features section - 3-4 benefit cards in responsive grid with icons
+3. Audience section - Problem/solution pairs showing empathy
+4. How It Works section - 3 numbered steps with visual flow
+5. Contact section - Clean form with subtle background differentiation
+
+REQUIRED CSS ANIMATIONS:
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-up { animation: fadeInUp 0.8s ease-out; }
+
+BUTTON HOVER EFFECT:
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+}
+
+CARD HOVER EFFECT:
+.feature-card:hover, .step-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+}`;
 
     const user = `JSON plan for the page:
 ${JSON.stringify(plan, null, 2)}
 
 CRITICAL INSTRUCTIONS:
-|- Generate HTML for ONLY these 3 sections in this exact order:
-  1. Hero section using plan.sectionsContent.hero
-  2. Audience section using plan.sectionsContent.audience. IMPORTANT: Render the 'segments' as a responsive 3-column grid (or stacked on mobile). Each segment title is the Pain Point (bold), description is the Solution.
-  3. Contact form section using plan.sectionsContent.contact
+Generate HTML for ALL 5 sections in this exact order:
 
-|- Use the exact content from plan.sectionsContent - do not modify or add to it
+1. HERO SECTION (plan.sectionsContent.hero)
+   - Full-width section with gradient background using plan.designSystem.palette
+   - Centered content: headline (h1), subhead (p), primary CTA button
+   - CTA button MUST be: <a href="#contact-section" class="cta-button">${plan.sectionsContent.hero.primaryCta}</a>
+   - If plan.images exists, optionally include hero image with overlay
+   - Padding: 100-120px vertical on desktop, 60-80px mobile
 
-IMPORTANT: For the contact form, use this exact format:
-<div id="contact-section">
-  <div id="success-message" style="display:none; padding: 1rem; background: #10b981; color: white; border-radius: 0.5rem; margin-bottom: 1rem;">
-    ✓ Thank you! Your message has been sent successfully.
+2. FEATURES SECTION (plan.sectionsContent.features)
+   - Section title: "Features" or contextual variant
+   - Responsive grid: 3-4 cards (grid on desktop, stack on mobile)
+   - Each card: icon (large emoji), title (h3), description (p)
+   - Cards have subtle shadow, hover lift effect
+   - Background: slightly different from hero (use secondary color)
+
+3. AUDIENCE SECTION (plan.sectionsContent.audience)
+   - Section title and description from plan
+   - 3 segments in responsive grid (3 cols desktop, 1 col mobile)
+   - Each segment: title (bold, pain point), description (solution)
+   - Clean card design with borders
+
+4. HOW IT WORKS SECTION (plan.sectionsContent.howItWorks)
+   - Section title: "How It Works" or similar
+   - 3 numbered steps in horizontal flow (desktop) or vertical (mobile)
+   - Each step: large number, title (h3), description (p)
+   - Visual connectors between steps (optional arrows/lines)
+
+5. CONTACT SECTION (plan.sectionsContent.contact)
+   - Section title from plan
+   - Form with name, email, message fields
+   - Use this exact structure:
+
+
+<section id="contact-section" class="contact-section">
+  <div class="container">
+    <h2>${plan.sectionsContent.contact.title}</h2>
+    <div id="success-message" style="display:none; padding: 1.5rem; background: #10b981; color: white; border-radius: 12px; margin-bottom: 1.5rem; text-align: center;">
+      ✓ Thank you! Your message has been sent successfully.
+    </div>
+    <div id="error-message" style="display:none; padding: 1.5rem; background: #ef4444; color: white; border-radius: 12px; margin-bottom: 1.5rem;"></div>
+    <form action="{{SITE_ID_PLACEHOLDER}}" method="POST" id="contact-form" class="contact-form">
+      <label>
+        ${plan.sectionsContent.contact.nameLabel}
+        <input type="text" name="name" required>
+      </label>
+      <label>
+        ${plan.sectionsContent.contact.emailLabel}
+        <input type="email" name="email" required>
+      </label>
+      <label>
+        ${plan.sectionsContent.contact.messageLabel}
+        <textarea name="message" rows="5" required></textarea>
+      </label>
+      <button type="submit" class="submit-button">${plan.sectionsContent.contact.submitLabel}</button>
+    </form>
   </div>
-  <div id="error-message" style="display:none; padding: 1rem; background: #ef4444; color: white; border-radius: 0.5rem; margin-bottom: 1rem;"></div>
-  <form action="{{SITE_ID_PLACEHOLDER}}" method="POST" id="contact-form">
-    <label>${plan.sectionsContent?.contact?.nameLabel || 'Name'} <input type="text" name="name" required></label>
-    <label>${plan.sectionsContent?.contact?.emailLabel || 'Email'} <input type="email" name="email" required></label>
-    <label>${plan.sectionsContent?.contact?.messageLabel || 'Message'} <textarea name="message" required></textarea></label>
-    <button type="submit">${plan.sectionsContent?.contact?.submitLabel || 'Send Message'}</button>
-  </form>
-</div>
+</section>
 
-CRITICAL: The primary CTA button in the hero section MUST link to the contact form at the bottom of the page. Use this implementation:
-- <a href="#contact-section" class="cta-button">${plan.sectionsContent?.hero?.primaryCta || 'Get Started'}</a>
-The contact form section has id="contact-section" so this link will smoothly scroll to the form.
+DESIGN SYSTEM USAGE:
+- Import Google Fonts: @import url('https://fonts.googleapis.com/css2?family=${plan.designSystem.typography.heading.replace(/ /g, '+')}:wght@600;700&family=${plan.designSystem.typography.body.replace(/ /g, '+')}:wght@400;500&display=swap');
+- Use plan.designSystem.palette for all colors
+- Apply plan.designSystem.effects.borderRadius (convert to px: sharp=4px, modern=8px, organic=16px, pill=9999px)
+- Apply plan.designSystem.effects.shadows (convert to CSS shadow values)
+- Use plan.designSystem.effects.gradientStyle for hero background
+
+EXACT CONTENT:
+- Use exact text from plan.sectionsContent - do not modify, add, or improvise
+- All icons from plan.sectionsContent.features[].icon
+- All numbers from plan.sectionsContent.howItWorks[].number
 
 <script>
 // Contact form UX:
@@ -164,6 +231,22 @@ Return ONLY the HTML (no markdown, no fences).`;
       throw error;
     }
 
+    // Use design system from plan if available
+    const designSystem = plan?.designSystem || {
+      palette: {
+        primary: plan?.palette?.primary || '#111827',
+        secondary: plan?.palette?.secondary || '#6B7280',
+        accent: plan?.palette?.accent || '#3B82F6',
+        background: plan?.palette?.background || '#FFFFFF',
+        text: plan?.palette?.text || '#111827',
+        muted: plan?.palette?.muted || '#9CA3AF'
+      },
+      typography: {
+        heading: plan?.fonts?.heading || 'Inter',
+        body: plan?.fonts?.body || 'Inter'
+      }
+    };
+
     const fullHtml = /<html[\s\S]*<\/html>/i.test(html)
       ? html
       : `<!doctype html>
@@ -179,7 +262,7 @@ Return ONLY the HTML (no markdown, no fences).`;
     persistence: 'localStorage'
   });
   mixpanel.track('Site Viewed', {
-    site_id: '${siteId}',
+    site_id: 'placeholder',
     site_title: '${plan?.title ?? 'Landing'}'
   });
 
@@ -188,7 +271,7 @@ Return ONLY the HTML (no markdown, no fences).`;
     mixpanel.track('CTA Clicked', {
       cta_text: ctaText,
       location: location,
-      site_id: '${siteId}'
+      site_id: 'placeholder'
     });
   }
 
@@ -218,26 +301,40 @@ Return ONLY the HTML (no markdown, no fences).`;
   });
 </script>
 <style>
+  @import url('https://fonts.googleapis.com/css2?family=${designSystem.typography.heading.replace(/ /g, '+')}:wght@600;700&family=${designSystem.typography.body.replace(/ /g, '+')}:wght@400;500&display=swap');
+  
   :root {
-    --color-primary: ${plan?.palette?.primary ?? '#111827'};
-    --color-secondary: ${plan?.palette?.secondary ?? '#6b7280'};
-    --color-bg: ${plan?.palette?.background ?? '#ffffff'};
-    --color-text: ${plan?.palette?.text ?? '#111827'};
-    --color-accent: ${plan?.palette?.accent ?? '#7c3aed'};
+    --color-primary: ${designSystem.palette.primary};
+    --color-secondary: ${designSystem.palette.secondary};
+    --color-accent: ${designSystem.palette.accent};
+    --color-bg: ${designSystem.palette.background};
+    --color-text: ${designSystem.palette.text};
+    --color-muted: ${designSystem.palette.muted};
   }
-  html, body { margin: 0; padding: 0; background: var(--color-bg); color: var(--color-text); font-family: ${plan?.fonts?.body ?? 'Inter, system-ui, sans-serif'}; }
+  
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { 
+    margin: 0; 
+    padding: 0; 
+    background: var(--color-bg); 
+    color: var(--color-text); 
+    font-family: '${designSystem.typography.body}', system-ui, sans-serif;
+    line-height: 1.6;
+  }
   * { word-wrap: break-word; overflow-wrap: break-word; }
-  img { max-width: 100%; height: auto; display: block; object-fit: cover; }
-  .hero-image { max-height: 400px; width: 100%; object-fit: cover; border-radius: 8px; }
+  img { max-width: 100%; height: auto; display: block; }
   a { color: var(--color-primary); text-decoration: none; }
-  .container { width: 100%; max-width: 1100px; margin: 0 auto; padding: 16px; }
-  h1, h2, h3, h4, h5, h6, p { margin: 0; padding: 0; }
+  .container { width: 100%; max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+  h1, h2, h3, h4, h5, h6 { 
+    font-family: '${designSystem.typography.heading}', system-ui, sans-serif;
+    font-weight: 700;
+    line-height: 1.2;
+  }
 </style>
 </head>
 <body>
-<div class="container">
 ${html}
-</div>
 </body>
 </html>`;
 

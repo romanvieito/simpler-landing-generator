@@ -20,17 +20,53 @@ export type GeneratedTestimonial = {
   role?: string;
 };
 
+export type GeneratedFeature = {
+  icon: string;
+  title: string;
+  description: string;
+};
+
+export type GeneratedStep = {
+  number: number;
+  title: string;
+  description: string;
+};
+
+export type DesignSystem = {
+  mood: string;
+  palette: {
+    primary: string;
+    secondary: string;
+    accent: string;
+    background: string;
+    text: string;
+    muted: string;
+  };
+  typography: {
+    heading: string;
+    body: string;
+    style: string;
+  };
+  effects: {
+    borderRadius: string;
+    shadows: string;
+    gradientStyle: string;
+  };
+};
+
 export type GeneratedSections = {
   hero: {
     headline: string;
     subhead: string;
     primaryCta: string;
   };
+  features: GeneratedFeature[];
   audience: {
     title: string;
     description: string;
     segments?: { title: string; description: string }[];
   };
+  howItWorks: GeneratedStep[];
   contact: {
     title: string;
     nameLabel: string;
@@ -54,6 +90,7 @@ export type GeneratedLanding = {
   palette?: string;
   tone?: string;
   sectionsContent: GeneratedSections;
+  designSystem?: DesignSystem;
 };
 
 export type GenerationRequest = {
@@ -190,6 +227,23 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
       subhead,
       primaryCta: callToAction,
     },
+    features: [
+      {
+        icon: "⚡",
+        title: "Fast Setup",
+        description: "Get your landing page live in minutes, not hours.",
+      },
+      {
+        icon: "✨",
+        title: "Beautiful Design",
+        description: "Professional, conversion-optimized layouts that work.",
+      },
+      {
+        icon: "📱",
+        title: "Mobile Ready",
+        description: "Looks perfect on every device, automatically.",
+      },
+    ],
     audience: {
       title: "Who this is for",
       description: audience,
@@ -208,12 +262,51 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
         },
       ],
     },
+    howItWorks: [
+      {
+        number: 1,
+        title: "Describe your business",
+        description: "Tell us what you do in a few sentences.",
+      },
+      {
+        number: 2,
+        title: "We generate your page",
+        description: "AI creates a custom landing page for you.",
+      },
+      {
+        number: 3,
+        title: "Publish and share",
+        description: "Go live with your own domain or subdomain.",
+      },
+    ],
     contact: {
       title: "Get in touch",
       nameLabel: "Name",
       emailLabel: "Email",
       messageLabel: "Message",
       submitLabel: "Send message",
+    },
+  };
+
+  const designSystem: DesignSystem = {
+    mood: "modern-professional",
+    palette: {
+      primary: "#111827",
+      secondary: "#6B7280",
+      accent: "#3B82F6",
+      background: "#FFFFFF",
+      text: "#111827",
+      muted: "#9CA3AF",
+    },
+    typography: {
+      heading: "Inter",
+      body: "Inter",
+      style: "clean-modern",
+    },
+    effects: {
+      borderRadius: "modern",
+      shadows: "subtle",
+      gradientStyle: "none",
     },
   };
 
@@ -231,6 +324,7 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
     palette: style ? `${style} palette` : "Modern palette with high contrast and neutrals",
     tone: "Clear, confident, benefit-led",
     sectionsContent,
+    designSystem,
   };
 };
 
