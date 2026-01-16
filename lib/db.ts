@@ -205,6 +205,16 @@ export async function getSitePublic(id: string) {
   return rows[0] || null;
 }
 
+export async function getAllSites() {
+  const { rows } = await sql`
+    SELECT id, title, description, vercel_url, custom_domain, created_at, user_id
+    FROM sites
+    ORDER BY created_at DESC
+    LIMIT 500
+  `;
+  return rows;
+}
+
 export async function updateSiteCustomDomain({
   id,
   userId,
