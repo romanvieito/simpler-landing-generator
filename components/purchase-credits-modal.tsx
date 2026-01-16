@@ -3,6 +3,7 @@
 
 import { useState } from 'react';
 import { CREDIT_PACKAGES, type CreditPackage } from '@/lib/stripe';
+import { analytics } from '@/lib/mixpanel';
 
 interface PurchaseCreditsModalProps {
   isOpen: boolean;
@@ -13,6 +14,9 @@ export function PurchaseCreditsModal({ isOpen, onClose }: PurchaseCreditsModalPr
   const [loading, setLoading] = useState<CreditPackage | null>(null);
 
   const handlePurchase = async (packageType: CreditPackage) => {
+    // Track purchase initiation in Mixpanel
+    analytics.creditsPurchaseStarted(packageType, CREDIT_PACKAGES[packageType].price / 100, CREDIT_PACKAGES[packageType].credits);
+
     // EL - Add Credits Click Intention Purchase
     // @ts-ignore
     if (typeof window !== 'undefined' && window.gtag) {

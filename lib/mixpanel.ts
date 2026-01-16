@@ -1,5 +1,8 @@
 import mixpanel from 'mixpanel-browser';
 
+// Type definitions for Mixpanel properties
+type MixpanelProperties = Record<string, string | number | boolean | null | undefined>;
+
 // Track initialization state
 let isInitialized = false;
 
@@ -27,7 +30,7 @@ const isMixpanelReady = () => {
 };
 
 // User identification and profile management
-export const identifyUser = (userId: string, userProperties?: Record<string, any>) => {
+export const identifyUser = (userId: string, userProperties?: MixpanelProperties) => {
   if (!isMixpanelReady()) return;
 
   try {
@@ -41,7 +44,7 @@ export const identifyUser = (userId: string, userProperties?: Record<string, any
   }
 };
 
-export const setUserProperties = (properties: Record<string, any>) => {
+export const setUserProperties = (properties: MixpanelProperties) => {
   if (!isMixpanelReady()) return;
   try {
     mixpanel.people.set(properties);
@@ -50,7 +53,7 @@ export const setUserProperties = (properties: Record<string, any>) => {
   }
 };
 
-export const setUserPropertyOnce = (properties: Record<string, any>) => {
+export const setUserPropertyOnce = (properties: MixpanelProperties) => {
   if (!isMixpanelReady()) return;
   try {
     mixpanel.people.set_once(properties);
@@ -60,7 +63,7 @@ export const setUserPropertyOnce = (properties: Record<string, any>) => {
 };
 
 // Event tracking functions
-export const trackEvent = (eventName: string, properties?: Record<string, any>) => {
+export const trackEvent = (eventName: string, properties?: MixpanelProperties) => {
   if (!isMixpanelReady()) return;
   try {
     mixpanel.track(eventName, properties);
@@ -125,6 +128,14 @@ export const analytics = {
   },
 
   // Purchase events
+  creditsPurchaseStarted: (packageType: string, amount: number, credits: number) => {
+    trackEvent('Credits Purchase Started', {
+      package_type: packageType,
+      amount,
+      credits
+    });
+  },
+
   creditsPurchased: (amount: number, credits: number, stripeSessionId: string) => {
     trackEvent('Credits Purchased', {
       amount,
@@ -215,12 +226,12 @@ export const analytics = {
     });
   },
 
-  featureUsed: (featureName: string, details?: Record<string, any>) => {
+  featureUsed: (featureName: string, details?: MixpanelProperties) => {
     trackEvent('Feature Used', { feature_name: featureName, ...details });
   },
 
   // Error tracking
-  errorOccurred: (errorType: string, errorMessage: string, context?: Record<string, any>) => {
+  errorOccurred: (errorType: string, errorMessage: string, context?: MixpanelProperties) => {
     trackEvent('Error Occurred', {
       error_type: errorType,
       error_message: errorMessage,
