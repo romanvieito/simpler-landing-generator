@@ -244,7 +244,7 @@ EXACT CONTENT:
       const data = await resp.json().catch(function () { return null; });
 
       if (!resp.ok) {
-        showError((data && data.error) || `Request failed (${resp.status})`);
+        showError((data && data.error) || "Request failed (" + resp.status + ")");
         return;
       }
 
