@@ -360,9 +360,10 @@ function LandingGeneratorContent() {
     iframe.style.height = '100%';
     iframe.style.border = 'none';
     iframe.style.display = 'block';
+    iframe.style.backgroundColor = '#ffffff'; // Ensure white background
     iframe.title = 'Landing Page Preview';
     // Disable scripts for safety; keep same-origin so we can support edit-mode interactions.
-    iframe.setAttribute('sandbox', 'allow-same-origin allow-forms');
+    iframe.setAttribute('sandbox', 'allow-same-origin allow-forms allow-scripts allow-popups');
 
     // Ensure we always have a complete HTML document
     let fullHtml = html;

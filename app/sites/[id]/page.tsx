@@ -120,9 +120,17 @@ export default function SitePage() {
       </div>
 
       {/* Generated site content */}
-      <div
-        dangerouslySetInnerHTML={{ __html: site.html }}
-        style={{ width: '100%' }}
+      <iframe
+        srcDoc={site.html}
+        style={{
+          width: '100%',
+          height: '100vh',
+          border: 'none',
+          display: 'block',
+          backgroundColor: '#ffffff'
+        }}
+        title={site.title || 'Site Preview'}
+        sandbox="allow-same-origin allow-forms allow-scripts allow-popups"
       />
     </>
   );
