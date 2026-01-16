@@ -4,9 +4,13 @@ import { auth } from '@clerk/nextjs/server';
 import { ensureContactSubmissionsTable, ensureSitesTable, getAllContactSubmissionsForUser } from '@/lib/db';
 
 export async function GET() {
-  // Skip authentication in development for easier testing
-  const isDevelopment = process.env.NODE_ENV === 'development';
-  const { userId } = isDevelopment ? { userId: 'dev-user' } : await auth();
+  const authResult = await auth();
+  let userId = authResult.userId;
+
+  // In development, use a test user ID if not authenticated
+  if (!userId && process.env.NODE_ENV === 'development') {
+    userId = 'test_user_development';
+  }
 
   if (!userId) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });

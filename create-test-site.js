@@ -138,7 +138,7 @@ async function createTestSite() {
     };
 
     // Create a test user ID (in a real scenario this would come from Clerk)
-    const testUserId = 'dev-user';
+    const testUserId = 'test_user_development';
 
     const { rows } = await sql`
       INSERT INTO sites (id, user_id, title, description, plan, html, vercel_url)
