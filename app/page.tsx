@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { CreditDisplay } from '@/components/credit-display';
 import { PurchaseCreditsModal } from '@/components/purchase-credits-modal';
+import { PurchaseDomainModal } from '@/components/purchase-domain-modal';
 import SubdomainEditor from '@/components/subdomain-editor';
 import { V2Banner } from '@/components/v2-banner';
 import { analytics } from '@/lib/mixpanel';
@@ -113,6 +114,7 @@ function LandingGeneratorContent() {
   const [view, setView] = useState<'input' | 'preview'>('input');
   const [customUrlSlug, setCustomUrlSlug] = useState<string>('');
   const [showPurchaseModal, setShowPurchaseModal] = useState(false);
+  const [showDomainModal, setShowDomainModal] = useState(false);
   const [draftHydrated, setDraftHydrated] = useState(false);
   const [autoSaveStatus, setAutoSaveStatus] = useState<'idle' | 'saving' | 'saved'>('idle');
 
@@ -1257,6 +1259,12 @@ function LandingGeneratorContent() {
         onClose={() => setShowPurchaseModal(false)}
       />
 
+      <PurchaseDomainModal
+        isOpen={showDomainModal}
+        onClose={() => setShowDomainModal(false)}
+        siteId={savedSiteId}
+      />
+
       <SignedOut>
         <div className="min-h-screen bg-black">
           {/* Modern Hero Section */}
@@ -1830,7 +1838,7 @@ function LandingGeneratorContent() {
 
               {(publishedUrl || savedSiteId) && (
                 <div className="bg-gray-50 border-t border-gray-200 py-2">
-                  <div className="container flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 text-sm">
+                  <div className="container flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 text-sm">
                     {publishedUrl && (
                       <div className="flex items-center gap-2">
                         <span className="status status-success" style={{ fontSize: '0.625rem', padding: '0.125rem 0.5rem' }}>
@@ -1842,6 +1850,15 @@ function LandingGeneratorContent() {
                           disabled={loading === 'publishing'}
                         />
                       </div>
+                    )}
+                    {publishedUrl && (
+                      <button
+                        onClick={() => setShowDomainModal(true)}
+                        className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={loading === 'publishing'}
+                      >
+                        Buy Domain
+                      </button>
                     )}
                     {savedSiteId && !publishedUrl && (
                       <div className="flex items-center gap-2">

@@ -38,8 +38,7 @@ export function PurchaseDomainModal({ isOpen, onClose, siteId, onDomainPurchased
       });
 
       if (!res.ok) {
-        throw new Error('Failed to check domain availability');
-      }
+        throw new Error('Failed to check domain availability'); }
 
       const result = await res.json();
       setCheckResult(result);

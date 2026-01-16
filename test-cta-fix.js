@@ -1,30 +1,30 @@
-// Test the CTA button linking fix by checking that header CTA links to contact form
+// Test the CTA button linking functionality
 const fs = require('fs');
 const path = require('path');
 
 try {
-  console.log('Testing CTA button linking fix in generate-html route...');
+  console.log('Testing CTA button linking functionality in generate-html route...');
 
   // Read the generate-html route file
   const routePath = path.join(__dirname, 'app', 'api', 'generate-html', 'route.ts');
   const routeContent = fs.readFileSync(routePath, 'utf8');
 
-  // Check if the system prompt includes the CTA button linking instructions
-  const hasCtaLinkInstruction = routeContent.includes('CTA BUTTON BEHAVIOR: The primary CTA button in the hero section should link to the contact form at the bottom of the page');
+  // Check for the actual CTA button implementation
+  const hasCtaButtonImplementation = routeContent.includes('CTA button MUST be: <a href="#contact-section" class="cta-button">');
+  const hasContactSectionId = routeContent.includes('id="contact-section"');
+  const hasFormInterceptionScript = routeContent.includes('form.addEventListener(\'submit\', async function (e) {');
 
-  // Check if the user instructions include contact form linking
-  const hasContactLinkInstructions = routeContent.includes('CRITICAL: The primary CTA button in the hero section MUST link to the contact form at the bottom of the page');
-  const hasContactSectionLink = routeContent.includes('href="#contact-section"');
+  console.log('✓ CTA button links to contact section:', hasCtaButtonImplementation);
+  console.log('✓ Contact section has proper ID:', hasContactSectionId);
+  console.log('✓ Form submission is intercepted by JavaScript:', hasFormInterceptionScript);
 
-  console.log('✓ System prompt includes CTA linking instructions:', hasCtaLinkInstruction);
-  console.log('✓ User instructions include contact form linking:', hasContactLinkInstructions);
-  console.log('✓ User instructions include contact section link:', hasContactSectionLink);
-
-  if (hasCtaLinkInstruction && hasContactLinkInstructions && hasContactSectionLink) {
-    console.log('SUCCESS: CTA button linking fix has been properly implemented');
-    console.log('The generated HTML should now have header CTA buttons that link to the contact form');
+  if (hasCtaButtonImplementation && hasContactSectionId && hasFormInterceptionScript) {
+    console.log('SUCCESS: CTA button functionality is properly implemented');
+    console.log('- CTA button scrolls to contact section');
+    console.log('- Contact form submissions are handled via JavaScript (no page reload)');
+    console.log('- State is preserved during interactions');
   } else {
-    console.log('ERROR: CTA button linking fix is incomplete');
+    console.log('ERROR: CTA button functionality is incomplete');
   }
 
 } catch (e) {

@@ -83,7 +83,7 @@ Generate HTML for ALL 5 sections in this exact order:
 2. FEATURES SECTION (plan.sectionsContent.features)
    - Section title: "Features" or contextual variant
    - Responsive grid: 3-4 cards (grid on desktop, stack on mobile)
-   - Each card: icon (large emoji), title (h3), description (p)
+   - Each card: icon (modern SVG), title (h3), description (p)
    - Cards have subtle shadow, hover lift effect
    - Background: slightly different from hero (use secondary color)
 
@@ -139,7 +139,7 @@ DESIGN SYSTEM USAGE:
 
 EXACT CONTENT:
 - Use exact text from plan.sectionsContent - do not modify, add, or improvise
-- All icons from plan.sectionsContent.features[].icon
+   - All icons from plan.sectionsContent.features[].icon (modern SVG icons)
 - All numbers from plan.sectionsContent.howItWorks[].number
 
 <script>
@@ -147,13 +147,18 @@ EXACT CONTENT:
 // - If redirected back with submitted=true, show success and hide form
 // - Otherwise, intercept submit and POST via fetch() so the page doesn't navigate
 (function () {
+  'use strict';
+
   const successMsg = document.getElementById('success-message');
   const errorMsg = document.getElementById('error-message');
   const form = document.getElementById('contact-form');
 
   function showSuccess() {
     if (errorMsg) errorMsg.style.display = 'none';
-    if (successMsg) successMsg.style.display = 'block';
+    if (successMsg) {
+      successMsg.style.display = 'block';
+      successMsg.setAttribute('aria-live', 'polite');
+    }
     if (form) form.style.display = 'none';
   }
 
@@ -161,44 +166,121 @@ EXACT CONTENT:
     if (!errorMsg) return;
     errorMsg.textContent = text || 'Something went wrong. Please try again.';
     errorMsg.style.display = 'block';
+    errorMsg.setAttribute('aria-live', 'assertive');
   }
 
+  function hideError() {
+    if (errorMsg) errorMsg.style.display = 'none';
+  }
+
+  // Check for success parameter on page load
   if (window.location.search.includes('submitted=true')) {
     showSuccess();
+    // Clean up the URL parameter
+    try {
+      const url = new URL(window.location);
+      url.searchParams.delete('submitted');
+      window.history.replaceState({}, '', url);
+    } catch (e) {
+      // Ignore URL manipulation errors
+    }
     return;
   }
 
-  if (!form) return;
+  if (!form) {
+    console.warn('Contact form not found');
+    return;
+  }
+
+  // Ensure form doesn't submit traditionally
+  form.setAttribute('data-js-intercepted', 'true');
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
+    e.stopPropagation();
+
+    // Prevent double submission
+    if (form.hasAttribute('data-submitting')) return;
+    form.setAttribute('data-submitting', 'true');
+
     try {
-      if (errorMsg) errorMsg.style.display = 'none';
+      hideError();
 
       const formData = new FormData(form);
       const payload = {
-        name: String(formData.get('name') || ''),
-        email: String(formData.get('email') || ''),
-        message: String(formData.get('message') || ''),
+        name: String(formData.get('name') || '').trim(),
+        email: String(formData.get('email') || '').trim(),
+        message: String(formData.get('message') || '').trim(),
       };
 
-      const resp = await fetch(form.action, {
+      // Basic client-side validation
+      if (!payload.name || !payload.email || !payload.message) {
+        showError('Please fill in all fields.');
+        return;
+      }
+
+      if (!payload.email.includes('@')) {
+        showError('Please enter a valid email address.');
+        return;
+      }
+
+      // Get the form action URL, fallback to a reasonable default
+      let actionUrl = form.action || '/api/contact/placeholder';
+      if (!actionUrl.startsWith('http')) {
+        // Convert relative URL to absolute
+        actionUrl = window.location.origin + actionUrl;
+      }
+
+      const resp = await fetch(actionUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+          'X-Requested-With': 'XMLHttpRequest'
+        },
         body: JSON.stringify(payload),
       });
 
       const data = await resp.json().catch(function () { return null; });
+
       if (!resp.ok) {
-        showError((data && data.error) || 'Failed to send message.');
+        showError((data && data.error) || `Request failed (${resp.status})`);
         return;
       }
 
       showSuccess();
+
+      // Track successful submission
+      try {
+        if (typeof mixpanel !== 'undefined' && mixpanel.track) {
+          mixpanel.track('Contact Form Submitted', {
+            success: true,
+            site_id: 'placeholder'
+          });
+        }
+      } catch (trackingError) {
+        // Ignore tracking errors
+      }
+
     } catch (err) {
-      showError('Network error. Please try again.');
+      console.error('Contact form submission error:', err);
+      showError('Network error. Please check your connection and try again.');
+    } finally {
+      form.removeAttribute('data-submitting');
     }
   });
+
+  // Prevent accidental form submission on enter key in non-textarea inputs
+  const inputs = form.querySelectorAll('input, textarea');
+  inputs.forEach(function(input) {
+    input.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && e.target.tagName !== 'TEXTAREA') {
+        e.preventDefault();
+        form.dispatchEvent(new Event('submit', { cancelable: true }));
+      }
+    });
+  });
+
 })();
 </script>
 
@@ -277,7 +359,7 @@ Return ONLY the HTML (no markdown, no fences).`;
 
   // Add click tracking to CTA elements after page loads
   document.addEventListener('DOMContentLoaded', function() {
-    // Track buttons with CTA-like text
+    // Track buttons with CTA-like text (but don't interfere with functionality)
     document.querySelectorAll('button, a, input[type="submit"]').forEach(function(el) {
       var text = el.textContent || el.value || el.innerText || '';
       if (text && (text.toLowerCase().includes('get') ||
@@ -286,17 +368,25 @@ Return ONLY the HTML (no markdown, no fences).`;
                    text.toLowerCase().includes('sign up') ||
                    text.toLowerCase().includes('contact') ||
                    text.toLowerCase().includes('learn more'))) {
-        el.addEventListener('click', function() {
-          trackCTAClick(text.trim(), window.location.pathname);
-        });
+        el.addEventListener('click', function(e) {
+          // Only track if not already handled by other logic
+          if (!e.defaultPrevented) {
+            trackCTAClick(text.trim(), window.location.pathname);
+          }
+        }, { passive: true });
       }
     });
 
-    // Track form submissions
+    // Track form submissions (but don't interfere)
     document.querySelectorAll('form').forEach(function(form) {
-      form.addEventListener('submit', function() {
-        trackCTAClick('Form Submitted', window.location.pathname);
-      });
+      // Skip forms that are already handled by our contact form script
+      if (form.id === 'contact-form') return;
+
+      form.addEventListener('submit', function(e) {
+        if (!e.defaultPrevented) {
+          trackCTAClick('Form Submitted', window.location.pathname);
+        }
+      }, { passive: true });
     });
   });
 </script>
