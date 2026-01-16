@@ -131,11 +131,11 @@ Generate HTML for ALL 5 sections in this exact order:
 </section>
 
 DESIGN SYSTEM USAGE:
-- Import Google Fonts: @import url('https://fonts.googleapis.com/css2?family=${plan.designSystem.typography.heading.replace(/ /g, '+')}:wght@600;700&family=${plan.designSystem.typography.body.replace(/ /g, '+')}:wght@400;500&display=swap');
-- Use plan.designSystem.palette for all colors
-- Apply plan.designSystem.effects.borderRadius (convert to px: sharp=4px, modern=8px, organic=16px, pill=9999px)
-- Apply plan.designSystem.effects.shadows (convert to CSS shadow values)
-- Use plan.designSystem.effects.gradientStyle for hero background
+- Import Google Fonts: @import url('https://fonts.googleapis.com/css2?family=${(plan.designSystem?.typography?.heading || plan.fonts?.heading || 'Inter').replace(/ /g, '+')}:wght@600;700&family=${(plan.designSystem?.typography?.body || plan.fonts?.body || 'Inter').replace(/ /g, '+')}:wght@400;500&display=swap');
+- Use plan.designSystem.palette or plan.palette for all colors
+- Apply plan.designSystem.effects.borderRadius (convert to px: sharp=4px, modern=8px, organic=16px, pill=9999px) or use 'modern' as default
+- Apply plan.designSystem.effects.shadows (convert to CSS shadow values) or use 'subtle' as default
+- Use plan.designSystem.effects.gradientStyle for hero background or 'none' as default
 
 EXACT CONTENT:
 - Use exact text from plan.sectionsContent - do not modify, add, or improvise
@@ -314,18 +314,23 @@ Return ONLY the HTML (no markdown, no fences).`;
     }
 
     // Use design system from plan if available
-    const designSystem = plan?.designSystem || {
+    const designSystem = {
       palette: {
-        primary: plan?.palette?.primary || '#111827',
-        secondary: plan?.palette?.secondary || '#6B7280',
-        accent: plan?.palette?.accent || '#3B82F6',
-        background: plan?.palette?.background || '#FFFFFF',
-        text: plan?.palette?.text || '#111827',
-        muted: plan?.palette?.muted || '#9CA3AF'
+        primary: plan?.designSystem?.palette?.primary || plan?.palette?.primary || '#111827',
+        secondary: plan?.designSystem?.palette?.secondary || plan?.palette?.secondary || '#6B7280',
+        accent: plan?.designSystem?.palette?.accent || plan?.palette?.accent || '#3B82F6',
+        background: plan?.designSystem?.palette?.background || plan?.palette?.background || '#FFFFFF',
+        text: plan?.designSystem?.palette?.text || plan?.palette?.text || '#111827',
+        muted: plan?.designSystem?.palette?.muted || plan?.palette?.muted || '#9CA3AF'
       },
       typography: {
-        heading: plan?.fonts?.heading || 'Inter',
-        body: plan?.fonts?.body || 'Inter'
+        heading: plan?.designSystem?.typography?.heading || plan?.fonts?.heading || 'Inter',
+        body: plan?.designSystem?.typography?.body || plan?.fonts?.body || 'Inter'
+      },
+      effects: plan?.designSystem?.effects || {
+        borderRadius: 'modern',
+        shadows: 'subtle',
+        gradientStyle: 'none'
       }
     };
 
