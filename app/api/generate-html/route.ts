@@ -291,8 +291,8 @@ Return ONLY the HTML (no markdown, no fences).`;
     const response = await chatText(system, user);
     const html = response.content;
 
-    // Charge fixed $0.05 per site for HTML generation
-    const htmlCost = 0.05; // Fixed price per landing page
+    // Charge fixed $0.20 per site for HTML generation
+    const htmlCost = 0.20; // Fixed price per landing page
 
     // Enhanced cost logging for monitoring
     console.log(`💰 HTML Generation Cost: User ${userId}, Tokens: ${response.usage.prompt_tokens} prompt + ${response.usage.completion_tokens} completion, API Cost: $${response.cost.toFixed(6)}, Charged: $${htmlCost.toFixed(2)}`);
@@ -301,7 +301,7 @@ Return ONLY the HTML (no markdown, no fences).`;
       await deductCredits({
         userId,
         amount: htmlCost,
-        description: `Landing page generation: $0.05 (tokens: ${response.usage.prompt_tokens}/${response.usage.completion_tokens})`
+        description: `Landing page generation: $0.20 (tokens: ${response.usage.prompt_tokens}/${response.usage.completion_tokens})`
       });
     } catch (error: any) {
       if (error.message === 'Insufficient credits') {

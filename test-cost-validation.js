@@ -6,7 +6,7 @@
 // DeepSeek pricing constants (must match lib/deepseek.ts)
 const DEEPSEEK_INPUT_CACHE_MISS_PRICE_PER_MILLION = 0.28;
 const DEEPSEEK_OUTPUT_PRICE_PER_MILLION = 0.42;
-const FIXED_PRICE_PER_SITE = 0.05; // New fixed pricing
+const FIXED_PRICE_PER_SITE = 0.20; // New fixed pricing
 
 function calculateRealCost(promptTokens, completionTokens) {
   // Calculate what we actually pay DeepSeek

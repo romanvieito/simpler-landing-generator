@@ -35,7 +35,7 @@ Generated landing pages now include working contact forms that store submissions
 Email notifications are automatically sent to the **site creator's email** (from their Clerk account). Without the Resend API key, forms still work but skip email notifications. Submissions are always stored in the database.
 
 ### Credit System
-**New users get $1 in free credits** to test the service. After that, users must purchase credits to continue generating landing pages. We charge a fixed **$0.05 per landing page**.
+**New users get $1 in free credits** to test the service. After that, users must purchase credits to continue generating landing pages. We charge a fixed **$0.20 per landing page**.
 
 #### Free Testing Credits
 - **New users**: $1 in credits (enough for 20 landing pages)
@@ -53,7 +53,7 @@ Email notifications are automatically sent to the **site creator's email** (from
 - **15 Credits ($12)**: Great for multiple landing pages (240 landing pages)
 - **50 Credits ($30)**: Ideal for agencies (600 landing pages)
 
-**1 credit = $1.00**. Each landing page costs $0.05 (fixed price).
+**1 credit = $1.00**. Each landing page costs $0.20 (fixed price).
 
 #### Webhook Setup
 1. In your Stripe dashboard, go to **Webhooks**
