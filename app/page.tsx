@@ -378,7 +378,7 @@ function LandingGeneratorContent() {
     return () => {
       if (previewIframeRef.current === iframe) previewIframeRef.current = null;
     };
-  }, [html]);
+  }, [html, view]);
 
   function getPreviewHtml(): string | null {
     const iframe = previewIframeRef.current;

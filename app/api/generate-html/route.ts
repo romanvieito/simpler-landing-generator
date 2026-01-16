@@ -348,22 +348,26 @@ Return ONLY the HTML (no markdown, no fences).`;
 <title>${plan?.title ?? 'Landing'}</title>
 <script src="https://cdn.mxpnl.com/libs/mixpanel-2-latest.min.js"></script>
 <script>
-  mixpanel.init('${process.env.NEXT_PUBLIC_MIXPANEL_TOKEN}', {
-    track_pageview: true,
-    persistence: 'localStorage'
-  });
-  mixpanel.track('Site Viewed', {
-    site_id: 'placeholder',
-    site_title: '${plan?.title ?? 'Landing'}'
-  });
+  if (typeof mixpanel !== 'undefined') {
+    mixpanel.init('${process.env.NEXT_PUBLIC_MIXPANEL_TOKEN}', {
+      track_pageview: true,
+      persistence: 'localStorage'
+    });
+    mixpanel.track('Site Viewed', {
+      site_id: 'placeholder',
+      site_title: '${plan?.title ?? 'Landing'}'
+    });
+  }
 
   // Track CTA clicks
   function trackCTAClick(ctaText, location) {
-    mixpanel.track('CTA Clicked', {
-      cta_text: ctaText,
-      location: location,
-      site_id: 'placeholder'
-    });
+    if (typeof mixpanel !== 'undefined') {
+      mixpanel.track('CTA Clicked', {
+        cta_text: ctaText,
+        location: location,
+        site_id: 'placeholder'
+      });
+    }
   }
 
   // Add click tracking to CTA elements after page loads
