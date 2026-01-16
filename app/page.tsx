@@ -8,6 +8,7 @@ import { useSearchParams } from 'next/navigation';
 import { CreditDisplay } from '@/components/credit-display';
 import { PurchaseCreditsModal } from '@/components/purchase-credits-modal';
 import SubdomainEditor from '@/components/subdomain-editor';
+import { V2Banner } from '@/components/v2-banner';
 import { analytics } from '@/lib/mixpanel';
 
 type Plan = {
@@ -1588,6 +1589,8 @@ function LandingGeneratorContent() {
                 </div>
               </div>
             </header>
+
+            <V2Banner />
 
             <main className="flex-1 flex items-center justify-center p-4 sm:p-8">
               <div className="w-full max-w-2xl flex flex-col gap-6">
