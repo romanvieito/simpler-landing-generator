@@ -1857,7 +1857,7 @@ function LandingGeneratorContent() {
                         className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={loading === 'publishing'}
                       >
-                        Buy Domain
+                        Get a Domain
                       </button>
                     )}
                     {savedSiteId && !publishedUrl && (
