@@ -4,7 +4,6 @@ import { headers } from 'next/headers';
 import { getStripe } from '@/lib/stripe';
 import { addCredits, ensureCreditsTable, ensureCreditTransactionsTable, setPendingConversion } from '@/lib/db';
 import { logStripeEvent, ensureStripeLogsTable, getStripeLogsByType } from '@/lib/stripe-logger';
-import { analytics } from '@/lib/mixpanel';
 
 // Helper function to safely get error message
 const getErrorMessage = (error: unknown): string => {
@@ -187,13 +186,8 @@ async function handleCheckoutSessionCompleted(session: any, stripe: any) {
       stripePaymentId: session.payment_intent || session.id,
     });
 
-    // Track credits purchased in Mixpanel
-    try {
-      const amount = session.amount_total / 100; // Convert from cents to dollars
-      analytics.creditsPurchased(amount, parseInt(credits), session.id);
-    } catch (e) {
-      console.warn('Failed to track credits purchase in Mixpanel:', e);
-    }
+    // Note: Credits purchase tracking moved to client-side success handler
+    // (server-side tracking doesn't work with browser-based Mixpanel library)
 
     // Set pending conversion for Google Ads
     try {

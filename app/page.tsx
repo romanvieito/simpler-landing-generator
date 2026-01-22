@@ -510,15 +510,25 @@ function LandingGeneratorContent() {
   useEffect(() => {
     const success = searchParams.get('success');
     const canceled = searchParams.get('canceled');
+    const sessionId = searchParams.get('session_id');
 
     if (success) {
       const credits = searchParams.get('credits');
+
+      // Track successful credits purchase in Mixpanel
+      if (credits && sessionId) {
+        const creditsAmount = parseInt(credits);
+        const amount = creditsAmount * 0.01; // Convert cents to dollars (assuming $1 per credit)
+        analytics.creditsPurchased(amount, creditsAmount, sessionId);
+      }
+
       alert(`Payment completed! Credits are being processed and will appear in your account within a few seconds. Please refresh the page if credits don't appear automatically.`);
       // Clear the URL parameters
       if (typeof window !== 'undefined') {
         const url = new URL(window.location.href);
         url.searchParams.delete('success');
         url.searchParams.delete('credits');
+        url.searchParams.delete('session_id');
         window.history.replaceState({}, '', url.toString());
         // Refresh the page after a delay to show updated credits
         setTimeout(() => {
