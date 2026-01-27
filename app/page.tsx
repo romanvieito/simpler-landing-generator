@@ -1011,8 +1011,8 @@ function LandingGeneratorContent() {
       // Extract useful details from the plan for better loading context
       setPlanDetails({
         title: planOut.title,
-        sectionCount: 3, // Always 3 sections: hero, audience, contact
-        sections: ['hero', 'audience', 'contact'],
+        sectionCount: 9, // Full landing page with all sections
+        sections: ['hero', 'problem', 'features', 'testimonials', 'audience', 'howItWorks', 'faq', 'finalCta', 'contact'],
         style: websiteStyle,
         palette: planOut.palette,
         fonts: planOut.fonts,

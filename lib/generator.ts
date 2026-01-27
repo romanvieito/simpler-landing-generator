@@ -54,19 +54,40 @@ export type DesignSystem = {
   };
 };
 
+export type GeneratedFAQ = {
+  question: string;
+  answer: string;
+};
+
 export type GeneratedSections = {
   hero: {
     headline: string;
     subhead: string;
     primaryCta: string;
+    secondaryCta?: string;           // For visitors not ready to commit
+    socialProof?: string;            // e.g., "Trusted by 500+ businesses"
+    trustBadges?: string[];          // e.g., ["10+ years experience", "100% satisfaction"]
+  };
+  problem?: {                        // NEW: Empathy section showing pain points
+    title: string;
+    description: string;
+    painPoints: string[];
   };
   features: GeneratedFeature[];
+  testimonials?: GeneratedTestimonial[];  // RE-ENABLED: Social proof
   audience: {
     title: string;
     description: string;
     segments?: { title: string; description: string }[];
   };
   howItWorks: GeneratedStep[];
+  faq?: GeneratedFAQ[];              // NEW: Objection handling
+  finalCta?: {                       // NEW: Urgency-driven closing
+    headline: string;
+    subhead: string;
+    cta: string;
+    guarantee?: string;
+  };
   contact: {
     title: string;
     nameLabel: string;
@@ -226,6 +247,18 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
       headline: `${brand} — ${headline}`,
       subhead,
       primaryCta: callToAction,
+      secondaryCta: "See how it works",
+      socialProof: "Trusted by hundreds of businesses",
+      trustBadges: ["Quick setup", "No coding required", "Cancel anytime"],
+    },
+    problem: {
+      title: "Sound familiar?",
+      description: "You're not alone. Most business owners face these challenges.",
+      painPoints: [
+        "Spending hours trying to build a website that looks professional",
+        "Losing potential customers because you don't have an online presence",
+        "Feeling overwhelmed by complicated website builders",
+      ],
     },
     features: [
       {
@@ -242,6 +275,23 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
         icon: `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><rect x="5" y="2" width="14" height="20" rx="2" ry="2" stroke="currentColor" stroke-width="2"/><path d="M12 18H12.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
         title: "Mobile Ready",
         description: "Looks perfect on every device, automatically.",
+      },
+    ],
+    testimonials: [
+      {
+        quote: "I was dreading building a website for months. This took me 10 minutes and it looks better than anything I could have made myself.",
+        name: "Sarah M.",
+        role: "Small Business Owner",
+      },
+      {
+        quote: "Finally, something that just works. No technical skills needed, and my customers love the professional look.",
+        name: "James K.",
+        role: "Freelance Consultant",
+      },
+      {
+        quote: "The best investment I've made for my business this year. Simple, fast, and effective.",
+        name: "Maria L.",
+        role: "Local Service Provider",
       },
     ],
     audience: {
@@ -279,6 +329,30 @@ const buildFallbackContent = ({ prompt, style, sections }: GenerationRequest): G
         description: "Go live with your own domain or subdomain.",
       },
     ],
+    faq: [
+      {
+        question: "How long does it take to create a landing page?",
+        answer: "Most users have their landing page live within 5-10 minutes. Just describe your business, review the generated page, and publish.",
+      },
+      {
+        question: "Do I need any technical skills?",
+        answer: "Not at all. If you can write a few sentences about your business, you can create a professional landing page.",
+      },
+      {
+        question: "Can I edit the page after it's generated?",
+        answer: "Yes! You can edit any text directly on the page, and regenerate sections if you want a different approach.",
+      },
+      {
+        question: "What if I'm not satisfied with the result?",
+        answer: "You can regenerate your page as many times as you like until it's perfect. We want you to love your landing page.",
+      },
+    ],
+    finalCta: {
+      headline: "Ready to launch your landing page?",
+      subhead: "Join hundreds of businesses who've already taken the first step. Your professional landing page is just minutes away.",
+      cta: "Get Started Now",
+      guarantee: "No credit card required. Start for free.",
+    },
     contact: {
       title: "Get in touch",
       nameLabel: "Name",

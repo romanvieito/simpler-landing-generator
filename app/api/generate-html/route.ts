@@ -25,13 +25,13 @@ export async function POST(req: Request) {
 
     const { plan } = await req.json();
 
-const system = `You are an expert web designer creating stunning, conversion-optimized landing pages inspired by Jonathan Ive's design philosophy.
+const system = `You are an expert web designer creating stunning, high-converting landing pages.
 
-DESIGN PRINCIPLES (Ive-Inspired):
+DESIGN PRINCIPLES:
 - Purposeful simplicity: Every element earns its place
 - Generous whitespace: Let content breathe (80-120px section padding on desktop, 40-60px mobile)
 - Typography hierarchy: Large, confident headlines (48-72px desktop); comfortable body text (16-18px)
-- Subtle depth: Soft shadows (0 4px 20px rgba(0,0,0,0.08)), gentle gradients, layered elements
+- Subtle depth: Soft shadows, gentle gradients, layered elements
 - Motion: Fade-in animations on scroll, smooth hover transitions (0.3s ease)
 - Color restraint: Use accent color sparingly for CTAs and highlights
 - Premium feel: High-quality spacing, refined details, polished interactions
@@ -45,124 +45,238 @@ TECHNICAL REQUIREMENTS:
 - Smooth scroll behavior: scroll-behavior: smooth on html
 - All text must wrap properly: word-wrap: break-word; overflow-wrap: break-word
 
-SECTION ORDER (5 sections, generate ALL):
-1. Hero section - Full-width with gradient/image background, centered content
-2. Features section - 3-4 benefit cards in responsive grid with icons
-3. Audience section - Problem/solution pairs showing empathy
-4. How It Works section - 3 numbered steps with visual flow
-5. Contact section - Clean form with subtle background differentiation
+SECTION ORDER (9 sections, generate ALL in this exact order):
+1. Hero section - Full-width with gradient background, social proof, dual CTAs
+2. Problem section - Empathy-driven pain points
+3. Features section - 3-4 benefit cards with icons
+4. Testimonials section - 3 customer quotes in cards
+5. Audience section - Who this is for
+6. How It Works section - 3 numbered steps
+7. FAQ section - Accordion-style Q&A
+8. Final CTA section - Urgency-driven closing with guarantee
+9. Contact section - Clean form
 
-REQUIRED CSS ANIMATIONS:
+REQUIRED CSS:
 @keyframes fadeInUp {
   from { opacity: 0; transform: translateY(30px); }
   to { opacity: 1; transform: translateY(0); }
 }
 .fade-in-up { animation: fadeInUp 0.8s ease-out; }
 
-BUTTON HOVER EFFECT:
+.cta-button {
+  display: inline-block;
+  padding: 16px 32px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
 .cta-button:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 30px rgba(0,0,0,0.15);
 }
+.cta-button-primary {
+  background: var(--color-accent);
+  color: white;
+}
+.cta-button-secondary {
+  background: transparent;
+  border: 2px solid var(--color-text);
+  color: var(--color-text);
+}
 
-CARD HOVER EFFECT:
-.feature-card:hover, .step-card:hover {
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+  transition: all 0.3s ease;
+}
+.card:hover {
   transform: translateY(-4px);
   box-shadow: 0 12px 40px rgba(0,0,0,0.12);
+}
+
+.testimonial-card {
+  background: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  position: relative;
+}
+.testimonial-card::before {
+  content: '"';
+  font-size: 80px;
+  color: var(--color-accent);
+  opacity: 0.2;
+  position: absolute;
+  top: 10px;
+  left: 20px;
+  line-height: 1;
+}
+
+.faq-item {
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+  padding: 20px 0;
+}
+.faq-question {
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin-bottom: 8px;
+  color: var(--color-text);
+}
+.faq-answer {
+  color: var(--color-muted);
+  line-height: 1.7;
+}
+
+.social-proof {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+.trust-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  margin-top: 24px;
+}
+.trust-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  opacity: 0.8;
 }`;
 
     const user = `JSON plan for the page:
 ${JSON.stringify(plan, null, 2)}
 
 CRITICAL INSTRUCTIONS:
-Generate HTML for ALL 5 sections in this exact order:
+Generate HTML for ALL 9 sections in this exact order. Use the exact content from the plan.
 
-1. HERO SECTION (plan.sectionsContent.hero)
-   - Full-width section with gradient background using plan.designSystem.palette
-   - Centered content: headline (h1), subhead (p), primary CTA button
-   - CTA button MUST be: <a href="#contact-section" class="cta-button">${plan.sectionsContent.hero.primaryCta}</a>
-   - If plan.images exists, optionally include hero image with overlay
-   - Padding: 100-120px vertical on desktop, 60-80px mobile
+=== 1. HERO SECTION (plan.sectionsContent.hero) ===
+- Full-width section with gradient background using plan.designSystem.palette
+- Center-aligned content with max-width container
+- Structure:
+  * Social proof line at top (plan.sectionsContent.hero.socialProof)
+  * Large headline (h1)
+  * Subhead paragraph
+  * Two CTA buttons side by side: primary and secondary
+  * Trust badges row below CTAs
+- Primary CTA: <a href="#contact-section" class="cta-button cta-button-primary">${plan.sectionsContent?.hero?.primaryCta || 'Get Started'}</a>
+- Secondary CTA: <a href="#how-it-works" class="cta-button cta-button-secondary">${plan.sectionsContent?.hero?.secondaryCta || 'Learn More'}</a>
+- If plan.images exists, use first image as subtle background with overlay
+- Padding: 100-140px vertical on desktop, 60-80px mobile
 
-2. FEATURES SECTION (plan.sectionsContent.features)
-   - Section title: "Features" or contextual variant
-   - Responsive grid: 3-4 cards (grid on desktop, stack on mobile)
-   - Each card: icon (modern SVG), title (h3), description (p)
-   - Cards have subtle shadow, hover lift effect
-   - Background: slightly different from hero (use secondary color)
+=== 2. PROBLEM SECTION (plan.sectionsContent.problem) ===
+- Light gray or off-white background for contrast
+- Centered title and description
+- Display 3 pain points as a clean list or grid
+- Each pain point: icon (warning/frustration emoji) + text
+- Use empathetic, second-person language
+- Add visual separators between points
 
-3. AUDIENCE SECTION (plan.sectionsContent.audience)
-   - Section title and description from plan
-   - 3 segments in responsive grid (3 cols desktop, 1 col mobile)
-   - Each segment: title (bold, pain point), description (solution)
-   - Clean card design with borders
+=== 3. FEATURES SECTION (plan.sectionsContent.features) ===
+- Section title: "What You Get" or similar
+- Responsive grid: 3-4 cards (grid on desktop, stack on mobile)
+- Each card: large emoji icon, bold title (h3), description paragraph
+- Cards have subtle shadow, hover lift effect
+- White background with accent borders
 
-4. HOW IT WORKS SECTION (plan.sectionsContent.howItWorks)
-   - Section title: "How It Works" or similar
-   - 3 numbered steps in horizontal flow (desktop) or vertical (mobile)
-   - Each step: large number, title (h3), description (p)
-   - Visual connectors between steps (optional arrows/lines)
+=== 4. TESTIMONIALS SECTION (plan.sectionsContent.testimonials) ===
+- Section title: "What Others Say" or "Success Stories"
+- 3 testimonial cards in responsive grid
+- Each testimonial card:
+  * Large quote mark decoration (CSS ::before)
+  * Quote text in italics
+  * Author name (bold)
+  * Author role (muted color)
+- Cards have subtle shadow, generous padding
 
-5. CONTACT SECTION (plan.sectionsContent.contact)
-   - Section title from plan
-   - Form with name, email, message fields
-   - Use this exact structure:
+=== 5. AUDIENCE SECTION (plan.sectionsContent.audience) ===
+- Section title and description from plan
+- 3 segments in responsive grid (3 cols desktop, 1 col mobile)
+- Each segment: title (bold, the pain point), description (how you solve it)
+- Clean card design with left accent border
 
+=== 6. HOW IT WORKS SECTION (plan.sectionsContent.howItWorks) ===
+- Section ID: id="how-it-works"
+- Section title: "How It Works"
+- 3 numbered steps in horizontal flow (desktop) or vertical (mobile)
+- Each step: large colored number circle, title (h3), description
+- Visual connectors between steps (dotted line or arrow)
+- Alternating background color
 
-<section id="contact-section" class="contact-section">
-  <div class="container">
-    <h2>${plan.sectionsContent.contact.title}</h2>
+=== 7. FAQ SECTION (plan.sectionsContent.faq) ===
+- Section title: "Frequently Asked Questions"
+- 4 FAQ items in single column, max-width 800px centered
+- Each FAQ: question (bold, larger font), answer (normal weight, muted)
+- Simple accordion-like styling with borders
+- No JavaScript needed - show all expanded
+
+=== 8. FINAL CTA SECTION (plan.sectionsContent.finalCta) ===
+- Full-width section with accent color background or gradient
+- Centered content with large headline
+- Subhead paragraph
+- Single prominent CTA button (white on accent)
+- Guarantee text below button in smaller font
+- Create visual urgency with bold styling
+
+=== 9. CONTACT SECTION (plan.sectionsContent.contact) ===
+- Section ID: id="contact-section"
+- Use this EXACT structure:
+
+<section id="contact-section" class="contact-section" style="padding: 80px 20px; background: #f9fafb;">
+  <div class="container" style="max-width: 600px; margin: 0 auto;">
+    <h2 style="text-align: center; margin-bottom: 32px; font-size: 2rem;">${plan.sectionsContent?.contact?.title || 'Get in Touch'}</h2>
     <div id="success-message" style="display:none; padding: 1.5rem; background: #10b981; color: white; border-radius: 12px; margin-bottom: 1.5rem; text-align: center;">
       ✓ Thank you! Your message has been sent successfully.
     </div>
     <div id="error-message" style="display:none; padding: 1.5rem; background: #ef4444; color: white; border-radius: 12px; margin-bottom: 1.5rem;"></div>
-    <form action="{{SITE_ID_PLACEHOLDER}}" method="POST" id="contact-form" class="contact-form">
-      <label>
-        ${plan.sectionsContent.contact.nameLabel}
-        <input type="text" name="name" required>
+    <form action="{{SITE_ID_PLACEHOLDER}}" method="POST" id="contact-form" class="contact-form" style="display: flex; flex-direction: column; gap: 20px;">
+      <label style="display: flex; flex-direction: column; gap: 6px; font-weight: 500;">
+        ${plan.sectionsContent?.contact?.nameLabel || 'Name'}
+        <input type="text" name="name" required style="padding: 14px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 1rem;">
       </label>
-      <label>
-        ${plan.sectionsContent.contact.emailLabel}
-        <input type="email" name="email" required>
+      <label style="display: flex; flex-direction: column; gap: 6px; font-weight: 500;">
+        ${plan.sectionsContent?.contact?.emailLabel || 'Email'}
+        <input type="email" name="email" required style="padding: 14px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 1rem;">
       </label>
-      <label>
-        ${plan.sectionsContent.contact.messageLabel}
-        <textarea name="message" rows="5" required></textarea>
+      <label style="display: flex; flex-direction: column; gap: 6px; font-weight: 500;">
+        ${plan.sectionsContent?.contact?.messageLabel || 'Message'}
+        <textarea name="message" rows="5" required style="padding: 14px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 1rem; resize: vertical;"></textarea>
       </label>
-      <button type="submit" class="submit-button">${plan.sectionsContent.contact.submitLabel}</button>
+      <button type="submit" class="submit-button" style="padding: 16px 32px; background: var(--color-accent, #3B82F6); color: white; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease;">${plan.sectionsContent?.contact?.submitLabel || 'Send Message'}</button>
     </form>
   </div>
 </section>
 
-DESIGN SYSTEM USAGE:
-- Import Google Fonts: @import url('https://fonts.googleapis.com/css2?family=${(plan.designSystem?.typography?.heading || plan.fonts?.heading || 'Inter').replace(/ /g, '+')}:wght@600;700&family=${(plan.designSystem?.typography?.body || plan.fonts?.body || 'Inter').replace(/ /g, '+')}:wght@400;500&display=swap');
-- Use plan.designSystem.palette or plan.palette for all colors
-- Apply plan.designSystem.effects.borderRadius (convert to px: sharp=4px, modern=8px, organic=16px, pill=9999px) or use 'modern' as default
-- Apply plan.designSystem.effects.shadows (convert to CSS shadow values) or use 'subtle' as default
-- Use plan.designSystem.effects.gradientStyle for hero background or 'none' as default
+=== DESIGN SYSTEM USAGE ===
+- Import Google Fonts: @import url('https://fonts.googleapis.com/css2?family=${(plan.designSystem?.typography?.heading || 'Inter').replace(/ /g, '+')}:wght@600;700&family=${(plan.designSystem?.typography?.body || 'Inter').replace(/ /g, '+')}:wght@400;500&display=swap');
+- Use plan.designSystem.palette for all colors
+- borderRadius: sharp=4px, modern=8px, organic=16px, pill=9999px
+- Use plan.designSystem.effects.gradientStyle for hero background
 
-EXACT CONTENT:
-- Use exact text from plan.sectionsContent - do not modify, add, or improvise
-   - All icons from plan.sectionsContent.features[].icon (modern SVG icons)
+=== CONTENT RULES ===
+- Use EXACT text from plan.sectionsContent - do not modify or improvise
+- All icons from plan.sectionsContent.features[].icon (emoji icons)
 - All numbers from plan.sectionsContent.howItWorks[].number
+- All testimonial quotes, names, and roles exactly as provided
 
+=== CONTACT FORM SCRIPT (include at end of body) ===
 <script>
-// Contact form UX:
-// - If redirected back with submitted=true, show success and hide form
-// - Otherwise, intercept submit and POST via fetch() so the page doesn't navigate
 (function () {
   'use strict';
-
   const successMsg = document.getElementById('success-message');
   const errorMsg = document.getElementById('error-message');
   const form = document.getElementById('contact-form');
 
   function showSuccess() {
     if (errorMsg) errorMsg.style.display = 'none';
-    if (successMsg) {
-      successMsg.style.display = 'block';
-      successMsg.setAttribute('aria-live', 'polite');
-    }
+    if (successMsg) { successMsg.style.display = 'block'; successMsg.setAttribute('aria-live', 'polite'); }
     if (form) form.style.display = 'none';
   }
 
@@ -173,43 +287,25 @@ EXACT CONTENT:
     errorMsg.setAttribute('aria-live', 'assertive');
   }
 
-  function hideError() {
-    if (errorMsg) errorMsg.style.display = 'none';
-  }
+  function hideError() { if (errorMsg) errorMsg.style.display = 'none'; }
 
-  // Check for success parameter on page load
   if (window.location.search.includes('submitted=true')) {
     showSuccess();
-    // Clean up the URL parameter
-    try {
-      const url = new URL(window.location);
-      url.searchParams.delete('submitted');
-      window.history.replaceState({}, '', url);
-    } catch (e) {
-      // Ignore URL manipulation errors
-    }
+    try { const url = new URL(window.location); url.searchParams.delete('submitted'); window.history.replaceState({}, '', url); } catch (e) {}
     return;
   }
 
-  if (!form) {
-    console.warn('Contact form not found');
-    return;
-  }
-
-  // Ensure form doesn't submit traditionally
+  if (!form) return;
   form.setAttribute('data-js-intercepted', 'true');
 
   form.addEventListener('submit', async function (e) {
     e.preventDefault();
     e.stopPropagation();
-
-    // Prevent double submission
     if (form.hasAttribute('data-submitting')) return;
     form.setAttribute('data-submitting', 'true');
 
     try {
       hideError();
-
       const formData = new FormData(form);
       const payload = {
         name: String(formData.get('name') || '').trim(),
@@ -217,55 +313,22 @@ EXACT CONTENT:
         message: String(formData.get('message') || '').trim(),
       };
 
-      // Basic client-side validation
-      if (!payload.name || !payload.email || !payload.message) {
-        showError('Please fill in all fields.');
-        return;
-      }
+      if (!payload.name || !payload.email || !payload.message) { showError('Please fill in all fields.'); return; }
+      if (!payload.email.includes('@')) { showError('Please enter a valid email address.'); return; }
 
-      if (!payload.email.includes('@')) {
-        showError('Please enter a valid email address.');
-        return;
-      }
-
-      // Get the form action URL, fallback to a reasonable default
       let actionUrl = form.action || '/api/contact/placeholder';
-      if (!actionUrl.startsWith('http')) {
-        // Convert relative URL to absolute
-        actionUrl = window.location.origin + actionUrl;
-      }
+      if (!actionUrl.startsWith('http')) actionUrl = window.location.origin + actionUrl;
 
       const resp = await fetch(actionUrl, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'XMLHttpRequest'
-        },
+        headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         body: JSON.stringify(payload),
       });
 
       const data = await resp.json().catch(function () { return null; });
-
-      if (!resp.ok) {
-        showError((data && data.error) || "Request failed (" + resp.status + ")");
-        return;
-      }
-
+      if (!resp.ok) { showError((data && data.error) || "Request failed (" + resp.status + ")"); return; }
       showSuccess();
-
-      // Track successful submission
-      try {
-        if (typeof mixpanel !== 'undefined' && mixpanel.track) {
-          mixpanel.track('Contact Form Submitted', {
-            success: true,
-            site_id: 'placeholder'
-          });
-        }
-      } catch (trackingError) {
-        // Ignore tracking errors
-      }
-
+      try { if (typeof mixpanel !== 'undefined' && mixpanel.track) { mixpanel.track('Contact Form Submitted', { success: true, site_id: 'placeholder' }); } } catch (e) {}
     } catch (err) {
       console.error('Contact form submission error:', err);
       showError('Network error. Please check your connection and try again.');
@@ -274,7 +337,6 @@ EXACT CONTENT:
     }
   });
 
-  // Prevent accidental form submission on enter key in non-textarea inputs
   const inputs = form.querySelectorAll('input, textarea');
   inputs.forEach(function(input) {
     input.addEventListener('keydown', function(e) {
@@ -284,13 +346,10 @@ EXACT CONTENT:
       }
     });
   });
-
 })();
 </script>
 
-The action URL will be replaced with the actual site ID when saved.
-
-Return ONLY the HTML (no markdown, no fences).`;
+Return ONLY the complete HTML document (no markdown, no fences).`;
 
     const response = await chatText(system, user);
     const html = response.content;

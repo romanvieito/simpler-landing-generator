@@ -33,7 +33,7 @@ function calculateApiCost(promptTokens: number, completionTokens: number): numbe
   return totalCost * 1.5;
 }
 
-async function callDeepseek(messages: Message[], jsonMode = false): Promise<ApiResponse> {
+async function callDeepseek(messages: Message[], jsonMode = false, maxTokens = 4096): Promise<ApiResponse> {
   const url = `${DEEPSEEK_API}/chat/completions`;
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -44,6 +44,7 @@ async function callDeepseek(messages: Message[], jsonMode = false): Promise<ApiR
     model: MODEL,
     messages,
     temperature: 0.3,
+    max_tokens: maxTokens,
   };
 
   if (jsonMode) {
@@ -77,19 +78,20 @@ async function callDeepseek(messages: Message[], jsonMode = false): Promise<ApiR
   };
 }
 
-export async function chatJSON(system: string, user: string): Promise<ApiResponse> {
+export async function chatJSON(system: string, user: string, maxTokens = 4096): Promise<ApiResponse> {
   return callDeepseek(
     [
       { role: 'system', content: system },
       { role: 'user', content: user },
     ],
-    true
+    true,
+    maxTokens
   );
 }
 
-export async function chatText(system: string, user: string): Promise<ApiResponse> {
+export async function chatText(system: string, user: string, maxTokens = 8192): Promise<ApiResponse> {
   return callDeepseek([
     { role: 'system', content: system },
     { role: 'user', content: user },
-  ]);
+  ], false, maxTokens);
 }
