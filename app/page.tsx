@@ -1043,6 +1043,7 @@ function LandingGeneratorContent() {
 
       // Automatically save the generated site to database to prevent loss on refresh
       setLoading('saving');
+      let finalSiteId = savedSiteId;
       try {
         const cleanedHtml = cleanHtmlForPublishing(htmlOut);
         const saveRes = await fetch('/api/save', {
@@ -1058,6 +1059,7 @@ function LandingGeneratorContent() {
         });
         const saveData = await saveRes.json();
         if (saveRes.ok) {
+          finalSiteId = saveData.id;
           setSavedSiteId(saveData.id);
           // Track site saved
           analytics.siteSaved(saveData.id, planOut.title ?? 'Landing');
@@ -1072,7 +1074,7 @@ function LandingGeneratorContent() {
       setView('preview');
 
       // Track generation completed
-      analytics.generationCompleted(savedSiteId, planOut.title, 3);
+      analytics.generationCompleted(finalSiteId, planOut.title, 3);
     } catch (err) {
       console.error(err);
       setLoading('idle');
@@ -1324,7 +1326,10 @@ function LandingGeneratorContent() {
 
                 <div className="pt-2">
                   <SignInButton mode="modal">
-                    <button className="bg-white text-black text-lg md:text-xl px-10 md:px-14 py-4 md:py-5 font-medium rounded-lg hover:bg-white/90 transition-colors duration-200">
+                    <button 
+                      onClick={() => analytics.ctaClicked('Skip the blank page', 'Hero')}
+                      className="bg-white text-black text-lg md:text-xl px-10 md:px-14 py-4 md:py-5 font-medium rounded-lg hover:bg-white/90 transition-colors duration-200"
+                    >
                       Skip the blank page
                     </button>
                   </SignInButton>
@@ -1465,7 +1470,10 @@ function LandingGeneratorContent() {
                 Your idea has been patient long enough.
               </h2>
               <SignInButton mode="modal">
-                <button className="bg-black text-white text-lg md:text-xl px-12 md:px-16 py-4 md:py-5 font-medium rounded-lg hover:bg-gray-900 transition-colors duration-200">
+                <button 
+                  onClick={() => analytics.ctaClicked('Begin', 'Final CTA')}
+                  className="bg-black text-white text-lg md:text-xl px-12 md:px-16 py-4 md:py-5 font-medium rounded-lg hover:bg-gray-900 transition-colors duration-200"
+                >
                   Begin
                 </button>
               </SignInButton>
@@ -1497,7 +1505,11 @@ function LandingGeneratorContent() {
                       <CreditDisplay onPurchaseClick={() => setShowPurchaseModal(true)} />
                     </div>
 
-                    <Link href="/dashboard" className="btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base hidden sm:inline-flex">
+                    <Link 
+                      href="/dashboard" 
+                      onClick={() => analytics.ctaClicked('Dashboard', 'Header')}
+                      className="btn btn-ghost text-gray-700 hover:text-black px-3 md:px-4 py-2 transition-colors duration-200 flex-shrink-0 text-sm md:text-base hidden sm:inline-flex"
+                    >
                       <svg className="w-4 h-4 mr-0 md:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
                       </svg>
@@ -1770,7 +1782,10 @@ function LandingGeneratorContent() {
                     )}
                     {publishedUrl && (
                       <button
-                        onClick={() => setShowDomainModal(true)}
+                        onClick={() => {
+                          analytics.ctaClicked('Get a Domain', 'Published Banner');
+                          setShowDomainModal(true);
+                        }}
                         className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors font-medium text-sm disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={loading === 'publishing'}
                       >
@@ -1782,7 +1797,11 @@ function LandingGeneratorContent() {
                         <span className="status status-info" style={{ fontSize: '0.625rem', padding: '0.125rem 0.5rem' }}>
                           Saved
                         </span>
-                        <Link href={`/sites/${savedSiteId}`} className="link text-sm">
+                        <Link 
+                          href={`/sites/${savedSiteId}`} 
+                          onClick={() => analytics.ctaClicked('View in My Sites', 'Saved Banner')}
+                          className="link text-sm"
+                        >
                           View in My Sites
                         </Link>
                       </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { analytics } from '@/lib/mixpanel';
 
 interface PurchaseDomainModalProps {
   isOpen: boolean;
@@ -25,6 +26,9 @@ export function PurchaseDomainModal({ isOpen, onClose, siteId, onDomainPurchased
 
   const handleCheckAvailability = async () => {
     if (!domain.trim()) return;
+
+    // Track domain check in Mixpanel
+    analytics.ctaClicked('Check Domain Availability', 'Domain Purchase Modal');
 
     setChecking(true);
     setError('');
@@ -55,6 +59,11 @@ export function PurchaseDomainModal({ isOpen, onClose, siteId, onDomainPurchased
 
     setCreatingCheckout(true);
     setError('');
+
+    // Track purchase initiation in Mixpanel
+    if (checkResult?.price) {
+      analytics.domainPurchaseStarted(domain.trim().toLowerCase(), checkResult.price / 100, siteId);
+    }
 
     try {
       const res = await fetch('/api/domains/purchase', {

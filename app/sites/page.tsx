@@ -6,6 +6,7 @@ import { SignedIn, SignedOut, SignInButton } from '@clerk/nextjs';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import UrlEditor from '@/components/url-editor';
+import { analytics } from '@/lib/mixpanel';
 
 type Site = {
   id: string;
@@ -152,6 +153,7 @@ export default function SitesPage() {
                 </div>
                 <Link
                   href="/"
+                  onClick={() => analytics.ctaClicked('Create Your First Site', 'Sites Empty State')}
                   className="btn btn-primary text-lg px-8 py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
                 >
                   <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

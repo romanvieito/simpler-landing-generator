@@ -136,6 +136,14 @@ export const analytics = {
     });
   },
 
+  domainPurchaseStarted: (domain: string, price: number, siteId?: string) => {
+    trackEvent('Domain Purchase Started', {
+      domain,
+      price,
+      site_id: siteId
+    });
+  },
+
   creditsPurchased: (amount: number, credits: number, stripeSessionId: string) => {
     trackEvent('Credits Purchased', {
       amount,

@@ -325,6 +325,7 @@ export default function DashboardPage() {
                   </div>
                   <Link
                     href="/"
+                    onClick={() => analytics.ctaClicked('Create Your First Site', 'Dashboard Empty State')}
                     className="btn btn-primary text-lg px-8 py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
                   >
                     <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -401,7 +402,10 @@ export default function DashboardPage() {
                               </button>
                               {(!site.custom_domain || site.custom_domain.includes('.easyland.site')) && (
                                 <button
-                                  onClick={() => handleDomainPurchase(site.id)}
+                                  onClick={() => {
+                                    analytics.ctaClicked('Get a Domain', 'Dashboard Site Card');
+                                    handleDomainPurchase(site.id);
+                                  }}
                                   className="bg-black text-white px-4 py-2 rounded-md hover:bg-gray-800 transition-colors font-medium text-sm flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                                   title="Get a custom domain - search available domains, see pricing, and purchase securely"
                                 >
@@ -558,7 +562,10 @@ export default function DashboardPage() {
                             <div className="flex gap-2">
                               {domain.status === 'expiring' || domain.status === 'expired' ? (
                                 <button
-                                  onClick={() => handleDomainRenewal(domain.name)}
+                                  onClick={() => {
+                                    analytics.ctaClicked('Renew Domain', 'Dashboard Domain Card');
+                                    handleDomainRenewal(domain.name);
+                                  }}
                                   disabled={renewingDomain === domain.name}
                                   className="px-3 py-2 text-sm bg-blue-600 text-white hover:bg-blue-700 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                                 >
@@ -573,7 +580,10 @@ export default function DashboardPage() {
                                 </button>
                               ) : (
                                 <button
-                                  onClick={() => handleDomainRenewal(domain.name)}
+                                  onClick={() => {
+                                    analytics.ctaClicked('Renew Domain', 'Dashboard Domain Card');
+                                    handleDomainRenewal(domain.name);
+                                  }}
                                   className="px-3 py-2 text-sm text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors flex items-center gap-2"
                                 >
                                   <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
