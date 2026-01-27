@@ -1306,291 +1306,169 @@ function LandingGeneratorContent() {
 
       <SignedOut>
         <div className="min-h-screen bg-black">
-          {/* Modern Hero Section */}
-          <section className="relative py-20 md:py-32 lg:py-40 overflow-hidden">
-            {/* Background gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-600/90 via-purple-600/90 to-indigo-600/90" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
-
-            {/* Decorative elements */}
-            <div className="absolute top-1/4 left-1/4 w-64 h-64 bg-white/10 rounded-full blur-3xl" />
-            <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl" />
-
-            <div className="container relative z-10 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-              <div className="text-center space-y-8 md:space-y-12">
-                {/* Main heading */}
-                <div className="space-y-4 md:space-y-6">
-                  <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight max-w-6xl mx-auto">
-                    World's Easiest 
-                    <span className="block bg-gradient-to-r from-yellow-300 via-orange-300 to-red-300 bg-clip-text text-transparent leading-relaxed py-1">
-                      Landing Page Generator
+          {/* Hero Section */}
+          <section className="bg-black py-24 md:py-40 lg:py-48">
+            <div className="container max-w-4xl mx-auto px-6 sm:px-8 lg:px-12">
+              <div className="text-center space-y-10 md:space-y-14">
+                <div className="space-y-6 md:space-y-8">
+                  <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight">
+                    The blank page wins every time.
+                    <span className="block text-white mt-2">
+                      Until now.
                     </span>
-                    For Busy Creators.
                   </h1>
-                  <p className="text-lg md:text-xl lg:text-2xl text-white/90 max-w-3xl mx-auto leading-relaxed">
-                    No coding. No design skills. Just describe your idea and publish a high-converting landing page in no time.
+                  <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
+                    You already know what you want to say. You just need something to react to. Describe your idea. Get a real page. Start editing instead of staring.
                   </p>
                 </div>
 
-                {/* CTA Button */}
-                <div className="pt-4">
+                <div className="pt-2">
                   <SignInButton mode="modal">
-                    <button className="btn btn-primary text-lg md:text-xl px-8 md:px-12 py-4 md:py-6 shadow-2xl hover:shadow-3xl transform hover:-translate-y-1 transition-all duration-300 bg-gradient-to-r from-black to-gray-900 text-white hover:from-gray-900 hover:to-gray-800 font-semibold rounded-2xl">
-                      <svg className="w-5 h-5 md:w-6 md:h-6 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                      </svg>
-                      Start Creating for Free
+                    <button className="bg-white text-black text-lg md:text-xl px-10 md:px-14 py-4 md:py-5 font-medium rounded-lg hover:bg-white/90 transition-colors duration-200">
+                      Skip the blank page
                     </button>
                   </SignInButton>
                 </div>
 
-                {/* Additional visual elements */}
-                <div className="pt-8 md:pt-12">
-                  <div className="flex items-center justify-center space-x-8 text-white/70 text-sm md:text-base">
-                    <div className="flex items-center space-x-2">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span>No credit card required</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                        <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                      </svg>
-                      <span>Free to start</span>
-                    </div>
-                  </div>
+                <p className="text-white/50 text-sm">
+                  No credit card. No commitment. Just start.
+                </p>
+              </div>
+            </div>
+          </section>
+
+          {/* The Resistance Section */}
+          <section className="py-24 md:py-40 bg-white">
+            <div className="container max-w-2xl mx-auto px-6 sm:px-8 lg:px-12">
+              <div className="text-center space-y-12">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black leading-tight">
+                  You've been meaning to launch.
+                </h2>
+                <div className="space-y-8 text-lg md:text-xl text-gray-600 leading-loose">
+                  <p>For months. Maybe years.</p>
+                  <p>
+                    The idea is ready. You are not "blocked" creatively. You know exactly what your thing does and who it's for.
+                  </p>
+                  <p className="text-black font-medium">
+                    But the blank page sits there. Waiting. Judging.
+                  </p>
+                  <p>
+                    So you research. You compare tools. You watch tutorials. You tell yourself you'll start "when you have more time."
+                  </p>
+                  <p className="text-black font-semibold">
+                    That's not procrastination. That's The Resistance.
+                  </p>
+                  <p>
+                    And it wins every time you mistake preparation for progress.
+                  </p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Who Is This For Section */}
-          <section className="py-20 md:py-32 bg-gradient-to-br from-gray-50 to-white">
-            <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* The Shift / Solution Section */}
+          <section className="py-24 md:py-40 bg-gray-50">
+            <div className="container max-w-2xl mx-auto px-6 sm:px-8 lg:px-12">
+              <div className="text-center space-y-12">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black leading-tight">
+                  What if you skipped the hard part?
+                </h2>
+                <div className="space-y-8 text-lg md:text-xl text-gray-600 leading-loose">
+                  <p>This tool doesn't write your story. You do.</p>
+                  <p>It just gives you a first draft to react to. In seconds.</p>
+                  <p>
+                    Type what you're making and who it's for. Get a complete, working landing page. Not a template. Not a wireframe. A real page you can publish.
+                  </p>
+                  <p className="text-black font-medium">
+                    Now the work isn't "create something from nothing."
+                  </p>
+                  <p className="text-black font-semibold">
+                    The work is "make this better." And that's a problem you can solve.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Three Benefits Section */}
+          <section className="py-24 md:py-40 bg-white">
+            <div className="container max-w-4xl mx-auto px-6 sm:px-8 lg:px-12">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-12">
+                <div className="text-center space-y-4">
+                  <h3 className="text-xl md:text-2xl font-bold text-black">The end of staring</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    A real page appears. The cursor blinks on something that already exists. You edit. You ship.
+                  </p>
+                </div>
+
+                <div className="text-center space-y-4">
+                  <h3 className="text-xl md:text-2xl font-bold text-black">The courage to publish</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Imperfect is fine when you can change it in seconds. Suddenly, "good enough" becomes good enough.
+                  </p>
+                </div>
+
+                <div className="text-center space-y-4">
+                  <h3 className="text-xl md:text-2xl font-bold text-black">The freedom to experiment</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Test an idea this afternoon. Try a different angle tomorrow. The cost of being wrong drops to zero.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Social Proof / Testimonials Section */}
+          <section className="py-24 md:py-40 bg-gray-50">
+            <div className="container max-w-3xl mx-auto px-6 sm:px-8 lg:px-12">
               <div className="text-center mb-16 md:mb-20">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-gray-900 mb-6">
-                  Who Is This For?
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black">
+                  People like you, shipping.
                 </h2>
-                <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                  EasyLand is perfect for creators who need a quick landing page that converts.
-                </p>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 md:gap-10">
-                {/* Creators */}
-                <div className="group card hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm">
-                  <div className="p-8 text-center">
-                    <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-blue-500 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z" />
-                      </svg>
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors duration-200">
-                      Creators
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      Launch your MVP landing page quickly to validate ideas and start collecting leads
-                    </p>
-                  </div>
+              <div className="space-y-16 md:space-y-20">
+                <div className="text-center">
+                  <p className="text-lg md:text-xl text-gray-700 leading-relaxed italic mb-6">
+                    "I'd been 'working on' my coaching website for eight months. Saturday morning I described what I do. By lunch, it was live. I cried a little."
+                  </p>
+                  <p className="text-gray-500">
+                    — Marina K., Career Coach
+                  </p>
                 </div>
 
-                {/* Freelancers & Agencies */}
-                <div className="group card hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm">
-                  <div className="p-8 text-center">
-                    <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-purple-600 transition-colors duration-200">
-                      Freelancers & Agencies
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      Deliver client landing pages faster and focus on strategy instead of coding
-                    </p>
-                  </div>
+                <div className="text-center">
+                  <p className="text-lg md:text-xl text-gray-700 leading-relaxed italic mb-6">
+                    "The relief was instant. I didn't have to figure out structure or design. I just had to say 'yes, that works' or 'no, change this.' That's it."
+                  </p>
+                  <p className="text-gray-500">
+                    — Devon R., Course Creator
+                  </p>
                 </div>
 
-                {/* Small Business Owners */}
-                <div className="group card hover:shadow-xl transition-all duration-300 hover:-translate-y-2 bg-white/80 backdrop-blur-sm">
-                  <div className="p-8 text-center">
-                    <div className="w-16 h-16 mx-auto mb-6 bg-gradient-to-br from-green-500 to-green-700 rounded-2xl flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-110 transition-all duration-300">
-                      <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-                      </svg>
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-green-600 transition-colors duration-200">
-                      Small Business Owners
-                    </h3>
-                    <p className="text-gray-600 leading-relaxed">
-                      Get a professional online presence without breaking the bank or hiring developers
-                    </p>
-                  </div>
+                <div className="text-center">
+                  <p className="text-lg md:text-xl text-gray-700 leading-relaxed italic mb-6">
+                    "I've used every website builder. They all assume you know what you want. This one gives you something to react to. That's the whole difference."
+                  </p>
+                  <p className="text-gray-500">
+                    — Sam T., Freelance Designer
+                  </p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Before & After Section */}
-          <section style={{ 
-            padding: '5rem 1rem',
-            backgroundColor: 'var(--color-white)'
-          }}>
-            <div className="container" style={{ maxWidth: '1200px', margin: '0 auto' }}>
-              <div style={{ textAlign: 'center', marginBottom: '3rem' }}>
-                <h2 style={{
-                  fontSize: '2.5rem',
-                  fontWeight: 700,
-                  color: 'var(--color-gray-900)',
-                  marginBottom: '1rem'
-                }}>
-                  The Old Way vs. The EasyLand Way
-                </h2>
-                <p style={{
-                  fontSize: '1.125rem',
-                  color: 'var(--color-gray-600)',
-                  maxWidth: '600px',
-                  margin: '0 auto'
-                }}>
-                  Stop wasting time and money on outdated solutions
-                </p>
-              </div>
-
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-                gap: '3rem',
-                maxWidth: '1000px',
-                margin: '0 auto'
-              }}>
-                {/* Before - The Old Way */}
-                <div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    marginBottom: '1.5rem'
-                  }}>
-                    <div style={{
-                      width: '3rem',
-                      height: '3rem',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--color-error-bg)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.5rem'
-                    }}>
-                      ❌
-                    </div>
-                    <h3 style={{
-                      fontSize: '1.5rem',
-                      fontWeight: 600,
-                      color: 'var(--color-gray-900)'
-                    }}>
-                      The Old Way
-                    </h3>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <div className="comparison-item comparison-item-before">
-                      <span style={{ fontSize: '1.25rem', color: 'var(--color-error)', flexShrink: 0 }}>✗</span>
-                      <span style={{ color: 'var(--color-gray-700)', lineHeight: 1.6 }}>
-                        Hire a freelance developer and wait weeks for results
-                      </span>
-                    </div>
-                    <div className="comparison-item comparison-item-before">
-                      <span style={{ fontSize: '1.25rem', color: 'var(--color-error)', flexShrink: 0 }}>✗</span>
-                      <span style={{ color: 'var(--color-gray-700)', lineHeight: 1.6 }}>
-                        Learn to code or struggle with WordPress/CMS/Shopify
-                      </span>
-                    </div>
-                    <div className="comparison-item comparison-item-before">
-                      <span style={{ fontSize: '1.25rem', color: 'var(--color-error)', flexShrink: 0 }}>✗</span>
-                      <span style={{ color: 'var(--color-gray-700)', lineHeight: 1.6 }}>
-                        Pay thousands to an expensive agency
-                      </span>
-                    </div>
-                    <div className="comparison-item comparison-item-before">
-                      <span style={{ fontSize: '1.25rem', color: 'var(--color-error)', flexShrink: 0 }}>✗</span>
-                      <span style={{ color: 'var(--color-gray-700)', lineHeight: 1.6 }}>
-                        Struggle with outdated, clunky no-code tools
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* After - With EasyLand */}
-                <div>
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    marginBottom: '1.5rem'
-                  }}>
-                    <div style={{
-                      width: '3rem',
-                      height: '3rem',
-                      borderRadius: '50%',
-                      backgroundColor: 'var(--color-success-bg)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center',
-                      fontSize: '1.5rem'
-                    }}>
-                      ✨
-                    </div>
-                    <h3 style={{
-                      fontSize: '1.5rem',
-                      fontWeight: 600,
-                      color: 'var(--color-gray-900)'
-                    }}>
-                      With EasyLand
-                    </h3>
-                  </div>
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <div className="comparison-item comparison-item-after">
-                      <span style={{ fontSize: '1.25rem', color: 'var(--color-success)', flexShrink: 0 }}>✓</span>
-                      <span style={{ color: 'var(--color-gray-900)', fontWeight: 500, lineHeight: 1.6 }}>
-                        Quick, high-converting landing pages
-                      </span>
-                    </div>
-                    <div className="comparison-item comparison-item-after">
-                      <span style={{ fontSize: '1.25rem', color: 'var(--color-success)', flexShrink: 0 }}>✓</span>
-                      <span style={{ color: 'var(--color-gray-900)', fontWeight: 500, lineHeight: 1.6 }}>
-                        No coding or design skills required
-                      </span>
-                    </div>
-                    <div className="comparison-item comparison-item-after">
-                      <span style={{ fontSize: '1.25rem', color: 'var(--color-success)', flexShrink: 0 }}>✓</span>
-                      <span style={{ color: 'var(--color-gray-900)', fontWeight: 500, lineHeight: 1.6 }}>
-                        Affordable, pay-per-use pricing
-                      </span>
-                    </div>
-                    <div className="comparison-item comparison-item-after">
-                      <span style={{ fontSize: '1.25rem', color: 'var(--color-success)', flexShrink: 0 }}>✓</span>
-                      <span style={{ color: 'var(--color-gray-900)', fontWeight: 500, lineHeight: 1.6 }}>
-                        Test your ideas quickly
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Final CTA */}
-              <div className="text-center mt-16 py-12 px-4 sm:px-8 bg-gray-50 rounded-3xl">
-                <h3 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-                  How Can I Test My Ideas in Minutes?
-                </h3>
-                <p className="text-lg sm:text-xl text-gray-600 mb-8 max-w-xl mx-auto leading-relaxed">
-                  Get high-converting landing pages without the wait.
-                </p>
-                <SignInButton mode="modal">
-                  <button className="btn btn-primary text-base sm:text-lg px-6 sm:px-10 py-3 sm:py-4 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200">
-                    Start Creating for Free
-                  </button>
-                </SignInButton>
-              </div>
+          {/* Final CTA Section */}
+          <section className="py-24 md:py-40 bg-white">
+            <div className="container max-w-2xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-10">
+                Your idea has been patient long enough.
+              </h2>
+              <SignInButton mode="modal">
+                <button className="bg-black text-white text-lg md:text-xl px-12 md:px-16 py-4 md:py-5 font-medium rounded-lg hover:bg-gray-900 transition-colors duration-200">
+                  Begin
+                </button>
+              </SignInButton>
             </div>
           </section>
         </div>
