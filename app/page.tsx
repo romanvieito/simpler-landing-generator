@@ -1439,6 +1439,23 @@ function LandingGeneratorContent() {
                   </p>
                 </div>
               </div>
+
+              <div className="mt-14 md:mt-16 rounded-2xl border border-gray-200 bg-gray-50 p-6 md:p-8">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left md:text-center">
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-black uppercase tracking-wide">What you start with</p>
+                    <p className="text-gray-600 leading-relaxed">A clear website draft based on your business description, ready for review and edits.</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-black uppercase tracking-wide">What you control</p>
+                    <p className="text-gray-600 leading-relaxed">Your copy, your messaging, and your updates — without needing to hire a developer.</p>
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-sm font-semibold text-black uppercase tracking-wide">What happens next</p>
+                    <p className="text-gray-600 leading-relaxed">Generate, edit, and publish when the site feels right for your business.</p>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
@@ -1613,6 +1630,13 @@ function LandingGeneratorContent() {
                     You describe your business, generate a website draft with AI, edit the content without coding, and publish when you are ready.
                   </p>
                 </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold text-black">Is Easyland a full custom agency service?</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    No. Easyland is a simple AI website builder that helps you create and publish faster yourself. It is designed to reduce complexity, not turn into a long agency project.
+                  </p>
+                </div>
               </div>
             </div>
           </section>
@@ -1626,9 +1650,18 @@ function LandingGeneratorContent() {
               <p className="text-gray-600 text-lg md:text-xl mb-4 leading-relaxed">
                 Get a simple professional website without code, complicated setup, or waiting on an agency.
               </p>
-              <p className="text-gray-500 text-sm md:text-base mb-10 leading-relaxed">
+              <p className="text-gray-500 text-sm md:text-base mb-6 leading-relaxed">
                 Ideal for local businesses, solo founders, and service businesses that need to get online quickly.
               </p>
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 md:p-5 mb-8 text-left max-w-xl mx-auto">
+                <p className="text-sm font-semibold text-black mb-2">When you start, here is what to expect:</p>
+                <ul className="space-y-2 text-sm text-gray-600">
+                  <li>• Describe your business and audience</li>
+                  <li>• Get a website draft generated with AI</li>
+                  <li>• Edit the copy without coding</li>
+                  <li>• Publish when you are ready</li>
+                </ul>
+              </div>
               <SignInButton mode="modal">
                 <button 
                   onClick={() => analytics.ctaClicked('Start Building Your Site', 'Final CTA')}
