@@ -1314,149 +1314,192 @@ function LandingGeneratorContent() {
               <div className="text-center space-y-10 md:space-y-14">
                 <div className="space-y-6 md:space-y-8">
                   <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-white leading-tight">
-                    The blank page wins every time.
-                    <span className="block text-white mt-2">
-                      Until now.
-                    </span>
+                    Build your business website with AI — no code required
                   </h1>
-                  <p className="text-lg md:text-xl text-white/70 max-w-2xl mx-auto leading-relaxed">
-                    You already know what you want to say. You just need something to react to. Describe your idea. Get a real page. Start editing instead of staring.
+                  <p className="text-lg md:text-xl text-white/70 max-w-3xl mx-auto leading-relaxed">
+                    Easyland helps small business owners create and publish a simple, professional website fast. No coding, no complicated setup, no agency needed.
                   </p>
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-4">
                   <SignInButton mode="modal">
                     <button 
-                      onClick={() => analytics.ctaClicked('Skip the blank page', 'Hero')}
+                      onClick={() => analytics.ctaClicked('Start Building', 'Hero')}
                       className="bg-white text-black text-lg md:text-xl px-10 md:px-14 py-4 md:py-5 font-medium rounded-lg hover:bg-white/90 transition-colors duration-200"
                     >
-                      Skip the blank page
+                      Start Building
                     </button>
                   </SignInButton>
+
+                  <a
+                    href="#how-it-works"
+                    onClick={() => analytics.ctaClicked('See How It Works', 'Hero')}
+                    className="border border-white/30 text-white text-lg md:text-xl px-10 md:px-14 py-4 md:py-5 font-medium rounded-lg hover:bg-white/10 transition-colors duration-200"
+                  >
+                    See How It Works
+                  </a>
                 </div>
 
                 <p className="text-white/50 text-sm">
-                  No credit card. No commitment. Just start.
+                  Built for small business owners who want to launch fast.
                 </p>
               </div>
             </div>
           </section>
 
-          {/* The Resistance Section */}
+          {/* Value Proposition Section */}
           <section className="py-24 md:py-40 bg-white">
-            <div className="container max-w-2xl mx-auto px-6 sm:px-8 lg:px-12">
-              <div className="text-center space-y-12">
+            <div className="container max-w-3xl mx-auto px-6 sm:px-8 lg:px-12">
+              <div className="text-center space-y-8 md:space-y-10">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black leading-tight">
-                  You've been meaning to launch.
+                  A simple AI website builder for small business owners
                 </h2>
-                <div className="space-y-8 text-lg md:text-xl text-gray-600 leading-loose">
-                  <p>For months. Maybe years.</p>
+                <div className="space-y-6 text-lg md:text-xl text-gray-600 leading-loose">
                   <p>
-                    The idea is ready. You are not "blocked" creatively. You know exactly what your thing does and who it's for.
+                    Easyland helps you go from idea to live website without hiring an agency or learning to code.
+                  </p>
+                  <p>
+                    Describe your business, generate your site with AI, make updates yourself, and publish fast.
                   </p>
                   <p className="text-black font-medium">
-                    But the blank page sits there. Waiting. Judging.
-                  </p>
-                  <p>
-                    So you research. You compare tools. You watch tutorials. You tell yourself you'll start "when you have more time."
-                  </p>
-                  <p className="text-black font-semibold">
-                    That's not procrastination. That's The Resistance.
-                  </p>
-                  <p>
-                    And it wins every time you mistake preparation for progress.
+                    It is built for small businesses that want a professional website without the usual complexity.
                   </p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* The Shift / Solution Section */}
+          {/* Benefits Section */}
           <section className="py-24 md:py-40 bg-gray-50">
-            <div className="container max-w-2xl mx-auto px-6 sm:px-8 lg:px-12">
-              <div className="text-center space-y-12">
+            <div className="container max-w-5xl mx-auto px-6 sm:px-8 lg:px-12">
+              <div className="text-center mb-14 md:mb-16">
                 <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black leading-tight">
-                  What if you skipped the hard part?
+                  Why small businesses choose Easyland
                 </h2>
-                <div className="space-y-8 text-lg md:text-xl text-gray-600 leading-loose">
-                  <p>This tool doesn't write your story. You do.</p>
-                  <p>It just gives you a first draft to react to. In seconds.</p>
-                  <p>
-                    Type what you're making and who it's for. Get a complete, working landing page. Not a template. Not a wireframe. A real page you can publish.
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-6">
+                <div className="text-center space-y-3">
+                  <h3 className="text-lg md:text-xl font-bold text-black">Start fast with AI</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    AI helps you create a strong first version of your website in minutes.
                   </p>
-                  <p className="text-black font-medium">
-                    Now the work isn't "create something from nothing."
+                </div>
+
+                <div className="text-center space-y-3">
+                  <h3 className="text-lg md:text-xl font-bold text-black">No code needed</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    You do not need coding skills, plugins, or a developer to get started.
                   </p>
-                  <p className="text-black font-semibold">
-                    The work is "make this better." And that's a problem you can solve.
+                </div>
+
+                <div className="text-center space-y-3">
+                  <h3 className="text-lg md:text-xl font-bold text-black">Built for small businesses</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Made for local businesses, solo founders, and service providers who need a clear online presence.
+                  </p>
+                </div>
+
+                <div className="text-center space-y-3">
+                  <h3 className="text-lg md:text-xl font-bold text-black">Publish quickly</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Go from business description to published site without a long setup process.
+                  </p>
+                </div>
+
+                <div className="text-center space-y-3">
+                  <h3 className="text-lg md:text-xl font-bold text-black">Easy to update</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Change text and refine your site later without rebuilding everything from scratch.
                   </p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Three Benefits Section */}
-          <section className="py-24 md:py-40 bg-white">
-            <div className="container max-w-4xl mx-auto px-6 sm:px-8 lg:px-12">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-16 md:gap-12">
+          {/* How It Works Section */}
+          <section id="how-it-works" className="py-24 md:py-40 bg-white scroll-mt-24">
+            <div className="container max-w-5xl mx-auto px-6 sm:px-8 lg:px-12">
+              <div className="text-center mb-14 md:mb-16">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black leading-tight">
+                  How it works
+                </h2>
+                <p className="text-lg md:text-xl text-gray-600 max-w-2xl mx-auto mt-6 leading-relaxed">
+                  A simple way to create and publish your business website with AI.
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 md:gap-6">
                 <div className="text-center space-y-4">
-                  <h3 className="text-xl md:text-2xl font-bold text-black">The end of staring</h3>
+                  <div className="w-12 h-12 mx-auto rounded-full bg-black text-white flex items-center justify-center font-bold text-lg">1</div>
+                  <h3 className="text-xl font-bold text-black">Tell Easyland about your business</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    A real page appears. The cursor blinks on something that already exists. You edit. You ship.
+                    Describe what you do, who you serve, and what kind of site you need.
                   </p>
                 </div>
 
                 <div className="text-center space-y-4">
-                  <h3 className="text-xl md:text-2xl font-bold text-black">The courage to publish</h3>
+                  <div className="w-12 h-12 mx-auto rounded-full bg-black text-white flex items-center justify-center font-bold text-lg">2</div>
+                  <h3 className="text-xl font-bold text-black">Generate your website with AI</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    Imperfect is fine when you can change it in seconds. Suddenly, "good enough" becomes good enough.
+                    Easyland turns your input into a simple, professional website draft.
                   </p>
                 </div>
 
                 <div className="text-center space-y-4">
-                  <h3 className="text-xl md:text-2xl font-bold text-black">The freedom to experiment</h3>
+                  <div className="w-12 h-12 mx-auto rounded-full bg-black text-white flex items-center justify-center font-bold text-lg">3</div>
+                  <h3 className="text-xl font-bold text-black">Edit without coding</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    Test an idea this afternoon. Try a different angle tomorrow. The cost of being wrong drops to zero.
+                    Update copy and make changes yourself without touching code.
+                  </p>
+                </div>
+
+                <div className="text-center space-y-4">
+                  <div className="w-12 h-12 mx-auto rounded-full bg-black text-white flex items-center justify-center font-bold text-lg">4</div>
+                  <h3 className="text-xl font-bold text-black">Publish your site</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Launch fast and keep improving your website as your business grows.
                   </p>
                 </div>
               </div>
             </div>
           </section>
 
-          {/* Social Proof / Testimonials Section */}
+          {/* FAQ Section */}
           <section className="py-24 md:py-40 bg-gray-50">
             <div className="container max-w-3xl mx-auto px-6 sm:px-8 lg:px-12">
-              <div className="text-center mb-16 md:mb-20">
-                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black">
-                  People like you, shipping.
+              <div className="text-center mb-14 md:mb-16">
+                <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-black leading-tight">
+                  Frequently asked questions
                 </h2>
               </div>
 
-              <div className="space-y-16 md:space-y-20">
-                <div className="text-center">
-                  <p className="text-lg md:text-xl text-gray-700 leading-relaxed italic mb-6">
-                    "I'd been 'working on' my coaching website for eight months. Saturday morning I described what I do. By lunch, it was live. I cried a little."
-                  </p>
-                  <p className="text-gray-500">
-                    — Marina K., Career Coach
+              <div className="space-y-8">
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold text-black">Do I need coding skills?</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    No. Easyland is a no-code website builder designed for people who want to create a website without writing code.
                   </p>
                 </div>
 
-                <div className="text-center">
-                  <p className="text-lg md:text-xl text-gray-700 leading-relaxed italic mb-6">
-                    "The relief was instant. I didn't have to figure out structure or design. I just had to say 'yes, that works' or 'no, change this.' That's it."
-                  </p>
-                  <p className="text-gray-500">
-                    — Devon R., Course Creator
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold text-black">How fast can I publish?</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    You can generate a website quickly and publish as soon as you are happy with the result.
                   </p>
                 </div>
 
-                <div className="text-center">
-                  <p className="text-lg md:text-xl text-gray-700 leading-relaxed italic mb-6">
-                    "I've used every website builder. They all assume you know what you want. This one gives you something to react to. That's the whole difference."
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold text-black">Is this for small businesses?</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Yes. Easyland is built for small business owners who want a simple, professional website without extra complexity.
                   </p>
-                  <p className="text-gray-500">
-                    — Sam T., Freelance Designer
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold text-black">Can I edit the site later?</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    Yes. You can come back, update your content, and keep improving your site over time.
                   </p>
                 </div>
               </div>
@@ -1466,15 +1509,15 @@ function LandingGeneratorContent() {
           {/* Final CTA Section */}
           <section className="py-24 md:py-40 bg-white">
             <div className="container max-w-2xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-10">
-                Your idea has been patient long enough.
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-10 leading-tight">
+                Create your business website faster with AI
               </h2>
               <SignInButton mode="modal">
                 <button 
-                  onClick={() => analytics.ctaClicked('Begin', 'Final CTA')}
+                  onClick={() => analytics.ctaClicked('Start Building Your Site', 'Final CTA')}
                   className="bg-black text-white text-lg md:text-xl px-12 md:px-16 py-4 md:py-5 font-medium rounded-lg hover:bg-gray-900 transition-colors duration-200"
                 >
-                  Begin
+                  Start Building Your Site
                 </button>
               </SignInButton>
             </div>

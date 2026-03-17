@@ -7,7 +7,7 @@ import './globals.css';
 
 export const metadata: Metadata = {
   title: 'EasyLand',
-  description: 'AI-powered landing page generator',
+  description: 'Easyland is an AI website builder for small business owners who want to create and publish a simple professional site fast, with no code required.',
   icons: {
     icon: '/globe.svg',
   },
