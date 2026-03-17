@@ -1340,9 +1340,34 @@ function LandingGeneratorContent() {
                   </a>
                 </div>
 
-                <p className="text-white/50 text-sm">
-                  Built for small business owners who want to launch fast.
-                </p>
+                <div className="space-y-3">
+                  <p className="text-white/50 text-sm">
+                    Built for small business owners who want to launch fast.
+                  </p>
+                  <p className="text-white/40 text-xs md:text-sm">
+                    AI website builder • No-code website builder • Simple website builder for small businesses
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Trust Strip */}
+          <section className="py-10 md:py-12 bg-white border-b border-gray-100">
+            <div className="container max-w-5xl mx-auto px-6 sm:px-8 lg:px-12">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-black uppercase tracking-wide">Simple to start</p>
+                  <p className="text-gray-600">Describe your business and get a website draft fast.</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-black uppercase tracking-wide">No code required</p>
+                  <p className="text-gray-600">Made for business owners, not developers.</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-black uppercase tracking-wide">Built to publish</p>
+                  <p className="text-gray-600">Create, edit, and launch from one simple workflow.</p>
+                </div>
               </div>
             </div>
           </section>
@@ -1364,6 +1389,37 @@ function LandingGeneratorContent() {
                   <p className="text-black font-medium">
                     It is built for small businesses that want a professional website without the usual complexity.
                   </p>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Who It's For Section */}
+          <section className="py-20 md:py-24 bg-gray-50">
+            <div className="container max-w-4xl mx-auto px-6 sm:px-8 lg:px-12">
+              <div className="text-center space-y-8">
+                <h2 className="text-3xl md:text-4xl font-bold text-black leading-tight">
+                  Built for businesses that need a website without the hassle
+                </h2>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-left md:text-center">
+                  <div className="space-y-3">
+                    <h3 className="text-xl font-bold text-black">Local service businesses</h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      Great for contractors, cleaners, landscapers, salons, and other businesses that need a simple professional site.
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="text-xl font-bold text-black">Solo founders and freelancers</h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      A fast way to launch a website when you want to focus on selling your service, not learning web design.
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    <h3 className="text-xl font-bold text-black">Small businesses moving online</h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      Ideal if you need an online presence quickly and want a no-code tool you can update yourself later.
+                    </p>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1485,21 +1541,28 @@ function LandingGeneratorContent() {
                 <div className="space-y-2">
                   <h3 className="text-xl font-bold text-black">How fast can I publish?</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    You can generate a website quickly and publish as soon as you are happy with the result.
+                    Most users can generate a first version quickly, make a few edits, and publish as soon as it looks right for their business.
                   </p>
                 </div>
 
                 <div className="space-y-2">
                   <h3 className="text-xl font-bold text-black">Is this for small businesses?</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    Yes. Easyland is built for small business owners who want a simple, professional website without extra complexity.
+                    Yes. Easyland is built for small business owners, local service businesses, solo founders, and freelancers who need a simple professional website.
                   </p>
                 </div>
 
                 <div className="space-y-2">
                   <h3 className="text-xl font-bold text-black">Can I edit the site later?</h3>
                   <p className="text-gray-600 leading-relaxed">
-                    Yes. You can come back, update your content, and keep improving your site over time.
+                    Yes. You can come back, update your content, and keep improving your site over time without starting over.
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <h3 className="text-xl font-bold text-black">What happens after I sign up?</h3>
+                  <p className="text-gray-600 leading-relaxed">
+                    You describe your business, generate a website draft with AI, edit the content without coding, and publish when you are ready.
                   </p>
                 </div>
               </div>
@@ -1509,9 +1572,12 @@ function LandingGeneratorContent() {
           {/* Final CTA Section */}
           <section className="py-24 md:py-40 bg-white">
             <div className="container max-w-2xl mx-auto px-6 sm:px-8 lg:px-12 text-center">
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-10 leading-tight">
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-6 leading-tight">
                 Create your business website faster with AI
               </h2>
+              <p className="text-gray-600 text-lg md:text-xl mb-10 leading-relaxed">
+                Get a simple professional website without code, complicated setup, or waiting on an agency.
+              </p>
               <SignInButton mode="modal">
                 <button 
                   onClick={() => analytics.ctaClicked('Start Building Your Site', 'Final CTA')}
