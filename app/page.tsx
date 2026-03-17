@@ -1535,6 +1535,35 @@ function LandingGeneratorContent() {
                   </p>
                 </div>
               </div>
+
+              <div className="mt-14 md:mt-16 rounded-2xl border border-gray-200 bg-white p-6 md:p-8">
+                <div className="text-center mb-8">
+                  <h3 className="text-2xl md:text-3xl font-bold text-black leading-tight">A simpler path than traditional website builders</h3>
+                  <p className="text-gray-600 mt-3 leading-relaxed max-w-2xl mx-auto">
+                    If you searched for an AI website builder or a simple no-code website builder, this is the difference Easyland is built around.
+                  </p>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="rounded-xl border border-gray-200 bg-gray-50 p-5">
+                    <p className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Typical builder experience</p>
+                    <ul className="space-y-3 text-gray-600 text-sm md:text-base">
+                      <li>• Start from a blank template</li>
+                      <li>• Spend time choosing layouts and sections</li>
+                      <li>• Figure out what to write</li>
+                      <li>• Tweak settings before you can publish</li>
+                    </ul>
+                  </div>
+                  <div className="rounded-xl border border-black bg-black text-white p-5">
+                    <p className="text-sm font-semibold text-white/70 uppercase tracking-wide mb-3">Easyland experience</p>
+                    <ul className="space-y-3 text-white/90 text-sm md:text-base">
+                      <li>• Start with your business description</li>
+                      <li>• Get a website draft generated with AI</li>
+                      <li>• Edit the copy without code</li>
+                      <li>• Publish when it is ready</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </div>
           </section>
 
