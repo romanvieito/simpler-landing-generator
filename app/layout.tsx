@@ -6,7 +6,7 @@ import { MixpanelProvider } from '@/components/mixpanel-provider';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Landing Generator',
+  title: 'EasyLand',
   description: 'AI-powered landing page generator',
   icons: {
     icon: '/globe.svg',

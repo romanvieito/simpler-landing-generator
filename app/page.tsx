@@ -1497,7 +1497,7 @@ function LandingGeneratorContent() {
                     </div>
                     <div className="min-w-0">
                       <h1 className="text-lg md:text-xl font-bold text-black truncate">EasyLand</h1>
-                      <p className="text-xs md:text-sm text-gray-600 hidden sm:block">Landing Page Generator</p>
+                      <p className="text-xs md:text-sm text-gray-600 hidden sm:block">AI Landing Page Generator</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-4 min-w-0">
