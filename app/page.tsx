@@ -1347,6 +1347,50 @@ function LandingGeneratorContent() {
                   <p className="text-white/40 text-xs md:text-sm">
                     AI website builder • No-code website builder • Simple website builder for small businesses
                   </p>
+                  <p className="text-white/40 text-xs md:text-sm">
+                    No coding required • Start in minutes • Publish when you are ready
+                  </p>
+                </div>
+
+                <div className="max-w-4xl mx-auto pt-4">
+                  <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-sm p-4 md:p-6 shadow-2xl text-left">
+                    <div className="flex items-center justify-between gap-4 mb-4">
+                      <div>
+                        <p className="text-white text-sm font-semibold">Example Easyland workflow</p>
+                        <p className="text-white/50 text-xs">From business description to live website</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-emerald-400 text-xs font-medium">Simple setup</p>
+                        <p className="text-white/50 text-xs">No code required</p>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="rounded-xl bg-black/30 border border-white/10 p-4 space-y-3">
+                        <p className="text-white/60 text-xs uppercase tracking-wide">Input</p>
+                        <div className="rounded-lg bg-white/5 border border-white/10 p-3">
+                          <p className="text-white text-sm">"We are a Miami roofing company serving homeowners who need fast repairs and honest pricing."</p>
+                        </div>
+                      </div>
+                      <div className="rounded-xl bg-black/30 border border-white/10 p-4 space-y-3">
+                        <p className="text-white/60 text-xs uppercase tracking-wide">AI Draft</p>
+                        <div className="space-y-2">
+                          <div className="h-3 rounded bg-white/80 w-4/5"></div>
+                          <div className="h-2 rounded bg-white/30 w-full"></div>
+                          <div className="h-2 rounded bg-white/30 w-5/6"></div>
+                          <div className="h-8 rounded bg-white text-black flex items-center justify-center text-xs font-semibold mt-3">Start Building</div>
+                        </div>
+                      </div>
+                      <div className="rounded-xl bg-black/30 border border-white/10 p-4 space-y-3">
+                        <p className="text-white/60 text-xs uppercase tracking-wide">Published Site</p>
+                        <div className="rounded-lg bg-emerald-500/10 border border-emerald-400/20 p-3 space-y-2">
+                          <p className="text-emerald-300 text-xs font-medium">Live and editable</p>
+                          <div className="h-2 rounded bg-white/30 w-3/4"></div>
+                          <div className="h-2 rounded bg-white/30 w-full"></div>
+                          <div className="h-2 rounded bg-white/30 w-2/3"></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -1355,7 +1399,7 @@ function LandingGeneratorContent() {
           {/* Trust Strip */}
           <section className="py-10 md:py-12 bg-white border-b border-gray-100">
             <div className="container max-w-5xl mx-auto px-6 sm:px-8 lg:px-12">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-6 text-center">
                 <div className="space-y-1">
                   <p className="text-sm font-semibold text-black uppercase tracking-wide">Simple to start</p>
                   <p className="text-gray-600">Describe your business and get a website draft fast.</p>
@@ -1367,6 +1411,10 @@ function LandingGeneratorContent() {
                 <div className="space-y-1">
                   <p className="text-sm font-semibold text-black uppercase tracking-wide">Built to publish</p>
                   <p className="text-gray-600">Create, edit, and launch from one simple workflow.</p>
+                </div>
+                <div className="space-y-1">
+                  <p className="text-sm font-semibold text-black uppercase tracking-wide">Start without an agency</p>
+                  <p className="text-gray-600">A faster path to a professional website you can update yourself.</p>
                 </div>
               </div>
             </div>
@@ -1575,8 +1623,11 @@ function LandingGeneratorContent() {
               <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-black mb-6 leading-tight">
                 Create your business website faster with AI
               </h2>
-              <p className="text-gray-600 text-lg md:text-xl mb-10 leading-relaxed">
+              <p className="text-gray-600 text-lg md:text-xl mb-4 leading-relaxed">
                 Get a simple professional website without code, complicated setup, or waiting on an agency.
+              </p>
+              <p className="text-gray-500 text-sm md:text-base mb-10 leading-relaxed">
+                Ideal for local businesses, solo founders, and service businesses that need to get online quickly.
               </p>
               <SignInButton mode="modal">
                 <button 
@@ -1586,6 +1637,9 @@ function LandingGeneratorContent() {
                   Start Building Your Site
                 </button>
               </SignInButton>
+              <p className="text-gray-500 text-xs md:text-sm mt-4">
+                No code required. Simple setup. Publish when ready.
+              </p>
             </div>
           </section>
         </div>
